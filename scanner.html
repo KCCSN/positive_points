@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Scanner App</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
+    <style>
+        body { margin: 0; padding: 0; font-family: 'Fredoka', sans-serif; background: #222; color: white; text-align: center; }
+        header { background: #ff4b72; padding: 15px; font-size: 1.5rem; font-weight: 600; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        #reader-container { padding: 20px; }
+        #reader { border-radius: 15px; overflow: hidden; }
+        #scanResult { display: none; background: white; color: #333; margin: 20px; padding: 30px 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        #scanAvatar { width: 120px; height: 120px; border-radius: 50%; border: 5px solid #ff4b72; margin-bottom: 10px; }
+        .btn-group { display: flex; gap: 15px; justify-content: center; margin-bottom: 20px; }
+        .btn { border: none; padding: 15px 30px; font-size: 1.5rem; font-family: 'Fredoka', sans-serif; font-weight: 600; border-radius: 15px; cursor: pointer; color: white; flex: 1; }
+        .btn-5 { background: #4CAF50; } .btn-10 { background: #2196F3; }
+        #saveMessage { font-size: 1.2rem; font-weight: 600; padding: 15px; border-radius: 10px; display: none; }
+        .msg-loading { background: #fff3cd; color: #856404; } .msg-success { background: #d4edda; color: #155724; }
+        .btn-cancel { background: transparent; color: #aaa; border: 2px solid #aaa; padding: 10px 20px; border-radius: 50px; font-size: 1rem; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <header>📸 Quick Scanner</header>
+    <div id="reader-container"><div id="reader"></div></div>
+
+    <div id="scanResult">
+        <img id="scanAvatar" src="">
+        <h2 id="scanName" style="font-size: 2.2rem; margin: 0;">Name</h2>
+        <div style="font-size: 1.2rem; color: #777; margin-bottom: 20px;">Current: <span id="currentPoints">0</span></div>
+        
+        <div class="btn-group">
+            <button class="btn btn-5" onclick="submitPoints(5)">+5</button>
+            <button class="btn btn-10" onclick="submitPoints(10)">+10</button>
+        </div>
+        <div id="saveMessage">Saving...</div>
+        <button class="btn-cancel" onclick="resetScanner()">Cancel / Next Card</button>
+    </div>
+
+    <script>
+        // ⚠️ 2. PASTE BOTH OF YOUR URLS HERE ⚠️
+        const GOOGLE_SHEET_CSV_URL = "YOUR_CSV_LINK_HERE";
+        const GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxlTv6HfOVB_AFua7XKePmCySDo5VsJeRpdF4jTgjt3nSm9v3Iz1pTdhO1GwkELAKNdhQ/exec";
+
+        let students = []; let html5QrcodeScanner; let currentStudent = null;
+
+        async function fetchStudents() {
+            try {
+                const response = await fetch(GOOGLE_SHEET_CSV_URL + '&t=' + new Date().getTime());
+                const text = await response.text();
+                const lines = text.replace(/\r/g, '').split('\n').filter(line => line.trim() !== '');
+                for (let i = 1; i < lines.length; i++) {
+                    let rowData = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                    if (rowData.length >= 2) {
+                        const name = rowData[0].replace(/^"|"$/g, '').trim();
+                        students.push({
+                            Name: name, Points: rowData[1] || "0",
+                            AvatarURL: rowData[2] ? rowData[2].replace(/^"|"$/g, '') : `https://api.dicebear.com/7.x/bottts/svg?seed=${name}`
+                        });
+                    }
+                }
+            } catch (err) {}
+        }
+
+        function startCamera() {
+            html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: {width: 250, height: 250} }, false);
+            html5QrcodeScanner.render((decodedText) => {
+                html5QrcodeScanner.clear(); 
+                document.getElementById('reader-container').style.display = 'none';
+                currentStudent = students.find(s => s.Name.toLowerCase() === decodedText.trim().toLowerCase());
+
+                if (currentStudent) {
+                    document.getElementById('scanAvatar').src = currentStudent.AvatarURL;
+                    document.getElementById('scanName').textContent = currentStudent.Name;
+                    document.getElementById('currentPoints').textContent = currentStudent.Points;
+                    document.getElementById('scanResult').style.display = 'block';
+                    document.getElementById('saveMessage').style.display = 'none';
+                } else { alert("Student not found!"); resetScanner(); }
+            }, () => {});
+        }
+
+        async function submitPoints(amount) {
+            const msgBox = document.getElementById('saveMessage');
+            msgBox.className = 'msg-loading'; msgBox.textContent = "Saving to Google..."; msgBox.style.display = 'block';
+            try {
+                const url = `${GOOGLE_WEB_APP_URL}?name=${encodeURIComponent(currentStudent.Name)}&points=${amount}`;
+                await fetch(url, { mode: 'no-cors' });
+                msgBox.className = 'msg-success'; msgBox.textContent = `✅ Saved +${amount} points!`;
+                currentStudent.Points = parseInt(currentStudent.Points) + amount;
+                setTimeout(resetScanner, 1500); // Back to camera instantly!
+            } catch (err) { msgBox.textContent = "❌ Error saving."; }
+        }
+
+        function resetScanner() {
+            document.getElementById('scanResult').style.display = 'none';
+            document.getElementById('reader-container').style.display = 'block';
+            startCamera();
+        }
+
+        fetchStudents(); startCamera();
+    </script>
+</body>
+</html>

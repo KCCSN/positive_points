@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Points Leaderboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            --hero-gradient: linear-gradient(135deg, #FF9A9E 0%, #FECFEF 100%);
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --text-main: #333;
+            --text-accent: #ff4b72;
+            --font-family: 'Fredoka', sans-serif;
+            --border-radius: 20px;
+        }
+
+        body {
+            margin: 0; padding: 0;
+            font-family: var(--font-family);
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+            color: var(--text-main);
+        }
+
+        /* === HERO LOOP SECTION === */
+        .hero-section {
+            height: 45vh; display: flex; align-items: center; justify-content: center;
+            background: var(--hero-gradient);
+            border-bottom-left-radius: 50px; border-bottom-right-radius: 50px;
+            box-shadow: 0 10px 30px rgba(255, 154, 158, 0.3);
+            text-align: center; padding: 20px; overflow: hidden;
+        }
+        .hero-content { font-size: 4rem; color: white; font-weight: 700; text-shadow: 3px 3px 0px rgba(0,0,0,0.1); }
+        .points-highlight { color: #ffe867; text-shadow: 2px 2px 0px #ff9800; }
+        .bounce-in { animation: bounceIn 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) both; }
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); opacity: 1; }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* === GRID SECTION === */
+        .dashboard { max-width: 1200px; margin: -30px auto 50px auto; padding: 0 20px; position: relative; z-index: 10; }
+        .search-bar {
+            width: 100%; max-width: 500px; padding: 15px 25px; font-size: 1.2rem;
+            font-family: var(--font-family); border: 3px solid white; border-radius: 50px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1); margin: 0 auto 30px auto; display: block; outline: none;
+        }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 25px; }
+        .card {
+            background: var(--card-bg); border-radius: var(--border-radius); padding: 25px;
+            text-align: center; box-shadow: 0 8px 20px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.3s;
+        }
+        .card:hover { transform: translateY(-8px) scale(1.02); }
+        .card img { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 4px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .card h3 { margin: 10px 0; font-size: 1.5rem; }
+        .card p { margin: 0; font-size: 1.2rem; color: var(--text-accent); font-weight: 600; background: rgba(255, 75, 114, 0.1); display: inline-block; padding: 5px 15px; border-radius: 20px; }
+
+        /* === MODALS & CELEBRATIONS === */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5);
+            display: none; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(5px);
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-content { background: white; padding: 40px; border-radius: 30px; max-width: 400px; text-align: center; position: relative; }
+        .modal-content img { width: 150px; height: 150px; border-radius: 50%; margin-top: -80px; border: 8px solid white; }
+        .close-btn { position: absolute; top: 15px; right: 20px; font-size: 2rem; cursor: pointer; color: #aaa; }
+        
+        .celebration-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85);
+            display: none; align-items: center; justify-content: center; z-index: 9999; backdrop-filter: blur(8px);
+        }
+        .celebration-box { text-align: center; color: white; }
+        .celebration-box img { width: 250px; height: 250px; border-radius: 50%; border: 10px solid #FFD700; margin: 20px 0; }
+        .celebration-box h1 { font-size: 4.5rem; color: #FFD700; margin: 0; text-shadow: 0 0 20px rgba(255, 215, 0, 0.5); }
+        .gained-points { font-size: 5rem; color: #4CAF50; font-weight: 800; }
+        .anim-spin-pop { animation: spinPop 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; }
+        @keyframes spinPop { 0% { transform: scale(0) rotate(-540deg); opacity: 0; } 100% { transform: scale(1) rotate(0deg); opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <div class="hero-section">
+        <div id="heroContent" class="hero-content">Loading Awesome Students...</div>
+    </div>
+
+    <div class="dashboard">
+        <input type="text" id="searchInput" class="search-bar" placeholder="🔍 Search for a student...">
+        <div id="studentGrid" class="grid"></div>
+    </div>
+
+    <div id="playerModal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <img id="modalAvatar" src="" alt="Avatar">
+            <h2 id="modalName">Name</h2>
+            <div style="font-size: 1.8rem; color: var(--text-accent); font-weight: 700; margin-bottom: 20px;"><span id="modalPoints">0</span> Points!</div>
+            <div id="modalFunFact" style="background: #f8f9fa; padding: 20px; border-radius: 15px;">Fun fact goes here.</div>
+        </div>
+    </div>
+
+    <div id="celebrationOverlay" class="celebration-overlay">
+        <div id="celebrationBox" class="celebration-box">
+            <h1>🎉 LEVEL UP! 🎉</h1>
+            <img id="celebrationAvatar" src="">
+            <h2 id="celebrationName" style="font-size: 4rem; margin: 10px 0;">Name</h2>
+            <div class="gained-points">+<span id="celebrationPoints">5</span> Points!</div>
+        </div>
+    </div>
+
+    <script>
+        // ⚠️ 1. PASTE YOUR PUBLISHED CSV URL HERE ⚠️
+        const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ-vWYjZl09URu0evofZSNIYAI3pkiBaGSSU_eH2UnvKRuz0IywaT_5Yln-sGn5gWNwW5effu0sfJDd/pub?output=csv";
+
+        let students = [];
+        let heroIndex = 0;
+        let heroInterval;
+        let celebrationQueue = [];
+        let isCelebrating = false;
+
+        async function fetchStudentData() {
+            try {
+                const response = await fetch(GOOGLE_SHEET_CSV_URL + '&t=' + new Date().getTime());
+                const text = await response.text();
+                parseCSV(text);
+                renderGrid();
+                
+                if (!heroInterval && students.length > 0) {
+                    updateHero();
+                    heroInterval = setInterval(updateHero, 7000); 
+                }
+            } catch (error) { console.error("Error fetching data:", error); }
+        }
+
+        function parseCSV(csvText) {
+            const lines = csvText.replace(/\r/g, '').split('\n').filter(line => line.trim() !== '');
+            const newStudents = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                let rowData = []; let inQuotes = false; let val = '';
+                for (let char of lines[i]) {
+                    if (char === '"') inQuotes = !inQuotes;
+                    else if (char === ',' && !inQuotes) { rowData.push(val.trim()); val = ''; }
+                    else val += char;
+                }
+                rowData.push(val.trim());
+
+                if (rowData.length >= 2) {
+                    const name = rowData[0] || "Unknown";
+                    newStudents.push({
+                        Name: name,
+                        Points: rowData[1] || "0",
+                        AvatarURL: rowData[2] ? rowData[2].replace(/^"|"$/g, '') : `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(name)}`,
+                        FunFact: rowData[3] ? rowData[3].replace(/^"|"$/g, '') : "No fun fact yet!"
+                    });
+                }
+            }
+
+            if (students.length > 0) {
+                newStudents.forEach(newStudent => {
+                    const oldStudent = students.find(s => s.Name === newStudent.Name);
+                    if (oldStudent) {
+                        const diff = parseInt(newStudent.Points) - parseInt(oldStudent.Points);
+                        if (diff > 0) celebrationQueue.push({ student: newStudent, pointsGained: diff });
+                    }
+                });
+            }
+            students = newStudents;
+            processCelebrations(); 
+        }
+
+        function processCelebrations() {
+            if (isCelebrating || celebrationQueue.length === 0) return;
+            isCelebrating = true;
+            
+            const event = celebrationQueue.shift();
+            document.getElementById('celebrationAvatar').src = event.student.AvatarURL;
+            document.getElementById('celebrationName').textContent = event.student.Name;
+            document.getElementById('celebrationPoints').textContent = event.pointsGained;
+            
+            document.getElementById('celebrationBox').className = 'celebration-box anim-spin-pop'; 
+            document.getElementById('celebrationOverlay').style.display = 'flex';
+            
+            setTimeout(() => {
+                document.getElementById('celebrationOverlay').style.display = 'none';
+                isCelebrating = false;
+                setTimeout(processCelebrations, 1000);
+            }, 5000); 
+        }
+
+        function updateHero() {
+            const heroStudents = students.filter(s => parseInt(s.Points) > 0);
+            const heroContent = document.getElementById('heroContent');
+            if (heroStudents.length === 0) { heroContent.innerHTML = "Time to earn points! 🌟"; return; }
+            if (heroIndex >= heroStudents.length) heroIndex = 0;
+            
+            const student = heroStudents[heroIndex];
+            heroContent.classList.remove('bounce-in');
+            void heroContent.offsetWidth; 
+            heroContent.innerHTML = `${student.Name} has <span class="points-highlight">${student.Points}</span> Points!`;
+            heroContent.classList.add('bounce-in');
+            heroIndex = (heroIndex + 1) % heroStudents.length;
+        }
+
+        function renderGrid(searchTerm = "") {
+            const grid = document.getElementById('studentGrid');
+            grid.innerHTML = ''; 
+            const filtered = students.filter(s => s.Name.toLowerCase().includes(searchTerm.toLowerCase()));
+            filtered.forEach(student => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.onclick = () => {
+                    document.getElementById('modalName').textContent = student.Name;
+                    document.getElementById('modalPoints').textContent = student.Points;
+                    document.getElementById('modalFunFact').textContent = student.FunFact;
+                    document.getElementById('modalAvatar').src = student.AvatarURL;
+                    document.getElementById('playerModal').classList.add('active');
+                };
+                card.innerHTML = `<img src="${student.AvatarURL}"><h3>${student.Name}</h3><p>⭐ ${student.Points}</p>`;
+                grid.appendChild(card);
+            });
+        }
+
+        document.getElementById('searchInput').addEventListener('input', (e) => renderGrid(e.target.value));
+        function closeModal() { document.getElementById('playerModal').classList.remove('active'); }
+        window.onclick = function(e) { if (e.target === document.getElementById('playerModal')) closeModal(); }
+
+        fetchStudentData(); 
+        setInterval(fetchStudentData, 60000); // 60s auto-refresh
+    </script>
+</body>
+</html>

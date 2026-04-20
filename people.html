@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Print ID Cards</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <style>
+        body { font-family: 'Fredoka', sans-serif; background: #f0f2f5; margin: 0; padding: 20px; text-align: center; }
+        .no-print { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 30px; display: inline-block; }
+        .btn { background: #ff4b72; color: white; border: none; padding: 12px 24px; font-size: 1.2rem; font-family: 'Fredoka', sans-serif; font-weight: 600; border-radius: 50px; cursor: pointer; }
+        
+        .card-grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; max-width: 1000px; margin: 0 auto; }
+        .id-card { width: 3.5in; height: 2.2in; background: white; border: 2px dashed #aaa; border-radius: 10px; padding: 15px; display: flex; align-items: center; justify-content: space-between; box-sizing: border-box; }
+        .card-left { text-align: left; flex: 1; height: 100%; display: flex; flex-direction: column; }
+        .card-left h2 { margin: 0 0 5px 0; font-size: 1.4rem; color: #333; }
+        .card-left p { margin: 0; font-size: 0.9rem; color: #777; }
+        .decorate-box { margin-top: auto; border: 2px solid #eee; border-radius: 8px; height: 70px; display: flex; align-items: center; justify-content: center; color: #ccc; font-size: 0.9rem; }
+        .qr-container { width: 90px; height: 90px; padding: 5px; border: 2px solid #333; border-radius: 8px; margin-left: 15px; }
+
+        @media print {
+            body { background: white; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .no-print { display: none !important; }
+            .card-grid { display: block !important; }
+            .id-card { display: inline-block !important; margin: 10px; page-break-inside: avoid; border: 2px dashed #999 !important; float: left; }
+            .qr-container canvas, .qr-container img { display: block !important; max-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="no-print">
+        <h2>🖨️ ID Card Generator</h2>
+        <button class="btn" onclick="window.print()">Print Cards</button>
+    </div>
+
+    <div id="cardGrid" class="card-grid"></div>
+
+    <script>
+        // ⚠️ 3. PASTE YOUR PUBLISHED CSV URL HERE ⚠️
+        const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ-vWYjZl09URu0evofZSNIYAI3pkiBaGSSU_eH2UnvKRuz0IywaT_5Yln-sGn5gWNwW5effu0sfJDd/pub?output=csv";
+
+        async function generateCards() {
+            try {
+                const response = await fetch(GOOGLE_SHEET_CSV_URL + '&t=' + new Date().getTime());
+                const text = await response.text();
+                const lines = text.replace(/\r/g, '').split('\n').filter(line => line.trim() !== '');
+                const grid = document.getElementById('cardGrid');
+
+                for (let i = 1; i < lines.length; i++) {
+                    let rowData = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                    if (rowData.length >= 1) {
+                        const name = rowData[0].replace(/^"|"$/g, '').trim();
+                        if (!name) continue;
+
+                        const card = document.createElement('div');
+                        card.className = 'id-card';
+                        card.innerHTML = `
+                            <div class="card-left">
+                                <h2>${name}</h2><p>Official Point Tracker</p>
+                                <div class="decorate-box">Draw your avatar here!</div>
+                            </div>
+                            <div class="qr-container" id="qr-${i}"></div>
+                        `;
+                        grid.appendChild(card);
+
+                        new QRCode(document.getElementById(`qr-${i}`), {
+                            text: name, width: 90, height: 90,
+                            colorDark : "#000", colorLight : "#fff", correctLevel : QRCode.CorrectLevel.H
+                        });
+                    }
+                }
+            } catch (error) { alert("Error loading data."); }
+        }
+        generateCards();
+    </script>
+</body>
+</html>
