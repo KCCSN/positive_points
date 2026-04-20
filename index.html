@@ -113,21 +113,9 @@
     </div>
 
     <script>
-        // ⚠️ 1. PASTE YOUR PUBLISHED CSV URL HERE ⚠️
-        const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ-vWYjZl09URu0evofZSNIYAI3pkiBaGSSU_eH2UnvKRuz0IywaT_5Yln-sGn5gWNwW5effu0sfJDd/pub?gid=316815520&single=true&output=csv";
-
-        let students = [];
-        let heroIndex = 0;
-        let heroInterval;
-        let celebrationQueue = [];
-        let isCelebrating = false;
-
-        async function fetchStudentData() {
-                      /* =========================================
+        /* =========================================
            CONFIG VARIABLES
            ========================================= */
-        // We don't need the slow CSV URL anymore!
-        // Just paste your fast Apps Script URL here:
         const GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxlTv6HfOVB_AFua7XKePmCySDo5VsJeRpdF4jTgjt3nSm9v3Iz1pTdhO1GwkELAKNdhQ/exec";
         /* ========================================= */
 
@@ -140,11 +128,11 @@
         // 1. Fetch live JSON data instantly from Apps Script
         async function fetchStudentData() {
             try {
-                // We ask the Apps Script for the 'get' action
+                // Ask the Apps Script for the 'get' action
                 const response = await fetch(GOOGLE_WEB_APP_URL + '?action=get&t=' + new Date().getTime());
                 const rawData = await response.json();
                 
-                // Format the live data exactly like before
+                // Format the live data
                 const newStudents = rawData.map(s => ({
                     Name: s.Name,
                     Points: s.Points,
@@ -177,7 +165,6 @@
             } catch (error) {
                 console.error("Error fetching live data:", error);
             }
-        }
         }
 
         function processCelebrations() {
@@ -237,7 +224,7 @@
         window.onclick = function(e) { if (e.target === document.getElementById('playerModal')) closeModal(); }
 
         fetchStudentData(); 
-        setInterval(fetchStudentData, 4000); // 60s auto-refresh
+        setInterval(fetchStudentData, 4000); // 4s auto-refresh
     </script>
 </body>
 </html>
