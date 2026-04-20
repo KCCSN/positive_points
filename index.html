@@ -123,54 +123,61 @@
         let isCelebrating = false;
 
         async function fetchStudentData() {
+                      /* =========================================
+           CONFIG VARIABLES
+           ========================================= */
+        // We don't need the slow CSV URL anymore!
+        // Just paste your fast Apps Script URL here:
+        const GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxlTv6HfOVB_AFua7XKePmCySDo5VsJeRpdF4jTgjt3nSm9v3Iz1pTdhO1GwkELAKNdhQ/exec";
+        /* ========================================= */
+
+        let students = [];
+        let heroIndex = 0;
+        let heroInterval;
+        let celebrationQueue = [];
+        let isCelebrating = false;
+
+        // 1. Fetch live JSON data instantly from Apps Script
+        async function fetchStudentData() {
             try {
-                const response = await fetch(GOOGLE_SHEET_CSV_URL + '&t=' + new Date().getTime());
-                const text = await response.text();
-                parseCSV(text);
+                // We ask the Apps Script for the 'get' action
+                const response = await fetch(GOOGLE_WEB_APP_URL + '?action=get&t=' + new Date().getTime());
+                const rawData = await response.json();
+                
+                // Format the live data exactly like before
+                const newStudents = rawData.map(s => ({
+                    Name: s.Name,
+                    Points: s.Points,
+                    AvatarURL: s.AvatarURL ? s.AvatarURL : `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(s.Name)}`,
+                    FunFact: s.FunFact ? s.FunFact : "No fun fact yet!"
+                }));
+
+                // CELEBRATION DIFF-CHECKER
+                if (students.length > 0) { 
+                    newStudents.forEach(newStudent => {
+                        const oldStudent = students.find(s => s.Name === newStudent.Name);
+                        if (oldStudent) {
+                            const diff = parseInt(newStudent.Points) - parseInt(oldStudent.Points);
+                            if (diff > 0) {
+                                celebrationQueue.push({ student: newStudent, pointsGained: diff });
+                            }
+                        }
+                    });
+                }
+
+                students = newStudents;
+                processCelebrations(); 
                 renderGrid();
                 
+                // Start Hero Loop if it hasn't started
                 if (!heroInterval && students.length > 0) {
                     updateHero();
                     heroInterval = setInterval(updateHero, 7000); 
                 }
-            } catch (error) { console.error("Error fetching data:", error); }
+            } catch (error) {
+                console.error("Error fetching live data:", error);
+            }
         }
-
-        function parseCSV(csvText) {
-            const lines = csvText.replace(/\r/g, '').split('\n').filter(line => line.trim() !== '');
-            const newStudents = [];
-            
-            for (let i = 1; i < lines.length; i++) {
-                let rowData = []; let inQuotes = false; let val = '';
-                for (let char of lines[i]) {
-                    if (char === '"') inQuotes = !inQuotes;
-                    else if (char === ',' && !inQuotes) { rowData.push(val.trim()); val = ''; }
-                    else val += char;
-                }
-                rowData.push(val.trim());
-
-                if (rowData.length >= 2) {
-                    const name = rowData[0] || "Unknown";
-                    newStudents.push({
-                        Name: name,
-                        Points: rowData[1] || "0",
-                        AvatarURL: rowData[2] ? rowData[2].replace(/^"|"$/g, '') : `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(name)}`,
-                        FunFact: rowData[3] ? rowData[3].replace(/^"|"$/g, '') : "No fun fact yet!"
-                    });
-                }
-            }
-
-            if (students.length > 0) {
-                newStudents.forEach(newStudent => {
-                    const oldStudent = students.find(s => s.Name === newStudent.Name);
-                    if (oldStudent) {
-                        const diff = parseInt(newStudent.Points) - parseInt(oldStudent.Points);
-                        if (diff > 0) celebrationQueue.push({ student: newStudent, pointsGained: diff });
-                    }
-                });
-            }
-            students = newStudents;
-            processCelebrations(); 
         }
 
         function processCelebrations() {
@@ -230,7 +237,7 @@
         window.onclick = function(e) { if (e.target === document.getElementById('playerModal')) closeModal(); }
 
         fetchStudentData(); 
-        setInterval(fetchStudentData, 60000); // 60s auto-refresh
+        setInterval(fetchStudentData, 4000); // 60s auto-refresh
     </script>
 </body>
 </html>
