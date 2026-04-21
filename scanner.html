@@ -10,6 +10,12 @@
     <style>
         body { margin: 0; padding: 0; font-family: 'Fredoka', sans-serif; background: #222; color: white; text-align: center; }
         header { background: #ff4b72; padding: 15px; font-size: 1.5rem; font-weight: 600; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        
+        .remote-bar { background: #333; padding: 15px; display: flex; gap: 10px; justify-content: center; }
+        .btn-remote { border: none; padding: 12px 15px; font-size: 1rem; font-family: 'Fredoka'; font-weight: 600; border-radius: 10px; cursor: pointer; flex: 1; }
+        .btn-vault { background: #FFD166; color: #333; }
+        .btn-close { background: #555; color: white; }
+
         #reader-container { padding: 20px; }
         #reader { border-radius: 15px; overflow: hidden; }
         #scanResult { display: none; background: white; color: #333; margin: 20px; padding: 30px 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
@@ -25,6 +31,12 @@
 <body>
 
     <header>📸 Quick Scanner</header>
+    
+    <div class="remote-bar">
+        <button class="btn-remote btn-vault" onclick="sendRemoteCommand('triggerVault')">🎁 Open Vault</button>
+        <button class="btn-remote btn-close" onclick="sendRemoteCommand('closeVault')">✖ Close Screen</button>
+    </div>
+
     <div id="reader-container"><div id="reader"></div></div>
 
     <div id="scanResult">
@@ -41,28 +53,30 @@
     </div>
 
     <script>
-        // ⚠️ 2. PASTE BOTH OF YOUR URLS HERE ⚠️
-        const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ-vWYjZl09URu0evofZSNIYAI3pkiBaGSSU_eH2UnvKRuz0IywaT_5Yln-sGn5gWNwW5effu0sfJDd/pub?gid=316815520&single=true&output=csv";
-        const GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxlTv6HfOVB_AFua7XKePmCySDo5VsJeRpdF4jTgjt3nSm9v3Iz1pTdhO1GwkELAKNdhQ/exec";
+        // ⚠️ PASTE YOUR APPS SCRIPT URL HERE ⚠️
+        const GOOGLE_WEB_APP_URL = "YOUR_APPS_SCRIPT_LINK_HERE";
 
         let students = []; let html5QrcodeScanner; let currentStudent = null;
 
+        // Fetch students silently for quick lookup
         async function fetchStudents() {
             try {
-                const response = await fetch(GOOGLE_SHEET_CSV_URL + '&t=' + new Date().getTime());
-                const text = await response.text();
-                const lines = text.replace(/\r/g, '').split('\n').filter(line => line.trim() !== '');
-                for (let i = 1; i < lines.length; i++) {
-                    let rowData = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                    if (rowData.length >= 2) {
-                        const name = rowData[0].replace(/^"|"$/g, '').trim();
-                        students.push({
-                            Name: name, Points: rowData[1] || "0",
-                            AvatarURL: rowData[2] ? rowData[2].replace(/^"|"$/g, '') : `https://api.dicebear.com/7.x/bottts/svg?seed=${name}`
-                        });
-                    }
-                }
+                const response = await fetch(GOOGLE_WEB_APP_URL + '?action=get&t=' + new Date().getTime());
+                const rawResponse = await response.json();
+                students = rawResponse.students;
             } catch (err) {}
+        }
+
+        // Send Projector Commands
+        async function sendRemoteCommand(action) {
+            try {
+                // Fire and forget - tells Apps Script to trigger command
+                fetch(`${GOOGLE_WEB_APP_URL}?action=${action}`, { mode: 'no-cors' });
+                const btnText = action === 'triggerVault' ? "Opening..." : "Closing...";
+                alert(`Sent command: ${btnText} \nWatch the big screen!`);
+            } catch (e) {
+                alert("Error sending command.");
+            }
         }
 
         function startCamera() {
@@ -90,7 +104,7 @@
                 await fetch(url, { mode: 'no-cors' });
                 msgBox.className = 'msg-success'; msgBox.textContent = `✅ Saved +${amount} points!`;
                 currentStudent.Points = parseInt(currentStudent.Points) + amount;
-                setTimeout(resetScanner, 1500); // Back to camera instantly!
+                setTimeout(resetScanner, 1500); 
             } catch (err) { msgBox.textContent = "❌ Error saving."; }
         }
 
