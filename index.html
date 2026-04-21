@@ -288,9 +288,13 @@
 
                 const remoteCommand = rawResponse.command;
                 const isVaultOpen = document.getElementById('prizeVaultOverlay').style.display === 'flex';
+                const isRevealed = document.getElementById('revealedState').style.display === 'block';
                 
                 if (remoteCommand === 'showVault' && !isVaultOpen) {
                     openPrizeVault();
+                } else if (remoteCommand === 'revealVault' && isVaultOpen && !isRevealed) {
+                    // Trigger the reveal animation remotely!
+                    revealPrizes();
                 } else if (remoteCommand === 'closeVault' && isVaultOpen) {
                     closePrizeVault();
                 }

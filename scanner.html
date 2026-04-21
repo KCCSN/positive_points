@@ -11,9 +11,11 @@
         body { margin: 0; padding: 0; font-family: 'Fredoka', sans-serif; background: #222; color: white; text-align: center; }
         header { background: #ff4b72; padding: 15px; font-size: 1.5rem; font-weight: 600; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
         
-        .remote-bar { background: #333; padding: 15px; display: flex; gap: 10px; justify-content: center; }
-        .btn-remote { border: none; padding: 12px 15px; font-size: 1rem; font-family: 'Fredoka'; font-weight: 600; border-radius: 10px; cursor: pointer; flex: 1; }
+        /* Remote Control Bar */
+        .remote-bar { background: #333; padding: 15px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+        .btn-remote { border: none; padding: 12px 10px; font-size: 1rem; font-family: 'Fredoka'; font-weight: 700; border-radius: 10px; cursor: pointer; flex: 1; min-width: 80px; }
         .btn-vault { background: #FFD166; color: #333; }
+        .btn-reveal { background: #06D6A0; color: white; }
         .btn-close { background: #555; color: white; }
 
         #reader-container { padding: 20px; }
@@ -22,19 +24,14 @@
         #scanResult { display: none; background: white; color: #333; margin: 20px; padding: 30px 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         #scanAvatar { width: 120px; height: 120px; border-radius: 50%; border: 5px solid #ff4b72; margin-bottom: 10px; }
         
-        /* New Button Styles */
         .btn-group { display: flex; gap: 10px; justify-content: center; margin-bottom: 15px; }
         .btn { border: none; padding: 15px 20px; font-size: 1.5rem; font-family: 'Fredoka', sans-serif; font-weight: 700; border-radius: 15px; cursor: pointer; color: white; flex: 1; }
         .btn-1 { background: #4CAF50; } 
         .btn-2 { background: #2196F3; }
         .btn-custom { background: #9C27B0; flex: 1; }
 
-        /* Custom Input Wrapper */
         .custom-input-wrap { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; }
-        .custom-input { 
-            width: 80px; font-size: 1.5rem; font-family: 'Fredoka', sans-serif; font-weight: 700; 
-            text-align: center; border-radius: 15px; border: 3px solid #ddd; outline: none;
-        }
+        .custom-input { width: 80px; font-size: 1.5rem; font-family: 'Fredoka'; font-weight: 700; text-align: center; border-radius: 15px; border: 3px solid #ddd; outline: none; }
         .custom-input:focus { border-color: #9C27B0; }
 
         #saveMessage { font-size: 1.2rem; font-weight: 600; padding: 15px; border-radius: 10px; display: none; margin-bottom: 15px; }
@@ -47,8 +44,9 @@
     <header>📸 Quick Scanner</header>
     
     <div class="remote-bar">
-        <button class="btn-remote btn-vault" onclick="sendRemoteCommand('triggerVault')">🎁 Open Vault</button>
-        <button class="btn-remote btn-close" onclick="sendRemoteCommand('closeVault')">✖ Close Screen</button>
+        <button class="btn-remote btn-vault" onclick="sendRemoteCommand('triggerVault')">🎁 Vault</button>
+        <button class="btn-remote btn-reveal" onclick="sendRemoteCommand('revealVault')">🎉 Reveal</button>
+        <button class="btn-remote btn-close" onclick="sendRemoteCommand('closeVault')">✖ Close</button>
     </div>
 
     <div id="reader-container"><div id="reader"></div></div>
@@ -95,7 +93,11 @@
                 const url = `${GOOGLE_WEB_APP_URL}?action=${action}&t=${new Date().getTime()}`;
                 fetch(url, { mode: 'no-cors' });
                 
-                const btnText = action === 'triggerVault' ? "Opening..." : "Closing...";
+                let btnText = "Command Sent";
+                if (action === 'triggerVault') btnText = "Opening Box...";
+                if (action === 'revealVault') btnText = "Revealing Winners...";
+                if (action === 'closeVault') btnText = "Closing Screen...";
+                
                 alert(`Sent command: ${btnText} \nWatch the big screen!`);
             } catch (e) {
                 alert("Error sending command. Check your internet connection.");
@@ -113,7 +115,7 @@
                     document.getElementById('scanAvatar').src = currentStudent.AvatarURL;
                     document.getElementById('scanName').textContent = currentStudent.Name;
                     document.getElementById('currentPoints').textContent = currentStudent.Points;
-                    document.getElementById('customAmount').value = ''; // Clear custom input
+                    document.getElementById('customAmount').value = ''; 
                     document.getElementById('scanResult').style.display = 'block';
                     document.getElementById('saveMessage').style.display = 'none';
                 } else { alert("Student not found!"); resetScanner(); }
@@ -141,7 +143,6 @@
                 const url = `${GOOGLE_WEB_APP_URL}?name=${encodeURIComponent(currentStudent.Name)}&points=${amount}`;
                 await fetch(url, { mode: 'no-cors' });
                 
-                // Show visually if it was added or subtracted
                 const sign = amount > 0 ? '+' : '';
                 msgBox.className = 'msg-success'; msgBox.textContent = `✅ Saved ${sign}${amount} points!`;
                 
