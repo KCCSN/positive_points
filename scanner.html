@@ -17,15 +17,29 @@
         .btn-close { background: #555; color: white; }
 
         #reader-container { padding: 20px; }
-        #reader { border-radius: 15px; overflow: hidden; }
+        #reader { border-radius: 15px; overflow: hidden; background: #000; min-height: 250px; }
+        
         #scanResult { display: none; background: white; color: #333; margin: 20px; padding: 30px 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         #scanAvatar { width: 120px; height: 120px; border-radius: 50%; border: 5px solid #ff4b72; margin-bottom: 10px; }
-        .btn-group { display: flex; gap: 15px; justify-content: center; margin-bottom: 20px; }
-        .btn { border: none; padding: 15px 30px; font-size: 1.5rem; font-family: 'Fredoka', sans-serif; font-weight: 600; border-radius: 15px; cursor: pointer; color: white; flex: 1; }
-        .btn-5 { background: #4CAF50; } .btn-10 { background: #2196F3; }
-        #saveMessage { font-size: 1.2rem; font-weight: 600; padding: 15px; border-radius: 10px; display: none; }
+        
+        /* New Button Styles */
+        .btn-group { display: flex; gap: 10px; justify-content: center; margin-bottom: 15px; }
+        .btn { border: none; padding: 15px 20px; font-size: 1.5rem; font-family: 'Fredoka', sans-serif; font-weight: 700; border-radius: 15px; cursor: pointer; color: white; flex: 1; }
+        .btn-1 { background: #4CAF50; } 
+        .btn-2 { background: #2196F3; }
+        .btn-custom { background: #9C27B0; flex: 1; }
+
+        /* Custom Input Wrapper */
+        .custom-input-wrap { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; }
+        .custom-input { 
+            width: 80px; font-size: 1.5rem; font-family: 'Fredoka', sans-serif; font-weight: 700; 
+            text-align: center; border-radius: 15px; border: 3px solid #ddd; outline: none;
+        }
+        .custom-input:focus { border-color: #9C27B0; }
+
+        #saveMessage { font-size: 1.2rem; font-weight: 600; padding: 15px; border-radius: 10px; display: none; margin-bottom: 15px; }
         .msg-loading { background: #fff3cd; color: #856404; } .msg-success { background: #d4edda; color: #155724; }
-        .btn-cancel { background: transparent; color: #aaa; border: 2px solid #aaa; padding: 10px 20px; border-radius: 50px; font-size: 1rem; margin-top: 10px; }
+        .btn-cancel { background: transparent; color: #aaa; border: 2px solid #aaa; padding: 10px 20px; border-radius: 50px; font-size: 1rem; margin-top: 10px; width: 100%; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -45,20 +59,25 @@
         <div style="font-size: 1.2rem; color: #777; margin-bottom: 20px;">Current: <span id="currentPoints">0</span></div>
         
         <div class="btn-group">
-            <button class="btn btn-5" onclick="submitPoints(5)">+5</button>
-            <button class="btn btn-10" onclick="submitPoints(10)">+10</button>
+            <button class="btn btn-1" onclick="submitPoints(1)">+1</button>
+            <button class="btn btn-2" onclick="submitPoints(2)">+2</button>
         </div>
+
+        <div class="custom-input-wrap">
+            <input type="number" id="customAmount" class="custom-input" placeholder="+/-">
+            <button class="btn btn-custom" onclick="submitCustomPoints()">Send</button>
+        </div>
+
         <div id="saveMessage">Saving...</div>
         <button class="btn-cancel" onclick="resetScanner()">Cancel / Next Card</button>
     </div>
 
     <script>
-        // ⚠️ PASTE YOUR APPS SCRIPT URL HERE ⚠️
-        const GOOGLE_WEB_APP_URL = "YOUR_APPS_SCRIPT_LINK_HERE";
+        // ⚠️⚠️⚠️ PASTE YOUR ACTUAL APPS SCRIPT URL HERE ⚠️⚠️⚠️
+        const GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxlTv6HfOVB_AFua7XKePmCySDo5VsJeRpdF4jTgjt3nSm9v3Iz1pTdhO1GwkELAKNdhQ/exec";
 
         let students = []; let html5QrcodeScanner; let currentStudent = null;
 
-        // Fetch students silently for quick lookup
         async function fetchStudents() {
             try {
                 const response = await fetch(GOOGLE_WEB_APP_URL + '?action=get&t=' + new Date().getTime());
@@ -67,10 +86,12 @@
             } catch (err) {}
         }
 
-       // Send Projector Commands (Upgraded with Cache-Buster)
         async function sendRemoteCommand(action) {
             try {
-                // The '&t=' adds a random timestamp so your phone never ignores the button press
+                if (GOOGLE_WEB_APP_URL === "YOUR_APPS_SCRIPT_LINK_HERE") {
+                    alert("⚠️ You need to paste your Apps Script URL into the scanner.html file!");
+                    return;
+                }
                 const url = `${GOOGLE_WEB_APP_URL}?action=${action}&t=${new Date().getTime()}`;
                 fetch(url, { mode: 'no-cors' });
                 
@@ -92,19 +113,38 @@
                     document.getElementById('scanAvatar').src = currentStudent.AvatarURL;
                     document.getElementById('scanName').textContent = currentStudent.Name;
                     document.getElementById('currentPoints').textContent = currentStudent.Points;
+                    document.getElementById('customAmount').value = ''; // Clear custom input
                     document.getElementById('scanResult').style.display = 'block';
                     document.getElementById('saveMessage').style.display = 'none';
                 } else { alert("Student not found!"); resetScanner(); }
             }, () => {});
         }
 
+        function submitCustomPoints() {
+            const amount = parseInt(document.getElementById('customAmount').value);
+            if (!isNaN(amount) && amount !== 0) {
+                submitPoints(amount);
+            } else {
+                alert("Please enter a valid number!");
+            }
+        }
+
         async function submitPoints(amount) {
+            if (GOOGLE_WEB_APP_URL === "YOUR_APPS_SCRIPT_LINK_HERE") {
+                alert("⚠️ You need to paste your Apps Script URL into the scanner.html file!");
+                return;
+            }
+
             const msgBox = document.getElementById('saveMessage');
             msgBox.className = 'msg-loading'; msgBox.textContent = "Saving to Google..."; msgBox.style.display = 'block';
             try {
                 const url = `${GOOGLE_WEB_APP_URL}?name=${encodeURIComponent(currentStudent.Name)}&points=${amount}`;
                 await fetch(url, { mode: 'no-cors' });
-                msgBox.className = 'msg-success'; msgBox.textContent = `✅ Saved +${amount} points!`;
+                
+                // Show visually if it was added or subtracted
+                const sign = amount > 0 ? '+' : '';
+                msgBox.className = 'msg-success'; msgBox.textContent = `✅ Saved ${sign}${amount} points!`;
+                
                 currentStudent.Points = parseInt(currentStudent.Points) + amount;
                 setTimeout(resetScanner, 1500); 
             } catch (err) { msgBox.textContent = "❌ Error saving."; }
