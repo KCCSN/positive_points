@@ -136,6 +136,20 @@
         </div>
     </div>
 
+<div id="pinModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 350px;">
+            <h2 style="margin-top: 0;">Admin Access</h2>
+            <p>Enter PIN to unlock database:</p>
+            <input type="password" id="pinInput" 
+                   style="width: 80%; padding: 15px; font-size: 2rem; text-align: center; border: 4px solid var(--dark); border-radius: 15px; font-family: sans-serif; letter-spacing: 10px; margin-bottom: 20px;" 
+                   placeholder="****" maxlength="4">
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button onclick="closePinModal()" class="btn-admin" style="background: #eee;">Cancel</button>
+                <button onclick="verifyPin()" class="btn-admin" style="background: var(--green); color: white;">Unlock</button>
+            </div>
+        </div>
+    </div>
+
     <div id="celebrationOverlay" class="celebration-overlay">
         <div class="sunburst"></div>
         <div id="celebrationBox" class="celebration-box">
@@ -173,11 +187,35 @@
         let students = []; let heroIndex = 0; let heroInterval;
         let celebrationQueue = []; let isCelebrating = false;
 
+        // --- UPDATED ADMIN PIN LOGIC ---
         function openDatabase() {
-            const enteredPin = prompt("🛑 Admin Only: Please enter your PIN:");
-            if (enteredPin === ADMIN_PIN) window.open(ADMIN_SHEET_URL, '_blank');
-            else if (enteredPin !== null) alert("❌ Incorrect PIN.");
+            document.getElementById('pinInput').value = ''; // Clear old attempts
+            document.getElementById('pinModal').classList.add('active');
+            document.getElementById('pinInput').focus();
         }
+
+        function closePinModal() {
+            document.getElementById('pinModal').classList.remove('active');
+        }
+
+        function verifyPin() {
+            const enteredPin = document.getElementById('pinInput').value;
+            
+            if (enteredPin === ADMIN_PIN) {
+                closePinModal();
+                window.open(ADMIN_SHEET_URL, '_blank');
+            } else {
+                alert("❌ Incorrect PIN. Nice try!");
+                document.getElementById('pinInput').value = '';
+            }
+        }
+
+        // Allow pressing "Enter" key to submit the PIN
+        document.getElementById('pinInput').addEventListener('keyup', function(event) {
+            if (event.key === 'Enter') {
+                verifyPin();
+            }
+        });
 
         function openPrizeVault() {
             document.getElementById('prizeVaultOverlay').style.display = 'flex';
@@ -270,6 +308,7 @@
             const box = document.getElementById('celebrationBox');
             box.classList.remove('anim-pop'); void box.offsetWidth; box.classList.add('anim-pop');
             
+
             document.getElementById('celebrationOverlay').style.display = 'flex';
             setTimeout(() => {
                 document.getElementById('celebrationOverlay').style.display = 'none';
