@@ -67,15 +67,17 @@
             } catch (err) {}
         }
 
-        // Send Projector Commands
+       // Send Projector Commands (Upgraded with Cache-Buster)
         async function sendRemoteCommand(action) {
             try {
-                // Fire and forget - tells Apps Script to trigger command
-                fetch(`${GOOGLE_WEB_APP_URL}?action=${action}`, { mode: 'no-cors' });
+                // The '&t=' adds a random timestamp so your phone never ignores the button press
+                const url = `${GOOGLE_WEB_APP_URL}?action=${action}&t=${new Date().getTime()}`;
+                fetch(url, { mode: 'no-cors' });
+                
                 const btnText = action === 'triggerVault' ? "Opening..." : "Closing...";
                 alert(`Sent command: ${btnText} \nWatch the big screen!`);
             } catch (e) {
-                alert("Error sending command.");
+                alert("Error sending command. Check your internet connection.");
             }
         }
 

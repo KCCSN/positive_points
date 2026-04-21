@@ -94,20 +94,33 @@
         .anim-pop { animation: levelUpPop 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; }
         @keyframes levelUpPop { 0% { transform: scale(0.2) translateY(200px); opacity: 0; } 100% { transform: scale(1) translateY(0); opacity: 1; } }
 
-        /* Massive Projector-Optimized Vault UI */
+        /* Dynamically Scaling Vault UI */
         .mystery-box { font-size: 15rem; cursor: pointer; display: inline-block; animation: shake 2s infinite ease-in-out; transition: transform 0.2s; filter: drop-shadow(0 20px 30px rgba(0,0,0,0.5)); }
         .mystery-box:hover { transform: scale(1.1); animation: none; }
         @keyframes shake { 0%, 100% { transform: rotate(0deg); } 10%, 30%, 50%, 70%, 90% { transform: rotate(-10deg) scale(1.05); } 20%, 40%, 60%, 80% { transform: rotate(10deg) scale(1.05); } }
         
-        .prize-grid { display: flex; flex-wrap: wrap; gap: 35px; justify-content: center; max-width: 1400px; margin: 0 auto; }
-        .prize-card {
-            background: linear-gradient(135deg, var(--yellow), #FFB703); border: 8px solid var(--surface); border-radius: 40px; padding: 35px 20px;
-            text-align: center; color: var(--dark); box-shadow: 0 15px 30px rgba(0,0,0,0.6), inset 0 -5px 0 rgba(0,0,0,0.1);
-            transform: scale(0); animation: popInWinner 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards; min-width: 250px;
+        .prize-grid { 
+            display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; 
+            max-width: 95vw; max-height: 70vh; align-content: center; margin: 0 auto;
         }
-        .prize-card img { width: 150px; height: 150px; border-radius: 50%; border: 8px solid var(--dark); background: white; margin-bottom: 15px; }
-        .prize-card h3 { margin: 10px 0 10px 0; font-size: 2.8rem; font-weight: 800; }
-        .prize-card p { margin: 0; font-size: 2rem; font-weight: 800; background: var(--surface); padding: 8px 30px; border-radius: 40px; border: 6px solid var(--dark); display: inline-block; }
+        .prize-card {
+            background: linear-gradient(135deg, var(--yellow), #FFB703); border: 5px solid var(--surface); border-radius: 25px; 
+            padding: 20px 15px; text-align: center; color: var(--dark); box-shadow: 0 10px 20px rgba(0,0,0,0.5), inset 0 -4px 0 rgba(0,0,0,0.1);
+            transform: scale(0); animation: popInWinner 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards; 
+            flex: 0 1 auto; width: clamp(140px, 16vw, 220px); /* Dynamically scales down if screen fills up */
+        }
+        .prize-card img { 
+            width: clamp(70px, 8vw, 120px); height: clamp(70px, 8vw, 120px); border-radius: 50%; 
+            border: 5px solid var(--dark); background: white; margin-bottom: 10px; 
+        }
+        .prize-card h3 { 
+            margin: 5px 0 10px 0; font-size: clamp(1.2rem, 2vw, 2rem); font-weight: 800; 
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
+        }
+        .prize-card p { 
+            margin: 0; font-size: clamp(1rem, 1.5vw, 1.6rem); font-weight: 800; background: var(--surface); 
+            padding: 5px 15px; border-radius: 30px; border: 4px solid var(--dark); display: inline-block; 
+        }
         @keyframes popInWinner { 0% { transform: scale(0) translateY(50px); opacity: 0; } 100% { transform: scale(1) translateY(0); opacity: 1; } }
 
     </style>
@@ -136,7 +149,7 @@
         </div>
     </div>
 
-<div id="pinModal" class="modal-overlay">
+    <div id="pinModal" class="modal-overlay">
         <div class="modal-content" style="max-width: 350px;">
             <h2 style="margin-top: 0;">Admin Access</h2>
             <p>Enter PIN to unlock database:</p>
@@ -171,7 +184,7 @@
 
         <div id="revealedState" style="display: none; text-align: center; width: 100%; position: relative;">
             <div class="sunburst" style="opacity: 0.2;"></div>
-            <h1 style="color: var(--yellow); font-size: 7rem; text-shadow: 8px 8px 0 var(--dark); margin-bottom: 50px; position: relative; z-index: 10;">🏆 15-Point Club 🏆</h1>
+            <h1 style="color: var(--yellow); font-size: 5rem; text-shadow: 6px 6px 0 var(--dark); margin-bottom: 20px; position: relative; z-index: 10;">🏆 15-Point Club 🏆</h1>
             <div id="prizeGrid" class="prize-grid" style="position: relative; z-index: 10;"></div>
             <h2 id="noPrizeMsg" style="color: white; font-size: 3rem; display: none; position: relative; z-index: 10;">Keep working hard! 🌟</h2>
         </div>
@@ -189,7 +202,7 @@
 
         // --- UPDATED ADMIN PIN LOGIC ---
         function openDatabase() {
-            document.getElementById('pinInput').value = ''; // Clear old attempts
+            document.getElementById('pinInput').value = ''; 
             document.getElementById('pinModal').classList.add('active');
             document.getElementById('pinInput').focus();
         }
@@ -200,7 +213,6 @@
 
         function verifyPin() {
             const enteredPin = document.getElementById('pinInput').value;
-            
             if (enteredPin === ADMIN_PIN) {
                 closePinModal();
                 window.open(ADMIN_SHEET_URL, '_blank');
@@ -210,13 +222,11 @@
             }
         }
 
-        // Allow pressing "Enter" key to submit the PIN
         document.getElementById('pinInput').addEventListener('keyup', function(event) {
-            if (event.key === 'Enter') {
-                verifyPin();
-            }
+            if (event.key === 'Enter') verifyPin();
         });
 
+        // --- VAULT LOGIC ---
         function openPrizeVault() {
             document.getElementById('prizeVaultOverlay').style.display = 'flex';
             document.getElementById('mysteryState').style.display = 'block';
@@ -227,7 +237,6 @@
             document.getElementById('prizeVaultOverlay').style.display = 'none';
         }
 
-        // Close vault if background is clicked
         function handleVaultClick(e) {
             if(e.target.id === 'prizeVaultOverlay' || e.target.id === 'revealedState') {
                 closePrizeVault();
@@ -260,7 +269,6 @@
                 const response = await fetch(GOOGLE_WEB_APP_URL + '?action=get&t=' + new Date().getTime());
                 const rawResponse = await response.json();
                 
-                // 1. Process Students
                 const newStudents = rawResponse.students.map(s => ({
                     Name: s.Name, Points: s.Points,
                     AvatarURL: s.AvatarURL ? s.AvatarURL : `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(s.Name)}`,
@@ -278,7 +286,6 @@
                 }
                 students = newStudents;
 
-                // 2. Process Remote Phone Commands!
                 const remoteCommand = rawResponse.command;
                 const isVaultOpen = document.getElementById('prizeVaultOverlay').style.display === 'flex';
                 
@@ -308,7 +315,6 @@
             const box = document.getElementById('celebrationBox');
             box.classList.remove('anim-pop'); void box.offsetWidth; box.classList.add('anim-pop');
             
-
             document.getElementById('celebrationOverlay').style.display = 'flex';
             setTimeout(() => {
                 document.getElementById('celebrationOverlay').style.display = 'none';
