@@ -12,33 +12,40 @@
         .no-print { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 30px; display: inline-block; }
         .btn { background: #ff4b72; color: white; border: none; padding: 12px 24px; font-size: 1.2rem; font-family: 'Fredoka', sans-serif; font-weight: 600; border-radius: 50px; cursor: pointer; }
         
-        .card-grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; max-width: 1000px; margin: 0 auto; }
+        /* Safe Block Grid for Printers */
+        .card-grid { display: block; max-width: 1000px; margin: 0 auto; overflow: hidden; }
         
-        /* Individual Card Design */
+        /* Bulletproof Absolute Layout */
         .id-card { 
             width: 3.5in; height: 2.2in; background: white; 
             border: 2px dashed #aaa; border-radius: 10px; padding: 15px; 
-            display: flex; align-items: center; justify-content: space-between; box-sizing: border-box; 
+            box-sizing: border-box; 
+            position: relative; /* Keeps the QR code locked perfectly inside */
+            float: left; margin: 10px;
+            page-break-inside: avoid; break-inside: avoid;
         }
-        .card-left { text-align: left; flex: 1; height: 100%; display: flex; flex-direction: column; }
-        .card-left h2 { margin: 0 0 5px 0; font-size: 1.4rem; color: #333; }
+        
+        .card-left { text-align: left; width: calc(100% - 110px); height: 100%; display: flex; flex-direction: column; }
+        .card-left h2 { margin: 0 0 5px 0; font-size: 1.3rem; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .card-left p { margin: 0; font-size: 0.9rem; color: #777; }
         .decorate-box { margin-top: auto; border: 2px solid #eee; border-radius: 8px; height: 70px; display: flex; align-items: center; justify-content: center; color: #ccc; font-size: 0.9rem; }
-        .qr-container { width: 90px; height: 90px; padding: 5px; border: 2px solid #333; border-radius: 8px; margin-left: 15px; }
+        
+        /* Locked to the right side */
+        .qr-container { 
+            position: absolute; right: 15px; top: 50%; transform: translateY(-50%);
+            width: 90px; height: 90px; padding: 5px; border: 2px solid #333; border-radius: 8px; background: white;
+        }
+        
+        /* Forces the QR code to perfectly fill the 90x90 box */
+        .qr-container img, .qr-container canvas { 
+            width: 100% !important; height: 100% !important; 
+        }
 
-        /* THE MAGIC PRINT SETTINGS FIX */
+        /* Pure Print Fixes */
         @media print {
             body { background: white; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .no-print { display: none !important; }
-            .card-grid { display: block !important; }
-            .id-card { 
-                display: inline-block !important; 
-                margin: 10px; 
-                page-break-inside: avoid; 
-                border: 2px dashed #999 !important; 
-                float: left; 
-            }
-            .qr-container canvas, .qr-container img { display: block !important; max-width: 100%; }
+            .id-card { border: 2px dashed #999 !important; }
         }
     </style>
 </head>
@@ -55,18 +62,17 @@
     </div>
 
     <script>
-        // ⚠️ PASTE YOUR APPS SCRIPT URL HERE ⚠️
+        // Your specific Google Apps Script URL
         const GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxlTv6HfOVB_AFua7XKePmCySDo5VsJeRpdF4jTgjt3nSm9v3Iz1pTdhO1GwkELAKNdhQ/exec";
 
         async function generateCards() {
             try {
-                // Fetch the exact same JSON API the rest of your app uses!
                 const response = await fetch(GOOGLE_WEB_APP_URL + '?action=get&t=' + new Date().getTime());
                 const rawResponse = await response.json();
                 const students = rawResponse.students;
                 
                 const grid = document.getElementById('cardGrid');
-                grid.innerHTML = ''; // Clear loading text
+                grid.innerHTML = ''; 
 
                 if (students.length === 0) {
                     grid.innerHTML = "<h3 style='color: red;'>No students found! Check your database.</h3>";
@@ -87,7 +93,6 @@
                     `;
                     grid.appendChild(card);
 
-                    // Generate the QR Code
                     new QRCode(document.getElementById(`qr-${i}`), {
                         text: student.Name, 
                         width: 90, height: 90,
@@ -95,7 +100,7 @@
                     });
                 });
             } catch (error) { 
-                document.getElementById('cardGrid').innerHTML = "<h3 style='color: red;'>Error loading data. Is your Apps Script URL correct?</h3>";
+                document.getElementById('cardGrid').innerHTML = "<h3 style='color: red;'>Error loading data.</h3>";
                 console.error(error); 
             }
         }
