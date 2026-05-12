@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -267,4 +268,369 @@
         fetchStudentData(); setInterval(fetchStudentData, 3000); 
     </script>
 </body>
+=======
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Points Leaderboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #FF4B72; --secondary: #00C6FF; --yellow: #FFD166; --green: #06D6A0;
+            --dark: #2B2D42; --surface: #FFFFFF; --font-family: 'Fredoka', sans-serif;
+        }
+
+        body {
+            margin: 0; padding: 0; font-family: var(--font-family); color: var(--dark);
+            background: linear-gradient(-45deg, #FF9A9E, #FECFEF, #a8edea, #00C6FF);
+            background-size: 400% 400%; animation: gradientBG 15s ease infinite; min-height: 100vh;
+        }
+        @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+
+        /* Admin / Top Bar */
+        .admin-header { position: absolute; top: 20px; right: 20px; z-index: 100; display: flex; gap: 15px; }
+        .btn-admin {
+            background: var(--surface); color: var(--dark); border: 4px solid var(--dark);
+            padding: 10px 20px; font-size: 1.1rem; font-family: var(--font-family); font-weight: 700;
+            border-radius: 50px; cursor: pointer; box-shadow: 0 6px 0 var(--dark); transition: all 0.15s;
+        }
+        .btn-prize { background: var(--yellow); }
+        .btn-admin:hover { transform: translateY(4px); box-shadow: 0 2px 0 var(--dark); }
+
+        /* Hero Podium */
+        .hero-section {
+            height: 40vh; display: flex; align-items: center; justify-content: center;
+            background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(10px);
+            border-bottom: 8px solid var(--dark); border-bottom-left-radius: 40px; border-bottom-right-radius: 40px;
+            box-shadow: 0 15px 0 rgba(0,0,0,0.1); text-align: center; padding: 20px; overflow: hidden; margin-bottom: 40px;
+        }
+        .hero-content { font-size: 5rem; color: var(--surface); font-weight: 700; text-shadow: 6px 6px 0px var(--dark); letter-spacing: 2px; }
+        .points-highlight { color: var(--yellow); text-shadow: 6px 6px 0px var(--dark), 0 0 30px rgba(255, 209, 102, 0.8); display: inline-block; }
+        .bounce-in { animation: rubberBand 1.2s both; }
+        @keyframes rubberBand {
+            0% { transform: scale3d(1, 1, 1); opacity: 0; } 30% { transform: scale3d(1.25, 0.75, 1); opacity: 1; }
+            40% { transform: scale3d(0.75, 1.25, 1); } 50% { transform: scale3d(1.15, 0.85, 1); }
+            65% { transform: scale3d(0.95, 1.05, 1); } 75% { transform: scale3d(1.05, 0.95, 1); } 100% { transform: scale3d(1, 1, 1); opacity: 1;}
+        }
+
+        /* Dashboard & Grid */
+        .dashboard { max-width: 1200px; margin: 0 auto 50px auto; padding: 0 20px; }
+        .search-bar {
+            width: 100%; max-width: 600px; padding: 20px 30px; font-size: 1.5rem; font-family: var(--font-family); font-weight: 600;
+            background: var(--surface); color: var(--dark); border: 6px solid var(--dark); border-radius: 50px; box-shadow: 0 8px 0 var(--dark);
+            margin: 0 auto 40px auto; display: block; outline: none; transition: all 0.2s;
+        }
+        .search-bar:focus { transform: translateY(4px); box-shadow: 0 4px 0 var(--dark); }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 30px; }
+        .card {
+            background: var(--surface); border-radius: 30px; padding: 25px; text-align: center; 
+            border: 6px solid var(--dark); box-shadow: 0 10px 0 var(--dark); cursor: pointer; transition: all 0.15s;
+        }
+        .card:hover { transform: translateY(6px); box-shadow: 0 4px 0 var(--dark); background: #FAFAFA; }
+        .card img { width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 6px solid var(--dark); background: #f0f0f0; margin-bottom: 15px; transition: transform 0.3s; }
+        .card:hover img { transform: scale(1.1) rotate(-5deg); }
+        .card h3 { margin: 10px 0; font-size: 1.8rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+        .card p { margin: 0; font-size: 1.4rem; font-weight: 700; color: var(--dark); background: var(--yellow); display: inline-flex; align-items: center; justify-content: center; padding: 8px 20px; border-radius: 30px; border: 4px solid var(--dark); }
+
+        /* Modals & Popups */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(43, 45, 66, 0.8);
+            display: none; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(8px);
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-content { background: var(--surface); padding: 50px 40px 40px 40px; border-radius: 40px; max-width: 450px; text-align: center; position: relative; border: 8px solid var(--dark); box-shadow: 0 15px 0 rgba(0,0,0,0.3); }
+        .modal-content img { width: 160px; height: 160px; border-radius: 50%; margin-top: -110px; border: 8px solid var(--dark); background: #fff; }
+        .close-btn { position: absolute; top: 15px; right: 25px; font-size: 2.5rem; font-weight: 700; cursor: pointer; color: var(--dark); transition: transform 0.2s; }
+        .close-btn:hover { transform: scale(1.2) rotate(90deg); color: var(--primary); }
+        .modal-badge { font-size: 2.2rem; color: var(--dark); font-weight: 800; margin-bottom: 25px; background: var(--yellow); padding: 10px 30px; border-radius: 50px; border: 6px solid var(--dark); display: inline-block; transform: rotate(-2deg); box-shadow: 4px 4px 0 var(--dark); }
+        .fun-fact { background: #f4f4f4; padding: 25px; border-radius: 20px; font-size: 1.3rem; line-height: 1.5; color: var(--dark); border: 4px dashed #ccc; font-weight: 500; }
+
+        /* Celebrations & Vault */
+        .celebration-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9);
+            display: none; align-items: center; justify-content: center; z-index: 9999; overflow: hidden;
+        }
+        .sunburst {
+            position: absolute; top: 50%; left: 50%; width: 200vw; height: 200vw; background: repeating-conic-gradient(var(--yellow) 0 15deg, #FFB703 15deg 30deg);
+            transform: translate(-50%, -50%); animation: spinBurst 10s linear infinite; z-index: -1; opacity: 0.5;
+        }
+        @keyframes spinBurst { 100% { transform: translate(-50%, -50%) rotate(360deg); } }
+        .celebration-box { text-align: center; color: white; position: relative; z-index: 10; }
+        .celebration-box img { width: 300px; height: 300px; border-radius: 50%; border: 12px solid var(--surface); margin: 20px 0; box-shadow: 0 0 0 12px var(--dark), 0 20px 50px rgba(0,0,0,0.5); background: var(--surface); }
+        .celebration-box h1 { font-size: 6rem; color: var(--surface); margin: 0; text-shadow: 8px 8px 0 var(--dark); font-weight: 800; letter-spacing: 4px; }
+        .gained-points { font-size: 7rem; color: var(--green); font-weight: 800; text-shadow: 8px 8px 0 var(--dark), 0 0 50px rgba(6, 214, 160, 0.6); display: inline-block; transform: rotate(-5deg); margin-top: 10px; }
+        .anim-pop { animation: levelUpPop 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; }
+        @keyframes levelUpPop { 0% { transform: scale(0.2) translateY(200px); opacity: 0; } 100% { transform: scale(1) translateY(0); opacity: 1; } }
+
+        /* Dynamically Scaling Vault UI */
+        .mystery-box { font-size: 15rem; cursor: pointer; display: inline-block; animation: shake 2s infinite ease-in-out; transition: transform 0.2s; filter: drop-shadow(0 20px 30px rgba(0,0,0,0.5)); }
+        .mystery-box:hover { transform: scale(1.1); animation: none; }
+        @keyframes shake { 0%, 100% { transform: rotate(0deg); } 10%, 30%, 50%, 70%, 90% { transform: rotate(-10deg) scale(1.05); } 20%, 40%, 60%, 80% { transform: rotate(10deg) scale(1.05); } }
+        
+        .prize-grid { 
+            display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; 
+            max-width: 95vw; max-height: 70vh; align-content: center; margin: 0 auto;
+        }
+        .prize-card {
+            background: linear-gradient(135deg, var(--yellow), #FFB703); border: 5px solid var(--surface); border-radius: 25px; 
+            padding: 20px 15px; text-align: center; color: var(--dark); box-shadow: 0 10px 20px rgba(0,0,0,0.5), inset 0 -4px 0 rgba(0,0,0,0.1);
+            transform: scale(0); animation: popInWinner 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards; 
+            flex: 0 1 auto; width: clamp(140px, 16vw, 220px); /* Dynamically scales down if screen fills up */
+        }
+        .prize-card img { 
+            width: clamp(70px, 8vw, 120px); height: clamp(70px, 8vw, 120px); border-radius: 50%; 
+            border: 5px solid var(--dark); background: white; margin-bottom: 10px; 
+        }
+        .prize-card h3 { 
+            margin: 5px 0 10px 0; font-size: clamp(1.2rem, 2vw, 2rem); font-weight: 800; 
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
+        }
+        .prize-card p { 
+            margin: 0; font-size: clamp(1rem, 1.5vw, 1.6rem); font-weight: 800; background: var(--surface); 
+            padding: 5px 15px; border-radius: 30px; border: 4px solid var(--dark); display: inline-block; 
+        }
+        @keyframes popInWinner { 0% { transform: scale(0) translateY(50px); opacity: 0; } 100% { transform: scale(1) translateY(0); opacity: 1; } }
+
+    </style>
+</head>
+<body>
+
+    <div class="admin-header">
+        <button onclick="openPrizeVault()" class="btn-admin btn-prize">🎁 Prize Vault</button>
+        <button onclick="openDatabase()" class="btn-admin">⚙️ Database</button>
+    </div>
+
+    <div class="hero-section"><div id="heroContent" class="hero-content">Loading...</div></div>
+
+    <div class="dashboard">
+        <input type="text" id="searchInput" class="search-bar" placeholder="🔍 Find a student...">
+        <div id="studentGrid" class="grid"></div>
+    </div>
+
+    <div id="playerModal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <img id="modalAvatar" src="">
+            <h2 id="modalName" style="font-size: 2.5rem; margin: 20px 0 10px 0;">Name</h2>
+            <div class="modal-badge">⭐ <span id="modalPoints">0</span></div>
+            <div id="modalFunFact" class="fun-fact"></div>
+        </div>
+    </div>
+
+    <div id="pinModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 350px;">
+            <h2 style="margin-top: 0;">Admin Access</h2>
+            <p>Enter PIN to unlock database:</p>
+            <input type="password" id="pinInput" 
+                   style="width: 80%; padding: 15px; font-size: 2rem; text-align: center; border: 4px solid var(--dark); border-radius: 15px; font-family: sans-serif; letter-spacing: 10px; margin-bottom: 20px;" 
+                   placeholder="****" maxlength="4">
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button onclick="closePinModal()" class="btn-admin" style="background: #eee;">Cancel</button>
+                <button onclick="verifyPin()" class="btn-admin" style="background: var(--green); color: white;">Unlock</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="celebrationOverlay" class="celebration-overlay">
+        <div class="sunburst"></div>
+        <div id="celebrationBox" class="celebration-box">
+            <h1>🎉 LEVEL UP! 🎉</h1>
+            <img id="celebrationAvatar" src="">
+            <h2 id="celebrationName" style="font-size: 5rem; margin: 10px 0; text-shadow: 6px 6px 0 var(--dark);">Name</h2>
+            <div class="gained-points">+<span id="celebrationPoints">5</span></div>
+        </div>
+    </div>
+
+    <div id="prizeVaultOverlay" class="celebration-overlay" style="background: rgba(43, 45, 66, 0.95); flex-direction: column;" onclick="handleVaultClick(event)">
+        <span class="close-btn" onclick="closePrizeVault()" style="color: white; right: 40px; top: 30px; font-size: 4rem; z-index: 100;">&times;</span>
+        
+        <div id="mysteryState" style="text-align: center;">
+            <h1 style="color: white; font-size: 6rem; margin-bottom: 20px; text-shadow: 6px 6px 0 var(--dark);">Who Unlocked a Prize?</h1>
+            <div class="mystery-box" onclick="revealPrizes()">🎁</div>
+            <p style="color: #FFD166; font-size: 2.5rem; font-weight: 700; margin-top: 20px; animation: fadeIn 1s infinite alternate;">Tap box to Reveal!</p>
+        </div>
+
+        <div id="revealedState" style="display: none; text-align: center; width: 100%; position: relative;">
+            <div class="sunburst" style="opacity: 0.2;"></div>
+            <h1 style="color: var(--yellow); font-size: 5rem; text-shadow: 6px 6px 0 var(--dark); margin-bottom: 20px; position: relative; z-index: 10;">🏆 15-Point Club 🏆</h1>
+            <div id="prizeGrid" class="prize-grid" style="position: relative; z-index: 10;"></div>
+            <h2 id="noPrizeMsg" style="color: white; font-size: 3rem; display: none; position: relative; z-index: 10;">Keep working hard! 🌟</h2>
+        </div>
+    </div>
+
+    <script>
+        // ⚠️ PASTE YOUR APPS SCRIPT URL HERE ⚠️
+        const GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxlTv6HfOVB_AFua7XKePmCySDo5VsJeRpdF4jTgjt3nSm9v3Iz1pTdhO1GwkELAKNdhQ/exec";
+        
+        const ADMIN_SHEET_URL = "https://docs.google.com/spreadsheets/d/1_mwGR_ljLD3drdZ7F28jMZRLfia1Vg56Icvgtk2-N9Y/edit";
+        const ADMIN_PIN = "2009";
+
+        let students = []; let heroIndex = 0; let heroInterval;
+        let celebrationQueue = []; let isCelebrating = false;
+
+        // --- UPDATED ADMIN PIN LOGIC ---
+        function openDatabase() {
+            document.getElementById('pinInput').value = ''; 
+            document.getElementById('pinModal').classList.add('active');
+            document.getElementById('pinInput').focus();
+        }
+
+        function closePinModal() {
+            document.getElementById('pinModal').classList.remove('active');
+        }
+
+        function verifyPin() {
+            const enteredPin = document.getElementById('pinInput').value;
+            if (enteredPin === ADMIN_PIN) {
+                closePinModal();
+                window.open(ADMIN_SHEET_URL, '_blank');
+            } else {
+                alert("❌ Incorrect PIN. Nice try!");
+                document.getElementById('pinInput').value = '';
+            }
+        }
+
+        document.getElementById('pinInput').addEventListener('keyup', function(event) {
+            if (event.key === 'Enter') verifyPin();
+        });
+
+        // --- VAULT LOGIC ---
+        function openPrizeVault() {
+            document.getElementById('prizeVaultOverlay').style.display = 'flex';
+            document.getElementById('mysteryState').style.display = 'block';
+            document.getElementById('revealedState').style.display = 'none';
+        }
+
+        function closePrizeVault() {
+            document.getElementById('prizeVaultOverlay').style.display = 'none';
+        }
+
+        function handleVaultClick(e) {
+            if(e.target.id === 'prizeVaultOverlay' || e.target.id === 'revealedState') {
+                closePrizeVault();
+            }
+        }
+
+        function revealPrizes() {
+            document.getElementById('mysteryState').style.display = 'none';
+            document.getElementById('revealedState').style.display = 'block';
+            const prizeGrid = document.getElementById('prizeGrid');
+            const noPrizeMsg = document.getElementById('noPrizeMsg');
+            prizeGrid.innerHTML = ''; 
+
+            const winners = students.filter(s => parseInt(s.Points) >= 15);
+            if (winners.length === 0) noPrizeMsg.style.display = 'block';
+            else {
+                noPrizeMsg.style.display = 'none';
+                winners.forEach((winner, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'prize-card';
+                    card.style.animationDelay = `${index * 0.15}s`; 
+                    card.innerHTML = `<img src="${winner.AvatarURL}"><h3>${winner.Name}</h3><p>⭐ ${winner.Points}</p>`;
+                    prizeGrid.appendChild(card);
+                });
+            }
+        }
+
+        async function fetchStudentData() {
+            try {
+                const response = await fetch(GOOGLE_WEB_APP_URL + '?action=get&t=' + new Date().getTime());
+                const rawResponse = await response.json();
+                
+                const newStudents = rawResponse.students.map(s => ({
+                    Name: s.Name, Points: s.Points,
+                    AvatarURL: s.AvatarURL ? s.AvatarURL : `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(s.Name)}`,
+                    FunFact: s.FunFact ? s.FunFact : "No fun fact yet! Keep exploring!"
+                }));
+
+                if (students.length > 0) { 
+                    newStudents.forEach(newStudent => {
+                        const oldStudent = students.find(s => s.Name === newStudent.Name);
+                        if (oldStudent) {
+                            const diff = parseInt(newStudent.Points) - parseInt(oldStudent.Points);
+                            if (diff > 0) celebrationQueue.push({ student: newStudent, pointsGained: diff });
+                        }
+                    });
+                }
+                students = newStudents;
+
+                const remoteCommand = rawResponse.command;
+                const isVaultOpen = document.getElementById('prizeVaultOverlay').style.display === 'flex';
+                const isRevealed = document.getElementById('revealedState').style.display === 'block';
+                
+                if (remoteCommand === 'showVault' && !isVaultOpen) {
+                    openPrizeVault();
+                } else if (remoteCommand === 'revealVault' && isVaultOpen && !isRevealed) {
+                    // Trigger the reveal animation remotely!
+                    revealPrizes();
+                } else if (remoteCommand === 'closeVault' && isVaultOpen) {
+                    closePrizeVault();
+                }
+
+                processCelebrations(); 
+                renderGrid(document.getElementById('searchInput').value); 
+                
+                if (!heroInterval && students.length > 0) {
+                    updateHero(); heroInterval = setInterval(updateHero, 6000); 
+                }
+            } catch (error) { console.error(error); }
+        }
+
+        function processCelebrations() {
+            if (isCelebrating || celebrationQueue.length === 0 || document.getElementById('prizeVaultOverlay').style.display === 'flex') return;
+            isCelebrating = true;
+            const event = celebrationQueue.shift();
+            document.getElementById('celebrationAvatar').src = event.student.AvatarURL;
+            document.getElementById('celebrationName').textContent = event.student.Name;
+            document.getElementById('celebrationPoints').textContent = event.pointsGained;
+            
+            const box = document.getElementById('celebrationBox');
+            box.classList.remove('anim-pop'); void box.offsetWidth; box.classList.add('anim-pop');
+            
+            document.getElementById('celebrationOverlay').style.display = 'flex';
+            setTimeout(() => {
+                document.getElementById('celebrationOverlay').style.display = 'none';
+                isCelebrating = false; setTimeout(processCelebrations, 1000); 
+            }, 5000); 
+        }
+
+        function updateHero() {
+            const heroStudents = students.filter(s => parseInt(s.Points) > 0);
+            const heroContent = document.getElementById('heroContent');
+            if (heroStudents.length === 0) { heroContent.innerHTML = "Time to earn points! 🌟"; return; }
+            if (heroIndex >= heroStudents.length) heroIndex = 0;
+            const student = heroStudents[heroIndex];
+            heroContent.classList.remove('bounce-in'); void heroContent.offsetWidth; 
+            heroContent.innerHTML = `${student.Name} has <span class="points-highlight">⭐ ${student.Points}</span>`;
+            heroContent.classList.add('bounce-in'); heroIndex = (heroIndex + 1) % heroStudents.length;
+        }
+
+        function renderGrid(searchTerm = "") {
+            const grid = document.getElementById('studentGrid'); grid.innerHTML = ''; 
+            const filtered = students.filter(s => s.Name.toLowerCase().includes(searchTerm.toLowerCase()));
+            filtered.forEach(student => {
+                const card = document.createElement('div'); card.className = 'card';
+                card.onclick = () => {
+                    document.getElementById('modalName').textContent = student.Name;
+                    document.getElementById('modalPoints').textContent = student.Points;
+                    document.getElementById('modalFunFact').textContent = student.FunFact;
+                    document.getElementById('modalAvatar').src = student.AvatarURL;
+                    document.getElementById('playerModal').classList.add('active');
+                };
+                card.innerHTML = `<img src="${student.AvatarURL}"><h3>${student.Name}</h3><p>⭐ ${student.Points}</p>`;
+                grid.appendChild(card);
+            });
+        }
+
+        document.getElementById('searchInput').addEventListener('input', (e) => renderGrid(e.target.value));
+        function closeModal() { document.getElementById('playerModal').classList.remove('active'); }
+        window.onclick = function(e) { if (e.target === document.getElementById('playerModal')) closeModal(); }
+
+        fetchStudentData(); setInterval(fetchStudentData, 4000); 
+    </script>
+</body>
+>>>>>>> 4a200324ad93d667ecff93cdd37342a31f8c5087
 </html>
