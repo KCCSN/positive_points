@@ -11,53 +11,76 @@
         :root { --dark: #2B2D42; --surface: #FFFFFF; --yellow: #FFD166; --primary: #FF4B72; --green: #06D6A0;}
         body { margin: 0; font-family: 'Fredoka', sans-serif; color: var(--dark); background: #111; overflow-x: hidden; }
 
-        /* SPLIT-SCREEN HERO SECTION */
+        /* === COMMAND BAR (Top Navigation) === */
+        .top-bar {
+            position: absolute; top: 20px; left: 0; right: 0; padding: 0 40px;
+            display: flex; justify-content: space-between; align-items: center; z-index: 100;
+        }
+
+        .search-bar {
+            width: 350px; padding: 15px 25px; font-size: 1.2rem; font-family: var(--font-family); font-weight: 600;
+            background: var(--surface); color: var(--dark); border: 5px solid var(--dark); border-radius: 50px; 
+            box-shadow: 0 6px 0 var(--dark); outline: none; transition: all 0.2s;
+        }
+        .search-bar:focus { transform: translateY(4px); box-shadow: 0 2px 0 var(--dark); }
+        .search-bar::placeholder { color: #aaa; }
+
+        .nav-buttons { display: flex; gap: 15px; }
+        
+        .btn-admin {
+            background: var(--surface); color: var(--dark); border: 4px solid var(--dark);
+            padding: 10px 20px; font-size: 1.1rem; font-family: var(--font-family); font-weight: 700;
+            border-radius: 50px; cursor: pointer; box-shadow: 0 6px 0 var(--dark); transition: all 0.15s;
+        }
+        .btn-prize { background: var(--yellow); }
+        .btn-admin:hover { transform: translateY(4px); box-shadow: 0 2px 0 var(--dark); }
+
+        /* === SPLIT-SCREEN HERO SECTION === */
         .hero-section {
-            height: 100vh; width: 100vw; display: flex;
+            height: 100vh; width: 100vw; display: flex; padding-top: 80px; box-sizing: border-box;
             background: linear-gradient(-45deg, #FF9A9E, #FECFEF, #a8edea, #00C6FF);
             background-size: 400% 400%; animation: gradientBG 15s ease infinite;
         }
         @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
         .hero-text-side {
-            flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            padding: 40px; text-align: center;
+            flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: space-evenly;
+            padding: 20px; text-align: center;
         }
         
         .hero-art-side {
-            flex: 1; margin: 50px; border-radius: 40px; border: 10px solid var(--dark);
+            flex: 1; margin: 20px 40px 40px 20px; border-radius: 40px; border: 10px solid var(--dark);
             background-color: var(--surface); background-size: contain; background-repeat: no-repeat; background-position: center;
-            box-shadow: 20px 20px 0 rgba(0,0,0,0.2); display: none; /* Hidden by default if no art */
+            box-shadow: 20px 20px 0 rgba(0,0,0,0.2); display: none; 
         }
 
-        .hero-content { font-size: 6rem; color: white; font-weight: 800; text-shadow: 4px 4px 0px black; }
+        .hero-content { font-size: 5.5rem; color: white; font-weight: 800; text-shadow: 4px 4px 0px black; }
         .points-highlight { color: var(--yellow); text-shadow: 4px 4px 0px black, 0 0 30px rgba(255, 209, 102, 0.8); display: block; margin-top: 15px;}
 
-        /* KIOSK CAMERA */
+        /* === KIOSK CAMERA (Now integrated natively) === */
         .kiosk-cam-container {
-            position: fixed; bottom: 30px; left: 30px; width: 250px; z-index: 100;
-            background: var(--surface); padding: 10px; border-radius: 20px; border: 6px solid var(--dark); box-shadow: 8px 8px 0 rgba(0,0,0,0.5);
+            background: var(--surface); padding: 10px; border-radius: 20px; border: 6px solid var(--dark); 
+            box-shadow: 8px 8px 0 rgba(0,0,0,0.5); width: 250px; margin-top: 20px;
         }
         #reader { border-radius: 10px; overflow: hidden; }
         .kiosk-label { text-align: center; font-weight: 800; font-size: 1.2rem; margin-top: 10px; color: var(--primary); }
 
-        /* Auto-Mode Badge */
+        /* === AUTO-MODE & WARNINGS === */
         #autoModeBadge {
-            position: fixed; top: 30px; left: 30px; z-index: 100; display: none;
-            background: var(--green); color: white; padding: 15px 30px; border-radius: 50px;
-            font-size: 1.8rem; font-weight: 800; border: 6px solid var(--dark); box-shadow: 6px 6px 0 var(--dark);
+            position: fixed; top: 100px; left: 40px; z-index: 90; display: none;
+            background: var(--green); color: white; padding: 10px 20px; border-radius: 50px;
+            font-size: 1.2rem; font-weight: 800; border: 4px solid var(--dark); box-shadow: 4px 4px 0 var(--dark);
             animation: pulse 2s infinite;
         }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
-        /* Anti-Spam Warning */
         #spamWarning {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 9999; display: none;
             background: #FF4B72; color: white; padding: 30px 50px; border-radius: 30px; font-size: 3rem; font-weight: 800;
             border: 8px solid var(--dark); box-shadow: 15px 15px 0 var(--dark); text-align: center;
         }
 
-        /* CELEBRATIONS */
+        /* === CELEBRATIONS === */
         .celebration-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 9999; flex-direction: column;}
         .sunburst { position: absolute; width: 200vw; height: 200vw; background: repeating-conic-gradient(var(--yellow) 0 15deg, #FFB703 15deg 30deg); animation: spinBurst 10s linear infinite; z-index: -1; opacity: 0.5; }
         @keyframes spinBurst { 100% { transform: rotate(360deg); } }
@@ -66,21 +89,41 @@
         .anim-pop { animation: pop 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; }
         @keyframes pop { 0% { transform: scale(0.2); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
-        /* Dashboard */
-        .dashboard { padding: 50px; background: #f4f4f4; min-height: 100vh; }
+        /* === DASHBOARD (Grid section) === */
+        .dashboard { padding: 50px 40px; background: #f4f4f4; min-height: 100vh; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 30px; }
-        .card { background: white; padding: 20px; border-radius: 20px; text-align: center; border: 4px solid var(--dark); }
-        .card img { width: 100px; border-radius: 50%; }
+        .card { background: white; padding: 25px; border-radius: 30px; text-align: center; border: 6px solid var(--dark); box-shadow: 0 10px 0 var(--dark); cursor: pointer; transition: all 0.15s; }
+        .card:hover { transform: translateY(6px); box-shadow: 0 4px 0 var(--dark); background: #FAFAFA; }
+        .card img { width: 100px; border-radius: 50%; border: 4px solid var(--dark); margin-bottom: 15px; }
+        .card h3 { margin: 10px 0; font-size: 1.8rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+        .card p { margin: 0; font-size: 1.4rem; font-weight: 700; color: var(--dark); background: var(--yellow); padding: 8px 20px; border-radius: 30px; border: 4px solid var(--dark); display: inline-block;}
+
+        /* === MODALS & VAULT === */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(43, 45, 66, 0.8); display: none; align-items: center; justify-content: center; z-index: 10000; backdrop-filter: blur(8px); }
+        .modal-overlay.active { display: flex; }
+        .modal-content { background: var(--surface); padding: 50px 40px 40px 40px; border-radius: 40px; max-width: 450px; text-align: center; position: relative; border: 8px solid var(--dark); box-shadow: 0 15px 0 rgba(0,0,0,0.3); }
+        .modal-content img { width: 160px; height: 160px; border-radius: 50%; margin-top: -110px; border: 8px solid var(--dark); background: #fff; }
+        .close-btn { position: absolute; top: 15px; right: 25px; font-size: 2.5rem; font-weight: 700; cursor: pointer; color: var(--dark); }
         
-        /* Prize Vault */
         .mystery-box { font-size: 10rem; cursor: pointer; animation: shake 2s infinite ease-in-out; }
         @keyframes shake { 0%, 100% { transform: rotate(0deg); } 20%, 60% { transform: rotate(-10deg); } 40%, 80% { transform: rotate(10deg); } }
         .prize-grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; max-width: 90vw; }
         .prize-card { background: var(--yellow); padding: 20px; border-radius: 20px; border: 4px solid var(--dark); text-align: center; width: 200px;}
         .prize-card img { width: 100px; border-radius: 50%; border: 4px solid var(--dark); }
+        
+        .bounce-in { animation: rubberBand 1.2s both; }
+        @keyframes rubberBand { 0% { transform: scale3d(1, 1, 1); opacity: 0; } 30% { transform: scale3d(1.25, 0.75, 1); opacity: 1; } 40% { transform: scale3d(0.75, 1.25, 1); } 50% { transform: scale3d(1.15, 0.85, 1); } 65% { transform: scale3d(0.95, 1.05, 1); } 75% { transform: scale3d(1.05, 0.95, 1); } 100% { transform: scale3d(1, 1, 1); opacity: 1;} }
     </style>
 </head>
 <body>
+
+    <div class="top-bar">
+        <input type="text" id="searchInput" class="search-bar" placeholder="🔍 Find a student...">
+        <div class="nav-buttons">
+            <button onclick="openPrizeVault()" class="btn-admin btn-prize">🎁 Prize Vault</button>
+            <button onclick="openDatabase()" class="btn-admin">⚙️ Database</button>
+        </div>
+    </div>
 
     <div id="autoModeBadge">🟢 AUTO-SCAN ACTIVE</div>
     <div id="spamWarning">Nice try!<br>Already checked in. 🛑</div>
@@ -88,17 +131,18 @@
     <div class="hero-section" id="heroBg">
         <div class="hero-text-side">
             <div id="heroContent" class="hero-content">Loading...</div>
+            
+            <div class="kiosk-cam-container">
+                <div id="reader"></div>
+                <div class="kiosk-label" id="kioskLabel">SCAN CARD HERE</div>
+            </div>
         </div>
+        
         <div class="hero-art-side" id="heroArt"></div>
     </div>
 
-    <div class="kiosk-cam-container">
-        <div id="reader"></div>
-        <div class="kiosk-label" id="kioskLabel">SCAN CARD HERE</div>
-    </div>
-
     <div class="dashboard">
-        <h1 style="text-align: center; font-size: 3rem;">Classroom Leaderboard</h1>
+        <h1 style="text-align: center; font-size: 4rem; margin-top: 0; text-shadow: 3px 3px 0px rgba(0,0,0,0.1);">Classroom Leaderboard</h1>
         <div id="studentGrid" class="grid"></div>
     </div>
 
@@ -112,29 +156,111 @@
         </div>
     </div>
 
-    <div id="prizeVaultOverlay" class="celebration-overlay">
+    <div id="prizeVaultOverlay" class="celebration-overlay" onclick="handleVaultClick(event)">
+        <span class="close-btn" onclick="closePrizeVault()" style="color: white; right: 40px; top: 30px; font-size: 4rem; z-index: 100;">&times;</span>
         <div id="mysteryState" style="text-align: center; z-index: 10;">
-            <h1 style="color: white; font-size: 5rem;">Who Unlocked a Prize?</h1>
-            <div class="mystery-box">🎁</div>
+            <h1 style="color: white; font-size: 6rem;">Who Unlocked a Prize?</h1>
+            <div class="mystery-box" onclick="revealPrizes()">🎁</div>
         </div>
-        <div id="revealedState" style="display: none; text-align: center; z-index: 10;">
-            <div class="sunburst"></div>
-            <h1 style="color: var(--yellow); font-size: 6rem;">🏆 15-Point Club 🏆</h1>
+        <div id="revealedState" style="display: none; text-align: center; z-index: 10; position: relative;">
+            <div class="sunburst" style="opacity: 0.2;"></div>
+            <h1 style="color: var(--yellow); font-size: 6rem; text-shadow: 6px 6px 0 var(--dark);">🏆 15-Point Club 🏆</h1>
             <div id="prizeGrid" class="prize-grid"></div>
+            <h2 id="noPrizeMsg" style="color: white; font-size: 3rem; display: none;">Keep working hard! 🌟</h2>
+        </div>
+    </div>
+
+    <div id="pinModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 350px;">
+            <h2 style="margin-top: 0;">Admin Access</h2>
+            <p>Enter PIN to unlock database:</p>
+            <input type="password" id="pinInput" 
+                   style="width: 80%; padding: 15px; font-size: 2rem; text-align: center; border: 4px solid var(--dark); border-radius: 15px; letter-spacing: 10px; margin-bottom: 20px;" 
+                   placeholder="****" maxlength="4">
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button onclick="closePinModal()" class="btn-admin" style="background: #eee;">Cancel</button>
+                <button onclick="verifyPin()" class="btn-admin" style="background: var(--green); color: white;">Unlock</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="playerModal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <img id="modalAvatar" src="">
+            <h2 id="modalName" style="font-size: 2.5rem; margin: 20px 0 10px 0;">Name</h2>
+            <div style="font-size: 2.2rem; color: var(--dark); font-weight: 800; margin-bottom: 25px; background: var(--yellow); padding: 10px 30px; border-radius: 50px; border: 6px solid var(--dark); display: inline-block;">⭐ <span id="modalPoints">0</span></div>
+            <div id="modalFunFact" style="background: #f4f4f4; padding: 25px; border-radius: 20px; font-size: 1.3rem; line-height: 1.5; color: var(--dark); border: 4px dashed #ccc; font-weight: 500;"></div>
         </div>
     </div>
 
     <script>
         // ⚠️ PASTE YOUR APPS SCRIPT URL HERE ⚠️
         const GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxlTv6HfOVB_AFua7XKePmCySDo5VsJeRpdF4jTgjt3nSm9v3Iz1pTdhO1GwkELAKNdhQ/exec";
+        
+        const ADMIN_SHEET_URL = "https://docs.google.com/spreadsheets/d/1_mwGR_ljLD3drdZ7F28jMZRLfia1Vg56Icvgtk2-N9Y/edit";
+        const ADMIN_PIN = "2009";
 
         let students = []; let heroIndex = 0; let heroInterval;
         let celebrationQueue = []; let isCelebrating = false;
         let activeKioskStudent = null; let kioskTimer = null;
         
-        // Auto-Mode Variables
+        // Auto-Mode & Randomizer Variables
         let isAutoMode = false;
         let scannedThisSession = new Set(); 
+        const shuffleSeed = {}; // Stores randomized order
+
+        // Get a persistent random number for a student to keep them sorted the same way per page load
+        function getShuffleSeed(name) {
+            if (!shuffleSeed[name]) shuffleSeed[name] = Math.random();
+            return shuffleSeed[name];
+        }
+
+        // --- ADMIN PIN LOGIC ---
+        function openDatabase() {
+            document.getElementById('pinInput').value = ''; 
+            document.getElementById('pinModal').classList.add('active');
+            document.getElementById('pinInput').focus();
+        }
+        function closePinModal() { document.getElementById('pinModal').classList.remove('active'); }
+        function verifyPin() {
+            if (document.getElementById('pinInput').value === ADMIN_PIN) {
+                closePinModal(); window.open(ADMIN_SHEET_URL, '_blank');
+            } else {
+                alert("❌ Incorrect PIN. Nice try!"); document.getElementById('pinInput').value = '';
+            }
+        }
+        document.getElementById('pinInput').addEventListener('keyup', (e) => { if (e.key === 'Enter') verifyPin(); });
+
+        // --- VAULT LOGIC ---
+        function openPrizeVault() {
+            document.getElementById('prizeVaultOverlay').style.display = 'flex';
+            document.getElementById('mysteryState').style.display = 'block';
+            document.getElementById('revealedState').style.display = 'none';
+        }
+        function closePrizeVault() { document.getElementById('prizeVaultOverlay').style.display = 'none'; }
+        function handleVaultClick(e) { if(e.target.id === 'prizeVaultOverlay' || e.target.id === 'revealedState') closePrizeVault(); }
+        
+        function revealPrizes() {
+            document.getElementById('mysteryState').style.display = 'none';
+            document.getElementById('revealedState').style.display = 'block';
+            const prizeGrid = document.getElementById('prizeGrid');
+            const noPrizeMsg = document.getElementById('noPrizeMsg');
+            prizeGrid.innerHTML = ''; 
+
+            const winners = students.filter(s => parseInt(s.Points) >= 15);
+            if (winners.length === 0) noPrizeMsg.style.display = 'block';
+            else {
+                noPrizeMsg.style.display = 'none';
+                winners.forEach((winner, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'prize-card';
+                    card.style.animationDelay = `${index * 0.15}s`; 
+                    card.innerHTML = `<img src="${winner.AvatarURL}"><h3>${winner.Name}</h3><p>⭐ ${winner.Points}</p>`;
+                    prizeGrid.appendChild(card);
+                });
+            }
+        }
 
         // 1. KIOSK SCANNER LOGIC
         const html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: {width: 200, height: 200} }, false);
@@ -145,7 +271,6 @@
             if (!student) return;
 
             if (isAutoMode) {
-                // Auto Mode logic
                 if (scannedThisSession.has(student.Name)) {
                     const warning = document.getElementById('spamWarning');
                     warning.style.display = 'block';
@@ -160,7 +285,6 @@
                 processCelebrations();
 
             } else {
-                // Manual Teacher Mode logic
                 if (activeKioskStudent !== student.Name) {
                     activeKioskStudent = student.Name;
                     clearInterval(heroInterval);
@@ -229,17 +353,14 @@
                     document.getElementById('mysteryState').style.display = 'block';
                     document.getElementById('revealedState').style.display = 'none';
                 } else if (remoteCommand === 'revealVault' && isVaultOpen && !isRevealed) {
-                    document.getElementById('mysteryState').style.display = 'none';
-                    document.getElementById('revealedState').style.display = 'block';
-                    const prizeGrid = document.getElementById('prizeGrid'); prizeGrid.innerHTML = '';
-                    students.filter(s => parseInt(s.Points) >= 15).forEach(winner => {
-                        prizeGrid.innerHTML += `<div class="prize-card"><img src="${winner.AvatarURL}"><h3>${winner.Name}</h3><p>⭐ ${winner.Points}</p></div>`;
-                    });
+                    revealPrizes();
                 } else if (remoteCommand === 'closeVault' && isVaultOpen) {
-                    document.getElementById('prizeVaultOverlay').style.display = 'none';
+                    closePrizeVault();
                 }
 
-                processCelebrations(); renderGrid();
+                processCelebrations(); 
+                renderGrid(document.getElementById('searchInput').value);
+                
                 if (!heroInterval && students.length > 0 && !activeKioskStudent) {
                     updateHero(); heroInterval = setInterval(updateHero, 6000); 
                 }
@@ -269,30 +390,44 @@
             const heroContent = document.getElementById('heroContent');
             const heroArt = document.getElementById('heroArt');
             
-            // Re-trigger animation
-            heroContent.classList.remove('bounce-in');
-            void heroContent.offsetWidth; 
-            
+            heroContent.classList.remove('bounce-in'); void heroContent.offsetWidth; 
             heroContent.innerHTML = `${student.Name}<br><span class="points-highlight">⭐ ${student.Points}</span>`;
             heroContent.classList.add('bounce-in');
 
-            // Handle the framed artwork dynamically
             if (student.Artwork && student.Artwork !== "") {
                 heroArt.style.backgroundImage = `url('${student.Artwork}')`;
                 heroArt.style.display = 'block';
             } else {
-                heroArt.style.display = 'none'; // Reverts to clean, centered text!
+                heroArt.style.display = 'none';
             }
-
             heroIndex = (heroIndex + 1) % heroStudents.length;
         }
 
-        function renderGrid() {
+        function renderGrid(searchTerm = "") {
             const grid = document.getElementById('studentGrid'); grid.innerHTML = ''; 
-            students.forEach(student => {
-                grid.innerHTML += `<div class="card"><img src="${student.AvatarURL}"><h3>${student.Name}</h3><p>⭐ ${student.Points}</p></div>`;
+            
+            // Filter, then SHUFFLE based on persistent random seed
+            const filteredAndShuffled = students
+                .filter(s => s.Name.toLowerCase().includes(searchTerm.toLowerCase()))
+                .sort((a, b) => getShuffleSeed(a.Name) - getShuffleSeed(b.Name));
+            
+            filteredAndShuffled.forEach(student => {
+                const card = document.createElement('div'); card.className = 'card';
+                card.onclick = () => {
+                    document.getElementById('modalName').textContent = student.Name;
+                    document.getElementById('modalPoints').textContent = student.Points;
+                    document.getElementById('modalFunFact').textContent = student.FunFact;
+                    document.getElementById('modalAvatar').src = student.AvatarURL;
+                    document.getElementById('playerModal').classList.add('active');
+                };
+                card.innerHTML = `<img src="${student.AvatarURL}"><h3>${student.Name}</h3><p>⭐ ${student.Points}</p>`;
+                grid.appendChild(card);
             });
         }
+
+        document.getElementById('searchInput').addEventListener('input', (e) => renderGrid(e.target.value));
+        function closeModal() { document.getElementById('playerModal').classList.remove('active'); }
+        window.onclick = function(e) { if (e.target === document.getElementById('playerModal')) closeModal(); }
 
         fetchStudentData(); setInterval(fetchStudentData, 3000); 
     </script>
