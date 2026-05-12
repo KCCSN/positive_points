@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Teacher Remote</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;800&display=swap" rel="stylesheet">
+    <style>
+        body { margin: 0; font-family: 'Fredoka', sans-serif; background: #222; color: white; text-align: center; }
+        header { background: #ff4b72; padding: 15px; font-size: 1.5rem; font-weight: 800; }
+        
+        .remote-bar { background: #333; padding: 15px; display: flex; gap: 8px; justify-content: center; }
+        .btn-remote { border: none; padding: 15px 10px; font-size: 1.1rem; font-family: 'Fredoka'; font-weight: 800; border-radius: 10px; cursor: pointer; flex: 1; }
+        .btn-vault { background: #FFD166; color: #333; } .btn-reveal { background: #06D6A0; color: white; } .btn-close { background: #555; color: white; }
+        
+        /* Auto Mode Toggle */
+        .auto-toggle { margin: 20px; padding: 20px; background: #444; border-radius: 20px; border: 4px solid #555; cursor: pointer; transition: 0.2s; }
+        .auto-toggle h2 { margin: 0; font-size: 2rem; }
+        .auto-on { background: #06D6A0; border-color: white; color: black; box-shadow: 0 0 20px rgba(6, 214, 160, 0.5); }
+
+        #kioskStatus { background: #111; padding: 40px 20px; margin: 20px; border-radius: 20px; border: 4px dashed #555; }
+        .status-text { color: #aaa; font-size: 1.5rem; }
+
+        #actionPanel { display: none; background: white; color: #333; margin: 20px; padding: 30px 20px; border-radius: 20px; }
+        #scanAvatar { width: 150px; height: 150px; border-radius: 50%; border: 6px solid #ff4b72; margin-bottom: 10px; }
+        
+        .btn-group { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
+        .btn { border: none; padding: 20px; font-size: 2rem; font-family: 'Fredoka'; font-weight: 800; border-radius: 15px; cursor: pointer; color: white; flex: 1; }
+        .btn-1 { background: #4CAF50; } .btn-2 { background: #2196F3; }
+        
+        #saveMessage { font-size: 1.2rem; font-weight: 800; padding: 15px; border-radius: 10px; display: none; margin-top: 15px; }
+        .msg-loading { background: #fff3cd; color: #856404; } .msg-success { background: #d4edda; color: #155724; }
+    </style>
+</head>
+<body>
+
+    <header>📱 Teacher Remote</header>
+    
+    <div class="remote-bar">
+        <button class="btn-remote btn-vault" onclick="sendCommand('triggerVault')">🎁 Vault</button>
+        <button class="btn-remote btn-reveal" onclick="sendCommand('revealVault')">🎉 Reveal</button>
+        <button class="btn-remote btn-close" onclick="sendCommand('closeVault')">✖ Close</button>
+    </div>
+
+    <div id="autoToggleBtn" class="auto-toggle" onclick="toggleAutoMode()">
+        <h2 id="autoToggleText">▶️ Turn ON Auto-Check-In</h2>
+    </div>
+
+    <div id="kioskStatus">
+        <div class="status-text">⏳ Waiting for student<br>to scan badge at Laptop...</div>
+    </div>
+
+    <div id="actionPanel">
+        <img id="scanAvatar" src="">
+        <h2 id="scanName" style="font-size: 3rem; margin: 0;">Name</h2>
+        
+        <div class="btn-group">
+            <button class="btn btn-1" onclick="submitPoints(1)">+1</button>
+            <button class="btn btn-2" onclick="submitPoints(2)">+2</button>
+        </div>
+        <div id="saveMessage">Saving...</div>
+    </div>
+
+    <script>
+        // ⚠️ PASTE YOUR APPS SCRIPT URL HERE ⚠️
+        const GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxlTv6HfOVB_AFua7XKePmCySDo5VsJeRpdF4jTgjt3nSm9v3Iz1pTdhO1GwkELAKNdhQ/exec";
+
+        let students = []; let activeStudentName = 'none';
+        let isAutoMode = 'off';
+
+        async function checkKiosk() {
+            try {
+                const response = await fetch(GOOGLE_WEB_APP_URL + '?action=get&t=' + new Date().getTime());
+                const rawResponse = await response.json();
+                students = rawResponse.students;
+                
+                // Sync Auto Mode Button UI
+                if (rawResponse.autoMode !== isAutoMode) {
+                    isAutoMode = rawResponse.autoMode;
+                    updateAutoUI();
+                }
+                
+                // If Auto Mode is ON, hide the manual approval panel to avoid confusion
+                if (isAutoMode === 'on') {
+                    document.getElementById('kioskStatus').style.display = 'block';
+                    document.getElementById('kioskStatus').innerHTML = '<div class="status-text" style="color:var(--green);">🟢 Kiosk is handling scans automatically.</div>';
+                    document.getElementById('actionPanel').style.display = 'none';
+                    return; 
+                }
+
+                // Normal Manual Checking
+                document.getElementById('kioskStatus').innerHTML = '<div class="status-text">⏳ Waiting for student<br>to scan badge at Laptop...</div>';
+                if (rawResponse.activeScanned !== 'none' && rawResponse.activeScanned !== activeStudentName) {
+                    activeStudentName = rawResponse.activeScanned;
+                    showActionPanel(activeStudentName);
+                } else if (rawResponse.activeScanned === 'none' && activeStudentName !== 'none') {
+                    activeStudentName = 'none';
+                    resetRemote();
+                }
+            } catch (err) {}
+        }
+
+        // Toggle Auto-Mode On/Off
+        function toggleAutoMode() {
+            const newState = isAutoMode === 'off' ? 'on' : 'off';
+            fetch(`${GOOGLE_WEB_APP_URL}?action=toggleAuto&state=${newState}&t=${new Date().getTime()}`, { mode: 'no-cors' });
+            
+            isAutoMode = newState; // Update immediately so it feels fast
+            updateAutoUI();
+        }
+
+        function updateAutoUI() {
+            const btn = document.getElementById('autoToggleBtn');
+            const txt = document.getElementById('autoToggleText');
+            if (isAutoMode === 'on') {
+                btn.className = 'auto-toggle auto-on';
+                txt.innerHTML = '⏹️ TURN OFF Auto-Check-In';
+            } else {
+                btn.className = 'auto-toggle';
+                txt.innerHTML = '▶️ Turn ON Auto-Check-In';
+            }
+        }
+
+        function showActionPanel(name) {
+            const student = students.find(s => s.Name.toLowerCase() === name.toLowerCase());
+            if (student) {
+                document.getElementById('kioskStatus').style.display = 'none';
+                document.getElementById('actionPanel').style.display = 'block';
+                document.getElementById('scanAvatar').src = student.AvatarURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${name}`;
+                document.getElementById('scanName').textContent = student.Name;
+                document.getElementById('saveMessage').style.display = 'none';
+            }
+        }
+
+        async function sendCommand(action) {
+            fetch(`${GOOGLE_WEB_APP_URL}?action=${action}&t=${new Date().getTime()}`, { mode: 'no-cors' });
+            alert("Signal sent to projector!");
+        }
+
+        async function submitPoints(amount) {
+            const msgBox = document.getElementById('saveMessage');
+            msgBox.className = 'msg-loading'; msgBox.textContent = "Saving to Google..."; msgBox.style.display = 'block';
+            
+            fetch(`${GOOGLE_WEB_APP_URL}?action=addPoints&name=${encodeURIComponent(activeStudentName)}&points=${amount}&t=${new Date().getTime()}`, { mode: 'no-cors' });
+            
+            msgBox.className = 'msg-success'; msgBox.textContent = `✅ Sent +${amount}!`;
+            setTimeout(resetRemote, 1500); 
+        }
+
+        function resetRemote() {
+            document.getElementById('actionPanel').style.display = 'none';
+            document.getElementById('kioskStatus').style.display = 'block';
+            activeStudentName = 'none';
+        }
+
+        setInterval(checkKiosk, 2000); 
+    </script>
+</body>
+</html>

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classroom Kiosk</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    
+    <style>
+        :root { --dark: #2B2D42; --surface: #FFFFFF; --yellow: #FFD166; --primary: #FF4B72; --green: #06D6A0;}
+        body { margin: 0; font-family: 'Fredoka', sans-serif; color: var(--dark); background: #111; overflow-x: hidden; }
+
+        .hero-section {
+            height: 100vh; width: 100vw; display: flex; align-items: center; justify-content: center;
+            background-size: cover; background-position: center; transition: background-image 1s ease-in-out;
+            position: relative; text-align: center;
+        }
+        .hero-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.6); z-index: 1; }
+        .hero-content { position: relative; z-index: 2; font-size: 6rem; color: white; font-weight: 800; text-shadow: 4px 4px 0px black; }
+        .points-highlight { color: var(--yellow); text-shadow: 4px 4px 0px black, 0 0 30px rgba(255, 209, 102, 0.8); }
+
+        .kiosk-cam-container {
+            position: fixed; bottom: 30px; left: 30px; width: 250px; z-index: 100;
+            background: var(--surface); padding: 10px; border-radius: 20px; border: 6px solid var(--dark); box-shadow: 8px 8px 0 rgba(0,0,0,0.5);
+        }
+        #reader { border-radius: 10px; overflow: hidden; }
+        .kiosk-label { text-align: center; font-weight: 800; font-size: 1.2rem; margin-top: 10px; color: var(--primary); }
+
+        /* Auto-Mode Badge */
+        #autoModeBadge {
+            position: fixed; top: 30px; left: 30px; z-index: 100; display: none;
+            background: var(--green); color: white; padding: 15px 30px; border-radius: 50px;
+            font-size: 1.8rem; font-weight: 800; border: 6px solid var(--dark); box-shadow: 6px 6px 0 var(--dark);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+
+        /* Anti-Spam Warning */
+        #spamWarning {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 9999; display: none;
+            background: #FF4B72; color: white; padding: 30px 50px; border-radius: 30px; font-size: 3rem; font-weight: 800;
+            border: 8px solid var(--dark); box-shadow: 15px 15px 0 var(--dark); text-align: center;
+        }
+
+        .celebration-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 9999; flex-direction: column;}
+        .sunburst { position: absolute; width: 200vw; height: 200vw; background: repeating-conic-gradient(var(--yellow) 0 15deg, #FFB703 15deg 30deg); animation: spinBurst 10s linear infinite; z-index: -1; opacity: 0.5; }
+        @keyframes spinBurst { 100% { transform: rotate(360deg); } }
+        .celebration-box { text-align: center; color: white; z-index: 10; }
+        .celebration-box img { width: 300px; height: 300px; border-radius: 50%; border: 12px solid white; margin: 20px 0; }
+        .anim-pop { animation: pop 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; }
+        @keyframes pop { 0% { transform: scale(0.2); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+        .dashboard { padding: 50px; background: #f4f4f4; min-height: 100vh; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 30px; }
+        .card { background: white; padding: 20px; border-radius: 20px; text-align: center; border: 4px solid var(--dark); }
+        .card img { width: 100px; border-radius: 50%; }
+        
+        .mystery-box { font-size: 10rem; cursor: pointer; animation: shake 2s infinite ease-in-out; }
+        @keyframes shake { 0%, 100% { transform: rotate(0deg); } 20%, 60% { transform: rotate(-10deg); } 40%, 80% { transform: rotate(10deg); } }
+        .prize-grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; max-width: 90vw; }
+        .prize-card { background: var(--yellow); padding: 20px; border-radius: 20px; border: 4px solid var(--dark); text-align: center; width: 200px;}
+        .prize-card img { width: 100px; border-radius: 50%; border: 4px solid var(--dark); }
+    </style>
+</head>
+<body>
+
+    <div id="autoModeBadge">🟢 AUTO-SCAN ACTIVE</div>
+    <div id="spamWarning">Nice try!<br>Already checked in. 🛑</div>
+
+    <div class="hero-section" id="heroBg">
+        <div class="hero-overlay"></div>
+        <div id="heroContent" class="hero-content">Loading...</div>
+    </div>
+
+    <div class="kiosk-cam-container">
+        <div id="reader"></div>
+        <div class="kiosk-label" id="kioskLabel">SCAN CARD HERE</div>
+    </div>
+
+    <div class="dashboard">
+        <h1 style="text-align: center; font-size: 3rem;">Classroom Leaderboard</h1>
+        <div id="studentGrid" class="grid"></div>
+    </div>
+
+    <div id="celebrationOverlay" class="celebration-overlay">
+        <div class="sunburst"></div>
+        <div id="celebrationBox" class="celebration-box">
+            <h1 style="font-size: 6rem; margin:0;">🎉 LEVEL UP! 🎉</h1>
+            <img id="celebrationAvatar" src="">
+            <h2 id="celebrationName" style="font-size: 5rem; margin:0;">Name</h2>
+            <div style="font-size: 6rem; color: var(--yellow); font-weight: 800;">+<span id="celebrationPoints">5</span></div>
+        </div>
+    </div>
+
+    <div id="prizeVaultOverlay" class="celebration-overlay">
+        <div id="mysteryState" style="text-align: center; z-index: 10;">
+            <h1 style="color: white; font-size: 5rem;">Who Unlocked a Prize?</h1>
+            <div class="mystery-box">🎁</div>
+        </div>
+        <div id="revealedState" style="display: none; text-align: center; z-index: 10;">
+            <div class="sunburst"></div>
+            <h1 style="color: var(--yellow); font-size: 6rem;">🏆 15-Point Club 🏆</h1>
+            <div id="prizeGrid" class="prize-grid"></div>
+        </div>
+    </div>
+
+    <script>
+        // ⚠️ PASTE YOUR APPS SCRIPT URL HERE ⚠️
+        const GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxlTv6HfOVB_AFua7XKePmCySDo5VsJeRpdF4jTgjt3nSm9v3Iz1pTdhO1GwkELAKNdhQ/exec";
+
+        let students = []; let heroIndex = 0; let heroInterval;
+        let celebrationQueue = []; let isCelebrating = false;
+        let activeKioskStudent = null; let kioskTimer = null;
+        
+        // Auto-Mode Variables
+        let isAutoMode = false;
+        let scannedThisSession = new Set(); // Anti-Spam Memory
+
+        // 1. KIOSK SCANNER LOGIC
+        const html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: {width: 200, height: 200} }, false);
+        html5QrcodeScanner.render((decodedText) => {
+            const scannedName = decodedText.trim();
+            const student = students.find(s => s.Name.toLowerCase() === scannedName.toLowerCase());
+            
+            if (!student) return;
+
+            if (isAutoMode) {
+                // --- AUTO MODE LOGIC ---
+                if (scannedThisSession.has(student.Name)) {
+                    // Block spammers!
+                    const warning = document.getElementById('spamWarning');
+                    warning.style.display = 'block';
+                    setTimeout(() => warning.style.display = 'none', 3000);
+                    return;
+                }
+                
+                // Add to anti-spam memory
+                scannedThisSession.add(student.Name);
+                
+                // Instantly give 1 point to Database
+                fetch(`${GOOGLE_WEB_APP_URL}?action=addPoints&name=${encodeURIComponent(student.Name)}&points=1`, { mode: 'no-cors' });
+                
+                // Instantly trigger celebration locally
+                student.Points = parseInt(student.Points) + 1; // Update locally so we don't wait
+                celebrationQueue.push({ student: student, pointsGained: 1 });
+                processCelebrations();
+
+            } else {
+                // --- MANUAL TEACHER MODE LOGIC ---
+                if (activeKioskStudent !== student.Name) {
+                    activeKioskStudent = student.Name;
+                    clearInterval(heroInterval);
+                    const bg = student.Artwork ? `url('${student.Artwork}')` : 'none';
+                    document.getElementById('heroBg').style.backgroundImage = bg;
+                    document.getElementById('heroContent').innerHTML = `Hi ${student.Name}!<br><span style="font-size:3rem;">Waiting for Teacher...</span>`;
+                    
+                    fetch(`${GOOGLE_WEB_APP_URL}?action=setActive&name=${encodeURIComponent(student.Name)}`, { mode: 'no-cors' });
+                    
+                    clearTimeout(kioskTimer);
+                    kioskTimer = setTimeout(() => { activeKioskStudent = null; updateHero(); heroInterval = setInterval(updateHero, 6000); }, 10000);
+                }
+            }
+        }, () => {});
+
+        // 2. FETCH DATA & SYNC STATES
+        async function fetchStudentData() {
+            try {
+                const response = await fetch(GOOGLE_WEB_APP_URL + '?action=get&t=' + new Date().getTime());
+                const rawResponse = await response.json();
+                
+                // Check Auto Mode State
+                if (rawResponse.autoMode === 'on' && !isAutoMode) {
+                    isAutoMode = true;
+                    document.getElementById('autoModeBadge').style.display = 'block';
+                    document.getElementById('kioskLabel').textContent = "AUTO-SCAN: GET +1 POINT!";
+                    document.getElementById('kioskLabel').style.color = "var(--green)";
+                } else if (rawResponse.autoMode === 'off' && isAutoMode) {
+                    isAutoMode = false;
+                    scannedThisSession.clear(); // WIPE SPAM MEMORY WHEN TURNED OFF
+                    document.getElementById('autoModeBadge').style.display = 'none';
+                    document.getElementById('kioskLabel').textContent = "SCAN CARD HERE";
+                    document.getElementById('kioskLabel').style.color = "var(--primary)";
+                }
+
+                const newStudents = rawResponse.students.map(s => ({
+                    Name: s.Name, Points: s.Points, Artwork: s.Artwork,
+                    AvatarURL: s.AvatarURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(s.Name)}`
+                }));
+
+                // Check for regular point updates from teacher
+                if (students.length > 0) { 
+                    newStudents.forEach(newStudent => {
+                        const oldStudent = students.find(s => s.Name === newStudent.Name);
+                        if (oldStudent) {
+                            const diff = parseInt(newStudent.Points) - parseInt(oldStudent.Points);
+                            // Only trigger celebration if it wasn't already triggered locally by Auto Mode
+                            if (diff > 0 && !scannedThisSession.has(newStudent.Name)) {
+                                celebrationQueue.push({ student: newStudent, pointsGained: diff });
+                            }
+                        }
+                    });
+                }
+                students = newStudents;
+
+                // Handle Phone Vault Commands
+                const remoteCommand = rawResponse.command;
+                const isVaultOpen = document.getElementById('prizeVaultOverlay').style.display === 'flex';
+                const isRevealed = document.getElementById('revealedState').style.display === 'block';
+                
+                if (remoteCommand === 'showVault' && !isVaultOpen) {
+                    document.getElementById('prizeVaultOverlay').style.display = 'flex';
+                    document.getElementById('mysteryState').style.display = 'block';
+                    document.getElementById('revealedState').style.display = 'none';
+                } else if (remoteCommand === 'revealVault' && isVaultOpen && !isRevealed) {
+                    document.getElementById('mysteryState').style.display = 'none';
+                    document.getElementById('revealedState').style.display = 'block';
+                    const prizeGrid = document.getElementById('prizeGrid'); prizeGrid.innerHTML = '';
+                    students.filter(s => parseInt(s.Points) >= 15).forEach(winner => {
+                        prizeGrid.innerHTML += `<div class="prize-card"><img src="${winner.AvatarURL}"><h3>${winner.Name}</h3><p>⭐ ${winner.Points}</p></div>`;
+                    });
+                } else if (remoteCommand === 'closeVault' && isVaultOpen) {
+                    document.getElementById('prizeVaultOverlay').style.display = 'none';
+                }
+
+                processCelebrations(); renderGrid();
+                if (!heroInterval && students.length > 0 && !activeKioskStudent) {
+                    updateHero(); heroInterval = setInterval(updateHero, 6000); 
+                }
+            } catch (error) {}
+        }
+
+        function processCelebrations() {
+            if (isCelebrating || celebrationQueue.length === 0 || document.getElementById('prizeVaultOverlay').style.display === 'flex') return;
+            isCelebrating = true;
+            const event = celebrationQueue.shift();
+            document.getElementById('celebrationAvatar').src = event.student.AvatarURL;
+            document.getElementById('celebrationName').textContent = event.student.Name;
+            document.getElementById('celebrationPoints').textContent = event.pointsGained;
+            document.getElementById('celebrationBox').className = 'celebration-box anim-pop';
+            document.getElementById('celebrationOverlay').style.display = 'flex';
+            setTimeout(() => { document.getElementById('celebrationOverlay').style.display = 'none'; isCelebrating = false; }, 4000); 
+        }
+
+        function updateHero() {
+            if (activeKioskStudent) return; 
+            const heroStudents = students.filter(s => parseInt(s.Points) > 0);
+            if (heroStudents.length === 0) return;
+            if (heroIndex >= heroStudents.length) heroIndex = 0;
+            const student = heroStudents[heroIndex];
+            
+            const heroBg = document.getElementById('heroBg');
+            heroBg.style.backgroundImage = student.Artwork ? `url('${student.Artwork}')` : 'none';
+            heroBg.style.backgroundColor = student.Artwork ? 'transparent' : '#2B2D42';
+            
+            document.getElementById('heroContent').innerHTML = `${student.Name}<br><span class="points-highlight">⭐ ${student.Points}</span>`;
+            heroIndex = (heroIndex + 1) % heroStudents.length;
+        }
+
+        function renderGrid() {
+            const grid = document.getElementById('studentGrid'); grid.innerHTML = ''; 
+            students.forEach(student => {
+                grid.innerHTML += `<div class="card"><img src="${student.AvatarURL}"><h3>${student.Name}</h3><p>⭐ ${student.Points}</p></div>`;
+            });
+        }
+
+        fetchStudentData(); setInterval(fetchStudentData, 3000); 
+    </script>
+</body>
+</html>
