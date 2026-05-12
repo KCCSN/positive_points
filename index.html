@@ -11,15 +11,29 @@
         :root { --dark: #2B2D42; --surface: #FFFFFF; --yellow: #FFD166; --primary: #FF4B72; --green: #06D6A0;}
         body { margin: 0; font-family: 'Fredoka', sans-serif; color: var(--dark); background: #111; overflow-x: hidden; }
 
+        /* SPLIT-SCREEN HERO SECTION */
         .hero-section {
-            height: 100vh; width: 100vw; display: flex; align-items: center; justify-content: center;
-            background-size: cover; background-position: center; transition: background-image 1s ease-in-out;
-            position: relative; text-align: center;
+            height: 100vh; width: 100vw; display: flex;
+            background: linear-gradient(-45deg, #FF9A9E, #FECFEF, #a8edea, #00C6FF);
+            background-size: 400% 400%; animation: gradientBG 15s ease infinite;
         }
-        .hero-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.6); z-index: 1; }
-        .hero-content { position: relative; z-index: 2; font-size: 6rem; color: white; font-weight: 800; text-shadow: 4px 4px 0px black; }
-        .points-highlight { color: var(--yellow); text-shadow: 4px 4px 0px black, 0 0 30px rgba(255, 209, 102, 0.8); }
+        @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
+        .hero-text-side {
+            flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 40px; text-align: center;
+        }
+        
+        .hero-art-side {
+            flex: 1; margin: 50px; border-radius: 40px; border: 10px solid var(--dark);
+            background-color: var(--surface); background-size: contain; background-repeat: no-repeat; background-position: center;
+            box-shadow: 20px 20px 0 rgba(0,0,0,0.2); display: none; /* Hidden by default if no art */
+        }
+
+        .hero-content { font-size: 6rem; color: white; font-weight: 800; text-shadow: 4px 4px 0px black; }
+        .points-highlight { color: var(--yellow); text-shadow: 4px 4px 0px black, 0 0 30px rgba(255, 209, 102, 0.8); display: block; margin-top: 15px;}
+
+        /* KIOSK CAMERA */
         .kiosk-cam-container {
             position: fixed; bottom: 30px; left: 30px; width: 250px; z-index: 100;
             background: var(--surface); padding: 10px; border-radius: 20px; border: 6px solid var(--dark); box-shadow: 8px 8px 0 rgba(0,0,0,0.5);
@@ -43,6 +57,7 @@
             border: 8px solid var(--dark); box-shadow: 15px 15px 0 var(--dark); text-align: center;
         }
 
+        /* CELEBRATIONS */
         .celebration-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 9999; flex-direction: column;}
         .sunburst { position: absolute; width: 200vw; height: 200vw; background: repeating-conic-gradient(var(--yellow) 0 15deg, #FFB703 15deg 30deg); animation: spinBurst 10s linear infinite; z-index: -1; opacity: 0.5; }
         @keyframes spinBurst { 100% { transform: rotate(360deg); } }
@@ -51,11 +66,13 @@
         .anim-pop { animation: pop 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; }
         @keyframes pop { 0% { transform: scale(0.2); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
+        /* Dashboard */
         .dashboard { padding: 50px; background: #f4f4f4; min-height: 100vh; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 30px; }
         .card { background: white; padding: 20px; border-radius: 20px; text-align: center; border: 4px solid var(--dark); }
         .card img { width: 100px; border-radius: 50%; }
         
+        /* Prize Vault */
         .mystery-box { font-size: 10rem; cursor: pointer; animation: shake 2s infinite ease-in-out; }
         @keyframes shake { 0%, 100% { transform: rotate(0deg); } 20%, 60% { transform: rotate(-10deg); } 40%, 80% { transform: rotate(10deg); } }
         .prize-grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; max-width: 90vw; }
@@ -69,8 +86,10 @@
     <div id="spamWarning">Nice try!<br>Already checked in. 🛑</div>
 
     <div class="hero-section" id="heroBg">
-        <div class="hero-overlay"></div>
-        <div id="heroContent" class="hero-content">Loading...</div>
+        <div class="hero-text-side">
+            <div id="heroContent" class="hero-content">Loading...</div>
+        </div>
+        <div class="hero-art-side" id="heroArt"></div>
     </div>
 
     <div class="kiosk-cam-container">
@@ -107,7 +126,7 @@
 
     <script>
         // ⚠️ PASTE YOUR APPS SCRIPT URL HERE ⚠️
-        const GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxlTv6HfOVB_AFua7XKePmCySDo5VsJeRpdF4jTgjt3nSm9v3Iz1pTdhO1GwkELAKNdhQ/exec";
+        const GOOGLE_WEB_APP_URL = "YOUR_APPS_SCRIPT_LINK_HERE";
 
         let students = []; let heroIndex = 0; let heroInterval;
         let celebrationQueue = []; let isCelebrating = false;
@@ -115,7 +134,7 @@
         
         // Auto-Mode Variables
         let isAutoMode = false;
-        let scannedThisSession = new Set(); // Anti-Spam Memory
+        let scannedThisSession = new Set(); 
 
         // 1. KIOSK SCANNER LOGIC
         const html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: {width: 200, height: 200} }, false);
@@ -126,34 +145,35 @@
             if (!student) return;
 
             if (isAutoMode) {
-                // --- AUTO MODE LOGIC ---
+                // Auto Mode logic
                 if (scannedThisSession.has(student.Name)) {
-                    // Block spammers!
                     const warning = document.getElementById('spamWarning');
                     warning.style.display = 'block';
                     setTimeout(() => warning.style.display = 'none', 3000);
                     return;
                 }
-                
-                // Add to anti-spam memory
                 scannedThisSession.add(student.Name);
-                
-                // Instantly give 1 point to Database
                 fetch(`${GOOGLE_WEB_APP_URL}?action=addPoints&name=${encodeURIComponent(student.Name)}&points=1`, { mode: 'no-cors' });
                 
-                // Instantly trigger celebration locally
-                student.Points = parseInt(student.Points) + 1; // Update locally so we don't wait
+                student.Points = parseInt(student.Points) + 1; 
                 celebrationQueue.push({ student: student, pointsGained: 1 });
                 processCelebrations();
 
             } else {
-                // --- MANUAL TEACHER MODE LOGIC ---
+                // Manual Teacher Mode logic
                 if (activeKioskStudent !== student.Name) {
                     activeKioskStudent = student.Name;
                     clearInterval(heroInterval);
-                    const bg = student.Artwork ? `url('${student.Artwork}')` : 'none';
-                    document.getElementById('heroBg').style.backgroundImage = bg;
-                    document.getElementById('heroContent').innerHTML = `Hi ${student.Name}!<br><span style="font-size:3rem;">Waiting for Teacher...</span>`;
+                    
+                    const heroArt = document.getElementById('heroArt');
+                    if (student.Artwork && student.Artwork !== "") {
+                        heroArt.style.backgroundImage = `url('${student.Artwork}')`;
+                        heroArt.style.display = 'block';
+                    } else {
+                        heroArt.style.display = 'none';
+                    }
+                    
+                    document.getElementById('heroContent').innerHTML = `Hi ${student.Name}!<br><span style="font-size:3rem; display:block; margin-top:20px;">Waiting for Teacher...</span>`;
                     
                     fetch(`${GOOGLE_WEB_APP_URL}?action=setActive&name=${encodeURIComponent(student.Name)}`, { mode: 'no-cors' });
                     
@@ -169,7 +189,6 @@
                 const response = await fetch(GOOGLE_WEB_APP_URL + '?action=get&t=' + new Date().getTime());
                 const rawResponse = await response.json();
                 
-                // Check Auto Mode State
                 if (rawResponse.autoMode === 'on' && !isAutoMode) {
                     isAutoMode = true;
                     document.getElementById('autoModeBadge').style.display = 'block';
@@ -177,7 +196,7 @@
                     document.getElementById('kioskLabel').style.color = "var(--green)";
                 } else if (rawResponse.autoMode === 'off' && isAutoMode) {
                     isAutoMode = false;
-                    scannedThisSession.clear(); // WIPE SPAM MEMORY WHEN TURNED OFF
+                    scannedThisSession.clear(); 
                     document.getElementById('autoModeBadge').style.display = 'none';
                     document.getElementById('kioskLabel').textContent = "SCAN CARD HERE";
                     document.getElementById('kioskLabel').style.color = "var(--primary)";
@@ -188,13 +207,11 @@
                     AvatarURL: s.AvatarURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(s.Name)}`
                 }));
 
-                // Check for regular point updates from teacher
                 if (students.length > 0) { 
                     newStudents.forEach(newStudent => {
                         const oldStudent = students.find(s => s.Name === newStudent.Name);
                         if (oldStudent) {
                             const diff = parseInt(newStudent.Points) - parseInt(oldStudent.Points);
-                            // Only trigger celebration if it wasn't already triggered locally by Auto Mode
                             if (diff > 0 && !scannedThisSession.has(newStudent.Name)) {
                                 celebrationQueue.push({ student: newStudent, pointsGained: diff });
                             }
@@ -203,7 +220,6 @@
                 }
                 students = newStudents;
 
-                // Handle Phone Vault Commands
                 const remoteCommand = rawResponse.command;
                 const isVaultOpen = document.getElementById('prizeVaultOverlay').style.display === 'flex';
                 const isRevealed = document.getElementById('revealedState').style.display === 'block';
@@ -242,6 +258,7 @@
             setTimeout(() => { document.getElementById('celebrationOverlay').style.display = 'none'; isCelebrating = false; }, 4000); 
         }
 
+        // --- SPLIT SCREEN UI UPDATER ---
         function updateHero() {
             if (activeKioskStudent) return; 
             const heroStudents = students.filter(s => parseInt(s.Points) > 0);
@@ -249,11 +266,24 @@
             if (heroIndex >= heroStudents.length) heroIndex = 0;
             const student = heroStudents[heroIndex];
             
-            const heroBg = document.getElementById('heroBg');
-            heroBg.style.backgroundImage = student.Artwork ? `url('${student.Artwork}')` : 'none';
-            heroBg.style.backgroundColor = student.Artwork ? 'transparent' : '#2B2D42';
+            const heroContent = document.getElementById('heroContent');
+            const heroArt = document.getElementById('heroArt');
             
-            document.getElementById('heroContent').innerHTML = `${student.Name}<br><span class="points-highlight">⭐ ${student.Points}</span>`;
+            // Re-trigger animation
+            heroContent.classList.remove('bounce-in');
+            void heroContent.offsetWidth; 
+            
+            heroContent.innerHTML = `${student.Name}<br><span class="points-highlight">⭐ ${student.Points}</span>`;
+            heroContent.classList.add('bounce-in');
+
+            // Handle the framed artwork dynamically
+            if (student.Artwork && student.Artwork !== "") {
+                heroArt.style.backgroundImage = `url('${student.Artwork}')`;
+                heroArt.style.display = 'block';
+            } else {
+                heroArt.style.display = 'none'; // Reverts to clean, centered text!
+            }
+
             heroIndex = (heroIndex + 1) % heroStudents.length;
         }
 
