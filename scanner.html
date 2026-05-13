@@ -3,38 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Teacher Remote</title>
+    <title>Teacher Remote & Scanner</title>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <style>
         body { margin: 0; font-family: 'Fredoka', sans-serif; background: #222; color: white; text-align: center; }
         header { background: #ff4b72; padding: 15px; font-size: 1.5rem; font-weight: 800; }
         
+        /* Remote Control Bar */
         .remote-bar { background: #333; padding: 15px; display: flex; gap: 8px; justify-content: center; }
         .btn-remote { border: none; padding: 15px 10px; font-size: 1.1rem; font-family: 'Fredoka'; font-weight: 800; border-radius: 10px; cursor: pointer; flex: 1; }
         .btn-vault { background: #FFD166; color: #333; } .btn-reveal { background: #06D6A0; color: white; } .btn-close { background: #555; color: white; }
         
         /* Auto Mode Toggle */
-        .auto-toggle { margin: 20px; padding: 20px; background: #444; border-radius: 20px; border: 4px solid #555; cursor: pointer; transition: 0.2s; }
-        .auto-toggle h2 { margin: 0; font-size: 2rem; }
+        .auto-toggle { margin: 15px; padding: 15px; background: #444; border-radius: 20px; border: 4px solid #555; cursor: pointer; transition: 0.2s; }
+        .auto-toggle h2 { margin: 0; font-size: 1.6rem; }
         .auto-on { background: #06D6A0; border-color: white; color: black; box-shadow: 0 0 20px rgba(6, 214, 160, 0.5); }
 
-        #kioskStatus { background: #111; padding: 40px 20px; margin: 20px; border-radius: 20px; border: 4px dashed #555; }
-        .status-text { color: #aaa; font-size: 1.5rem; }
+        /* Camera Scanner View */
+        #scannerView { padding: 15px; }
+        #reader { border-radius: 15px; overflow: hidden; background: #000; min-height: 250px; border: 4px solid #444;}
+        .kiosk-status-text { color: #aaa; font-size: 1.2rem; margin-top: 15px; font-weight: 600; }
 
-        #actionPanel { display: none; background: white; color: #333; margin: 20px; padding: 30px 20px; border-radius: 20px; }
-        #scanAvatar { width: 150px; height: 150px; border-radius: 50%; border: 6px solid #ff4b72; margin-bottom: 10px; }
+        /* Action Panel (Hidden until a scan happens) */
+        #actionPanel { display: none; background: white; color: #333; margin: 15px; padding: 30px 20px; border-radius: 20px; }
+        #scanAvatar { width: 120px; height: 120px; border-radius: 50%; border: 6px solid #ff4b72; margin-bottom: 10px; }
         
         .btn-group { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
-        .btn { border: none; padding: 20px; font-size: 2rem; font-family: 'Fredoka'; font-weight: 800; border-radius: 15px; cursor: pointer; color: white; flex: 1; }
+        .btn { border: none; padding: 15px 20px; font-size: 1.8rem; font-family: 'Fredoka'; font-weight: 800; border-radius: 15px; cursor: pointer; color: white; flex: 1; }
         .btn-1 { background: #4CAF50; } .btn-2 { background: #2196F3; }
+        .btn-custom { background: #9C27B0; flex: 1; font-size: 1.5rem; }
+
+        .custom-input-wrap { display: flex; gap: 10px; justify-content: center; margin-top: 15px; }
+        .custom-input { width: 80px; font-size: 1.5rem; font-family: 'Fredoka'; font-weight: 700; text-align: center; border-radius: 15px; border: 3px solid #ddd; outline: none; }
+        .custom-input:focus { border-color: #9C27B0; }
         
         #saveMessage { font-size: 1.2rem; font-weight: 800; padding: 15px; border-radius: 10px; display: none; margin-top: 15px; }
         .msg-loading { background: #fff3cd; color: #856404; } .msg-success { background: #d4edda; color: #155724; }
+        .btn-cancel { background: transparent; color: #aaa; border: 3px solid #aaa; padding: 10px 20px; border-radius: 50px; font-size: 1.2rem; margin-top: 20px; width: 100%; cursor: pointer; font-family: 'Fredoka'; font-weight: 600;}
     </style>
 </head>
 <body>
 
-    <header>📱 Teacher Remote</header>
+    <header>📱 Teacher Hybrid Remote</header>
     
     <div class="remote-bar">
         <button class="btn-remote btn-vault" onclick="sendCommand('triggerVault')">🎁 Vault</button>
@@ -46,66 +57,147 @@
         <h2 id="autoToggleText">▶️ Turn ON Auto-Check-In</h2>
     </div>
 
-    <div id="kioskStatus">
-        <div class="status-text">⏳ Waiting for student<br>to scan badge at Laptop...</div>
+    <div id="scannerView">
+        <div id="reader"></div>
+        <div class="kiosk-status-text" id="kioskStatusMsg">...or waiting for laptop kiosk scan...</div>
     </div>
 
     <div id="actionPanel">
         <img id="scanAvatar" src="">
-        <h2 id="scanName" style="font-size: 3rem; margin: 0;">Name</h2>
+        <h2 id="scanName" style="font-size: 2.5rem; margin: 0;">Name</h2>
         
         <div class="btn-group">
             <button class="btn btn-1" onclick="submitPoints(1)">+1</button>
             <button class="btn btn-2" onclick="submitPoints(2)">+2</button>
         </div>
+
+        <div class="custom-input-wrap">
+            <input type="number" id="customAmount" class="custom-input" placeholder="+/-">
+            <button class="btn btn-custom" onclick="submitCustomPoints()">Send</button>
+        </div>
+
         <div id="saveMessage">Saving...</div>
+        
+        <button class="btn-cancel" onclick="resetRemote()">Cancel / Back to Camera</button>
     </div>
 
     <script>
         // ⚠️ PASTE YOUR APPS SCRIPT URL HERE ⚠️
-        const GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxlTv6HfOVB_AFua7XKePmCySDo5VsJeRpdF4jTgjt3nSm9v3Iz1pTdhO1GwkELAKNdhQ/exec";
+        const GOOGLE_WEB_APP_URL = "YOUR_APPS_SCRIPT_LINK_HERE";
 
         let students = []; let activeStudentName = 'none';
-        let isAutoMode = 'off';
+        let isAutoMode = 'off'; let html5QrcodeScanner = null;
 
+        // --- 1. HYBRID CAMERA & KIOSK LISTENER ---
+        function startCamera() {
+            if (html5QrcodeScanner) return; // Already running
+            document.getElementById('scannerView').style.display = 'block';
+            
+            html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: {width: 250, height: 250} }, false);
+            html5QrcodeScanner.render((decodedText) => {
+                const scannedName = decodedText.trim();
+                const student = students.find(s => s.Name.toLowerCase() === scannedName.toLowerCase());
+                
+                if (student) {
+                    activeStudentName = student.Name;
+                    
+                    // Tell the Big Screen to show this kid too!
+                    fetch(`${GOOGLE_WEB_APP_URL}?action=setActive&name=${encodeURIComponent(student.Name)}&t=${new Date().getTime()}`, { mode: 'no-cors' });
+                    
+                    showActionPanel(student);
+                } else {
+                    alert("Student not found in database!");
+                }
+            }, () => {});
+        }
+
+        function stopCamera() {
+            if (html5QrcodeScanner) {
+                html5QrcodeScanner.clear();
+                html5QrcodeScanner = null;
+            }
+            document.getElementById('scannerView').style.display = 'none';
+        }
+
+        // Poll database to see if laptop scanned someone
         async function checkKiosk() {
             try {
                 const response = await fetch(GOOGLE_WEB_APP_URL + '?action=get&t=' + new Date().getTime());
                 const rawResponse = await response.json();
                 students = rawResponse.students;
                 
-                // Sync Auto Mode Button UI
+                // Sync Auto Mode Button
                 if (rawResponse.autoMode !== isAutoMode) {
                     isAutoMode = rawResponse.autoMode;
                     updateAutoUI();
                 }
-                
-                // If Auto Mode is ON, hide the manual approval panel to avoid confusion
+
                 if (isAutoMode === 'on') {
-                    document.getElementById('kioskStatus').style.display = 'block';
-                    document.getElementById('kioskStatus').innerHTML = '<div class="status-text" style="color:var(--green);">🟢 Kiosk is handling scans automatically.</div>';
-                    document.getElementById('actionPanel').style.display = 'none';
-                    return; 
+                    document.getElementById('kioskStatusMsg').innerHTML = '<span style="color: #06D6A0;">🟢 Kiosk is handling scans automatically.</span><br><br>You can still use this camera if needed.';
+                } else {
+                    document.getElementById('kioskStatusMsg').innerHTML = '...or waiting for laptop kiosk scan...';
                 }
 
-                // Normal Manual Checking
-                document.getElementById('kioskStatus').innerHTML = '<div class="status-text">⏳ Waiting for student<br>to scan badge at Laptop...</div>';
+                // If laptop scanned someone, pull up their profile on the phone!
                 if (rawResponse.activeScanned !== 'none' && rawResponse.activeScanned !== activeStudentName) {
                     activeStudentName = rawResponse.activeScanned;
-                    showActionPanel(activeStudentName);
-                } else if (rawResponse.activeScanned === 'none' && activeStudentName !== 'none') {
-                    activeStudentName = 'none';
-                    resetRemote();
+                    const student = students.find(s => s.Name.toLowerCase() === activeStudentName.toLowerCase());
+                    if (student) showActionPanel(student);
                 }
             } catch (err) {}
         }
 
-        // Toggle Auto-Mode On/Off
+        // --- 2. ACTION PANEL LOGIC ---
+        function showActionPanel(student) {
+            stopCamera(); // Turn off camera to save battery while editing
+            
+            document.getElementById('actionPanel').style.display = 'block';
+            document.getElementById('scanAvatar').src = student.AvatarURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${student.Name}`;
+            document.getElementById('scanName').textContent = student.Name;
+            document.getElementById('customAmount').value = '';
+            document.getElementById('saveMessage').style.display = 'none';
+        }
+
+        function submitCustomPoints() {
+            const amount = parseInt(document.getElementById('customAmount').value);
+            if (!isNaN(amount) && amount !== 0) submitPoints(amount);
+            else alert("Please enter a valid number!");
+        }
+
+        async function submitPoints(amount) {
+            if (GOOGLE_WEB_APP_URL === "https://script.google.com/macros/s/AKfycbxlTv6HfOVB_AFua7XKePmCySDo5VsJeRpdF4jTgjt3nSm9v3Iz1pTdhO1GwkELAKNdhQ/exec") {
+                alert("⚠️ You need to paste your Apps Script URL into the scanner.html file!"); return;
+            }
+
+            const msgBox = document.getElementById('saveMessage');
+            msgBox.className = 'msg-loading'; msgBox.textContent = "Saving to Google..."; msgBox.style.display = 'block';
+            
+            try {
+                await fetch(`${GOOGLE_WEB_APP_URL}?action=addPoints&name=${encodeURIComponent(activeStudentName)}&points=${amount}&t=${new Date().getTime()}`, { mode: 'no-cors' });
+                
+                const sign = amount > 0 ? '+' : '';
+                msgBox.className = 'msg-success'; msgBox.textContent = `✅ Sent ${sign}${amount}!`;
+                setTimeout(resetRemote, 1200); 
+            } catch(e) {
+                msgBox.className = 'msg-loading'; msgBox.style.background = '#FF4B72'; msgBox.style.color = 'white'; msgBox.textContent = "❌ Error saving.";
+            }
+        }
+
+        function resetRemote() {
+            document.getElementById('actionPanel').style.display = 'none';
+            activeStudentName = 'none';
+            
+            // Clear the kiosk flag on the server if we cancelled out
+            fetch(`${GOOGLE_WEB_APP_URL}?action=setActive&name=none&t=${new Date().getTime()}`, { mode: 'no-cors' });
+            
+            startCamera(); // Turn camera back on
+        }
+
+        // --- 3. REMOTE CONTROLS ---
         function toggleAutoMode() {
             const newState = isAutoMode === 'off' ? 'on' : 'off';
             fetch(`${GOOGLE_WEB_APP_URL}?action=toggleAuto&state=${newState}&t=${new Date().getTime()}`, { mode: 'no-cors' });
-            
-            isAutoMode = newState; // Update immediately so it feels fast
+            isAutoMode = newState; 
             updateAutoUI();
         }
 
@@ -121,38 +213,13 @@
             }
         }
 
-        function showActionPanel(name) {
-            const student = students.find(s => s.Name.toLowerCase() === name.toLowerCase());
-            if (student) {
-                document.getElementById('kioskStatus').style.display = 'none';
-                document.getElementById('actionPanel').style.display = 'block';
-                document.getElementById('scanAvatar').src = student.AvatarURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${name}`;
-                document.getElementById('scanName').textContent = student.Name;
-                document.getElementById('saveMessage').style.display = 'none';
-            }
-        }
-
         async function sendCommand(action) {
             fetch(`${GOOGLE_WEB_APP_URL}?action=${action}&t=${new Date().getTime()}`, { mode: 'no-cors' });
             alert("Signal sent to projector!");
         }
 
-        async function submitPoints(amount) {
-            const msgBox = document.getElementById('saveMessage');
-            msgBox.className = 'msg-loading'; msgBox.textContent = "Saving to Google..."; msgBox.style.display = 'block';
-            
-            fetch(`${GOOGLE_WEB_APP_URL}?action=addPoints&name=${encodeURIComponent(activeStudentName)}&points=${amount}&t=${new Date().getTime()}`, { mode: 'no-cors' });
-            
-            msgBox.className = 'msg-success'; msgBox.textContent = `✅ Sent +${amount}!`;
-            setTimeout(resetRemote, 1500); 
-        }
-
-        function resetRemote() {
-            document.getElementById('actionPanel').style.display = 'none';
-            document.getElementById('kioskStatus').style.display = 'block';
-            activeStudentName = 'none';
-        }
-
+        // Start Engine
+        startCamera();
         setInterval(checkKiosk, 2000); 
     </script>
 </body>
