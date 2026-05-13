@@ -215,6 +215,9 @@
         
         // Artwork Loop Variables
         let artworkList = []; let artIndex = 0; let artInterval = null;
+        
+        // Fix for Search Box sticking
+        let wasSearching = false;
 
         // Shuffle function for page load
         function shuffleArray(array) {
@@ -274,7 +277,8 @@
                     activeKioskStudent = student.Name;
                     
                     const popup = document.getElementById('kioskPopup');
-                    document.getElementById('kioskPopupName').textContent = student.Name;
+                    // UPDATE: Now includes their points in the popup!
+                    document.getElementById('kioskPopupName').innerHTML = `${student.Name}<br><span style="color: var(--yellow); font-size: 2rem;">⭐ ${student.Points}</span>`;
                     document.getElementById('kioskPopupStatus').textContent = "Waiting for Teacher...";
                     popup.style.display = 'block';
                     
@@ -378,6 +382,7 @@
 
             if (searchTerm) {
                 // Search Mode (Pauses Scroll, Filters Data)
+                wasSearching = true; // Memory flag set
                 track.style.animation = 'none';
                 const filtered = orderedStudents.filter(s => s.Name.toLowerCase().includes(searchTerm));
                 track.innerHTML = buildCardsHTML(filtered);
@@ -387,11 +392,12 @@
             // Normal Scrolling Mode
             track.style.animation = 'scrollUp 150s linear infinite';
             
-            // Hard reconstruct DOM ONLY if the number of kids changes
-            if (knownStudentCount !== students.length) {
-                orderedStudents = shuffleArray([...students]);
+            // Reconstruct DOM if the number of kids changes OR if we just deleted a search query!
+            if (knownStudentCount !== students.length || wasSearching) {
+                if (orderedStudents.length !== students.length) orderedStudents = shuffleArray([...students]);
                 track.innerHTML = buildCardsHTML(orderedStudents) + buildCardsHTML(orderedStudents); // Duplicated for infinite loop
                 knownStudentCount = students.length;
+                wasSearching = false; // Reset the memory flag
             } else {
                 // Soft update: just change the points text so animation doesn't break!
                 updateLeaderboardPoints();
