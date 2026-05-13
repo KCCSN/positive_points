@@ -3,30 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Classroom Kiosk</title>
+    <title>Classroom Digital Display</title>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     
     <style>
         :root { --dark: #2B2D42; --surface: #FFFFFF; --yellow: #FFD166; --primary: #FF4B72; --green: #06D6A0;}
-        body { margin: 0; font-family: 'Fredoka', sans-serif; color: var(--dark); background: #111; overflow-x: hidden; }
+        body { margin: 0; font-family: 'Fredoka', sans-serif; color: var(--dark); background: #111; overflow: hidden; }
 
-        /* === COMMAND BAR (Top Navigation) === */
-        .top-bar {
-            position: absolute; top: 20px; left: 0; right: 0; padding: 0 40px;
-            display: flex; justify-content: space-between; align-items: center; z-index: 100;
+        /* === SPLIT SCREEN LAYOUT === */
+        .split-layout {
+            display: flex; height: 100vh; width: 100vw;
         }
 
+        /* === LEFT SIDE (Controls & Leaderboard) === */
+        .left-panel {
+            flex: 1; display: flex; flex-direction: column; position: relative;
+            background: linear-gradient(-45deg, #FF9A9E, #FECFEF, #a8edea, #00C6FF);
+            background-size: 400% 400%; animation: gradientBG 15s ease infinite;
+            padding: 20px; box-sizing: border-box;
+        }
+        @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+
+        /* COMMAND BAR */
+        .top-bar {
+            display: flex; justify-content: space-between; align-items: center; 
+            margin-bottom: 20px; z-index: 100;
+        }
         .search-bar {
-            width: 350px; padding: 15px 25px; font-size: 1.2rem; font-family: var(--font-family); font-weight: 600;
+            width: 300px; padding: 15px 25px; font-size: 1.2rem; font-family: var(--font-family); font-weight: 600;
             background: var(--surface); color: var(--dark); border: 5px solid var(--dark); border-radius: 50px; 
             box-shadow: 0 6px 0 var(--dark); outline: none; transition: all 0.2s;
         }
         .search-bar:focus { transform: translateY(4px); box-shadow: 0 2px 0 var(--dark); }
-        .search-bar::placeholder { color: #aaa; }
-
-        .nav-buttons { display: flex; gap: 15px; }
-        
+        .nav-buttons { display: flex; gap: 10px; }
         .btn-admin {
             background: var(--surface); color: var(--dark); border: 4px solid var(--dark);
             padding: 10px 20px; font-size: 1.1rem; font-family: var(--font-family); font-weight: 700;
@@ -35,50 +45,62 @@
         .btn-prize { background: var(--yellow); }
         .btn-admin:hover { transform: translateY(4px); box-shadow: 0 2px 0 var(--dark); }
 
-        /* === SPLIT-SCREEN HERO SECTION === */
-        .hero-section {
-            height: 100vh; width: 100vw; display: flex; padding-top: 80px; box-sizing: border-box;
-            background: linear-gradient(-45deg, #FF9A9E, #FECFEF, #a8edea, #00C6FF);
-            background-size: 400% 400%; animation: gradientBG 15s ease infinite;
+        /* SCROLLING LEADERBOARD */
+        .leaderboard-wrapper {
+            flex: 1; overflow: hidden; position: relative; margin-bottom: 20px;
+            /* Fades out the top and bottom slightly for a clean look */
+            mask-image: linear-gradient(to bottom, transparent, black 5%, black 95%, transparent);
+            -webkit-mask-image: linear-gradient(to bottom, transparent, black 5%, black 95%, transparent);
         }
-        @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-
-        .hero-text-side {
-            flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: space-evenly;
-            padding: 20px; text-align: center;
+        .scroll-track {
+            display: flex; flex-direction: column; gap: 15px; 
+            animation: scrollUp 40s linear infinite;
         }
+        @keyframes scrollUp { 0% { transform: translateY(0); } 100% { transform: translateY(-50%); } }
         
-        .hero-art-side {
-            flex: 1; margin: 20px 40px 40px 20px; border-radius: 40px; border: 10px solid var(--dark);
-            background-color: var(--surface); background-size: contain; background-repeat: no-repeat; background-position: center;
-            box-shadow: 20px 20px 0 rgba(0,0,0,0.2); display: none; 
+        .lb-card {
+            background: var(--surface); border: 4px solid var(--dark); border-radius: 20px;
+            padding: 15px 25px; display: flex; align-items: center; box-shadow: 0 6px 0 var(--dark);
+            margin: 0 10px;
         }
+        .lb-card img { width: 60px; height: 60px; border-radius: 50%; border: 3px solid var(--dark); margin-right: 20px; }
+        .lb-card h3 { flex: 1; margin: 0; font-size: 1.8rem; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+        .lb-card p { margin: 0; font-size: 1.5rem; font-weight: 800; background: var(--yellow); padding: 5px 20px; border-radius: 30px; border: 4px solid var(--dark); }
 
-        .hero-content { font-size: 5.5rem; color: white; font-weight: 800; text-shadow: 4px 4px 0px black; }
-        .points-highlight { color: var(--yellow); text-shadow: 4px 4px 0px black, 0 0 30px rgba(255, 209, 102, 0.8); display: block; margin-top: 15px;}
-
-        /* === KIOSK CAMERA (Now integrated natively) === */
+        /* KIOSK CAMERA (Docked at Bottom Left) */
         .kiosk-cam-container {
             background: var(--surface); padding: 10px; border-radius: 20px; border: 6px solid var(--dark); 
-            box-shadow: 8px 8px 0 rgba(0,0,0,0.5); width: 250px; margin-top: 20px;
+            box-shadow: 8px 8px 0 rgba(0,0,0,0.5); width: 200px; z-index: 100;
         }
         #reader { border-radius: 10px; overflow: hidden; }
-        .kiosk-label { text-align: center; font-weight: 800; font-size: 1.2rem; margin-top: 10px; color: var(--primary); }
+        .kiosk-label { text-align: center; font-weight: 800; font-size: 1rem; margin-top: 10px; color: var(--primary); }
+
+        /* KIOSK ACTIVE POPUP (Overlays the leaderboard) */
+        #kioskPopup {
+            position: absolute; bottom: 30px; left: 250px; right: 20px; background: white; 
+            border: 6px solid var(--dark); border-radius: 20px; padding: 20px; text-align: center;
+            box-shadow: 10px 10px 0 rgba(0,0,0,0.4); display: none; z-index: 200;
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+        }
+        @keyframes popIn { 0% { transform: scale(0); } 100% { transform: scale(1); } }
+
+        /* === RIGHT SIDE (Artwork Loop) === */
+        .right-panel {
+            flex: 1; background: var(--dark); padding: 30px; display: flex; align-items: center; justify-content: center;
+        }
+        .art-frame {
+            width: 100%; height: 100%; border-radius: 30px; border: 12px solid var(--surface);
+            background-color: #222; background-size: contain; background-repeat: no-repeat; background-position: center;
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.8), 0 20px 40px rgba(0,0,0,0.5);
+            transition: background-image 1s ease-in-out;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .no-art-text { color: #555; font-size: 2rem; font-weight: 800; display: none; }
 
         /* === AUTO-MODE & WARNINGS === */
-        #autoModeBadge {
-            position: fixed; top: 100px; left: 40px; z-index: 90; display: none;
-            background: var(--green); color: white; padding: 10px 20px; border-radius: 50px;
-            font-size: 1.2rem; font-weight: 800; border: 4px solid var(--dark); box-shadow: 4px 4px 0 var(--dark);
-            animation: pulse 2s infinite;
-        }
+        #autoModeBadge { position: fixed; top: 90px; left: 40px; z-index: 110; display: none; background: var(--green); color: white; padding: 10px 20px; border-radius: 50px; font-size: 1.2rem; font-weight: 800; border: 4px solid var(--dark); box-shadow: 4px 4px 0 var(--dark); animation: pulse 2s infinite; }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-
-        #spamWarning {
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 9999; display: none;
-            background: #FF4B72; color: white; padding: 30px 50px; border-radius: 30px; font-size: 3rem; font-weight: 800;
-            border: 8px solid var(--dark); box-shadow: 15px 15px 0 var(--dark); text-align: center;
-        }
+        #spamWarning { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 9999; display: none; background: #FF4B72; color: white; padding: 30px 50px; border-radius: 30px; font-size: 3rem; font-weight: 800; border: 8px solid var(--dark); box-shadow: 15px 15px 0 var(--dark); text-align: center; }
 
         /* === CELEBRATIONS === */
         .celebration-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 9999; flex-direction: column;}
@@ -89,62 +111,59 @@
         .anim-pop { animation: pop 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; }
         @keyframes pop { 0% { transform: scale(0.2); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
-        /* === DASHBOARD (Grid section) === */
-        .dashboard { padding: 50px 40px; background: #f4f4f4; min-height: 100vh; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 30px; }
-        .card { background: white; padding: 25px; border-radius: 30px; text-align: center; border: 6px solid var(--dark); box-shadow: 0 10px 0 var(--dark); cursor: pointer; transition: all 0.15s; }
-        .card:hover { transform: translateY(6px); box-shadow: 0 4px 0 var(--dark); background: #FAFAFA; }
-        .card img { width: 100px; border-radius: 50%; border: 4px solid var(--dark); margin-bottom: 15px; }
-        .card h3 { margin: 10px 0; font-size: 1.8rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
-        .card p { margin: 0; font-size: 1.4rem; font-weight: 700; color: var(--dark); background: var(--yellow); padding: 8px 20px; border-radius: 30px; border: 4px solid var(--dark); display: inline-block;}
-
         /* === MODALS & VAULT === */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(43, 45, 66, 0.8); display: none; align-items: center; justify-content: center; z-index: 10000; backdrop-filter: blur(8px); }
         .modal-overlay.active { display: flex; }
         .modal-content { background: var(--surface); padding: 50px 40px 40px 40px; border-radius: 40px; max-width: 450px; text-align: center; position: relative; border: 8px solid var(--dark); box-shadow: 0 15px 0 rgba(0,0,0,0.3); }
-        .modal-content img { width: 160px; height: 160px; border-radius: 50%; margin-top: -110px; border: 8px solid var(--dark); background: #fff; }
         .close-btn { position: absolute; top: 15px; right: 25px; font-size: 2.5rem; font-weight: 700; cursor: pointer; color: var(--dark); }
-        
         .mystery-box { font-size: 10rem; cursor: pointer; animation: shake 2s infinite ease-in-out; }
         @keyframes shake { 0%, 100% { transform: rotate(0deg); } 20%, 60% { transform: rotate(-10deg); } 40%, 80% { transform: rotate(10deg); } }
         .prize-grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; max-width: 90vw; }
         .prize-card { background: var(--yellow); padding: 20px; border-radius: 20px; border: 4px solid var(--dark); text-align: center; width: 200px;}
         .prize-card img { width: 100px; border-radius: 50%; border: 4px solid var(--dark); }
-        
-        .bounce-in { animation: rubberBand 1.2s both; }
-        @keyframes rubberBand { 0% { transform: scale3d(1, 1, 1); opacity: 0; } 30% { transform: scale3d(1.25, 0.75, 1); opacity: 1; } 40% { transform: scale3d(0.75, 1.25, 1); } 50% { transform: scale3d(1.15, 0.85, 1); } 65% { transform: scale3d(0.95, 1.05, 1); } 75% { transform: scale3d(1.05, 0.95, 1); } 100% { transform: scale3d(1, 1, 1); opacity: 1;} }
     </style>
 </head>
 <body>
 
-    <div class="top-bar">
-        <input type="text" id="searchInput" class="search-bar" placeholder="🔍 Find a student...">
-        <div class="nav-buttons">
-            <button onclick="openPrizeVault()" class="btn-admin btn-prize">🎁 Prize Vault</button>
-            <button onclick="openDatabase()" class="btn-admin">⚙️ Database</button>
-        </div>
-    </div>
-
-    <div id="autoModeBadge">🟢 AUTO-SCAN ACTIVE</div>
-    <div id="spamWarning">Nice try!<br>Already checked in. 🛑</div>
-
-    <div class="hero-section" id="heroBg">
-        <div class="hero-text-side">
-            <div id="heroContent" class="hero-content">Loading...</div>
+    <div class="split-layout">
+        
+        <div class="left-panel">
             
+            <div class="top-bar">
+                <input type="text" id="searchInput" class="search-bar" placeholder="🔍 Find a student...">
+                <div class="nav-buttons">
+                    <button onclick="openPrizeVault()" class="btn-admin btn-prize">🎁 Prize Vault</button>
+                    <button onclick="openDatabase()" class="btn-admin">⚙️ Database</button>
+                </div>
+            </div>
+
+            <div id="autoModeBadge">🟢 AUTO-SCAN ACTIVE</div>
+            
+            <div class="leaderboard-wrapper">
+                <div class="scroll-track" id="scrollTrack"></div>
+            </div>
+
             <div class="kiosk-cam-container">
                 <div id="reader"></div>
                 <div class="kiosk-label" id="kioskLabel">SCAN CARD HERE</div>
             </div>
+
+            <div id="kioskPopup">
+                <h2 style="font-size: 2.5rem; margin:0;" id="kioskPopupName">Name</h2>
+                <p style="font-size: 1.5rem; color: #555; margin: 10px 0;" id="kioskPopupStatus">Waiting for teacher...</p>
+            </div>
+
         </div>
-        
-        <div class="hero-art-side" id="heroArt"></div>
+
+        <div class="right-panel">
+            <div class="art-frame" id="artFrame">
+                <div class="no-art-text" id="noArtText">Gathering Masterpieces...</div>
+            </div>
+        </div>
+
     </div>
 
-    <div class="dashboard">
-        <h1 style="text-align: center; font-size: 4rem; margin-top: 0; text-shadow: 3px 3px 0px rgba(0,0,0,0.1);">Classroom Leaderboard</h1>
-        <div id="studentGrid" class="grid"></div>
-    </div>
+    <div id="spamWarning">Nice try!<br>Already checked in. 🛑</div>
 
     <div id="celebrationOverlay" class="celebration-overlay">
         <div class="sunburst"></div>
@@ -162,7 +181,7 @@
             <h1 style="color: white; font-size: 6rem;">Who Unlocked a Prize?</h1>
             <div class="mystery-box" onclick="revealPrizes()">🎁</div>
         </div>
-        <div id="revealedState" style="display: none; text-align: center; z-index: 10; position: relative;">
+        <div id="revealedState" style="display: none; text-align: center; z-index: 10;">
             <div class="sunburst" style="opacity: 0.2;"></div>
             <h1 style="color: var(--yellow); font-size: 6rem; text-shadow: 6px 6px 0 var(--dark);">🏆 15-Point Club 🏆</h1>
             <div id="prizeGrid" class="prize-grid"></div>
@@ -173,10 +192,7 @@
     <div id="pinModal" class="modal-overlay">
         <div class="modal-content" style="max-width: 350px;">
             <h2 style="margin-top: 0;">Admin Access</h2>
-            <p>Enter PIN to unlock database:</p>
-            <input type="password" id="pinInput" 
-                   style="width: 80%; padding: 15px; font-size: 2rem; text-align: center; border: 4px solid var(--dark); border-radius: 15px; letter-spacing: 10px; margin-bottom: 20px;" 
-                   placeholder="****" maxlength="4">
+            <input type="password" id="pinInput" style="width: 80%; padding: 15px; font-size: 2rem; text-align: center; border: 4px solid var(--dark); border-radius: 15px; letter-spacing: 10px; margin-bottom: 20px;" placeholder="****" maxlength="4">
             <div style="display: flex; gap: 10px; justify-content: center;">
                 <button onclick="closePinModal()" class="btn-admin" style="background: #eee;">Cancel</button>
                 <button onclick="verifyPin()" class="btn-admin" style="background: var(--green); color: white;">Unlock</button>
@@ -184,146 +200,103 @@
         </div>
     </div>
 
-    <div id="playerModal" class="modal-overlay">
-        <div class="modal-content">
-            <span class="close-btn" onclick="closeModal()">&times;</span>
-            <img id="modalAvatar" src="">
-            <h2 id="modalName" style="font-size: 2.5rem; margin: 20px 0 10px 0;">Name</h2>
-            <div style="font-size: 2.2rem; color: var(--dark); font-weight: 800; margin-bottom: 25px; background: var(--yellow); padding: 10px 30px; border-radius: 50px; border: 6px solid var(--dark); display: inline-block;">⭐ <span id="modalPoints">0</span></div>
-            <div id="modalFunFact" style="background: #f4f4f4; padding: 25px; border-radius: 20px; font-size: 1.3rem; line-height: 1.5; color: var(--dark); border: 4px dashed #ccc; font-weight: 500;"></div>
-        </div>
-    </div>
-
     <script>
         // ⚠️ PASTE YOUR APPS SCRIPT URL HERE ⚠️
-        const GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxlTv6HfOVB_AFua7XKePmCySDo5VsJeRpdF4jTgjt3nSm9v3Iz1pTdhO1GwkELAKNdhQ/exec";
+        const GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxlTv6HfOVB_AFua7XKePmCySDo5VsJeRpdF4jTgjt3nSm9v3Iz1pTdhO1GwkELAKNdhQ/execE";
         
         const ADMIN_SHEET_URL = "https://docs.google.com/spreadsheets/d/1_mwGR_ljLD3drdZ7F28jMZRLfia1Vg56Icvgtk2-N9Y/edit";
         const ADMIN_PIN = "2009";
 
-        let students = []; let heroIndex = 0; let heroInterval;
+        let students = []; let orderedStudents = [];
         let celebrationQueue = []; let isCelebrating = false;
         let activeKioskStudent = null; let kioskTimer = null;
+        let isAutoMode = false; let scannedThisSession = new Set(); 
+        let knownStudentCount = 0; 
         
-        // Auto-Mode & Randomizer Variables
-        let isAutoMode = false;
-        let scannedThisSession = new Set(); 
-        const shuffleSeed = {}; // Stores randomized order
+        // Artwork Loop Variables
+        let artworkList = []; let artIndex = 0; let artInterval = null;
 
-        // Get a persistent random number for a student to keep them sorted the same way per page load
-        function getShuffleSeed(name) {
-            if (!shuffleSeed[name]) shuffleSeed[name] = Math.random();
-            return shuffleSeed[name];
+        // Shuffle function for page load
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
         }
 
         // --- ADMIN PIN LOGIC ---
-        function openDatabase() {
-            document.getElementById('pinInput').value = ''; 
-            document.getElementById('pinModal').classList.add('active');
-            document.getElementById('pinInput').focus();
-        }
+        function openDatabase() { document.getElementById('pinInput').value = ''; document.getElementById('pinModal').classList.add('active'); document.getElementById('pinInput').focus(); }
         function closePinModal() { document.getElementById('pinModal').classList.remove('active'); }
-        function verifyPin() {
-            if (document.getElementById('pinInput').value === ADMIN_PIN) {
-                closePinModal(); window.open(ADMIN_SHEET_URL, '_blank');
-            } else {
-                alert("❌ Incorrect PIN. Nice try!"); document.getElementById('pinInput').value = '';
-            }
-        }
+        function verifyPin() { if (document.getElementById('pinInput').value === ADMIN_PIN) { closePinModal(); window.open(ADMIN_SHEET_URL, '_blank'); } else { alert("❌ Incorrect PIN. Nice try!"); document.getElementById('pinInput').value = ''; } }
         document.getElementById('pinInput').addEventListener('keyup', (e) => { if (e.key === 'Enter') verifyPin(); });
 
         // --- VAULT LOGIC ---
-        function openPrizeVault() {
-            document.getElementById('prizeVaultOverlay').style.display = 'flex';
-            document.getElementById('mysteryState').style.display = 'block';
-            document.getElementById('revealedState').style.display = 'none';
-        }
+        function openPrizeVault() { document.getElementById('prizeVaultOverlay').style.display = 'flex'; document.getElementById('mysteryState').style.display = 'block'; document.getElementById('revealedState').style.display = 'none'; }
         function closePrizeVault() { document.getElementById('prizeVaultOverlay').style.display = 'none'; }
         function handleVaultClick(e) { if(e.target.id === 'prizeVaultOverlay' || e.target.id === 'revealedState') closePrizeVault(); }
         
         function revealPrizes() {
-            document.getElementById('mysteryState').style.display = 'none';
-            document.getElementById('revealedState').style.display = 'block';
-            const prizeGrid = document.getElementById('prizeGrid');
-            const noPrizeMsg = document.getElementById('noPrizeMsg');
-            prizeGrid.innerHTML = ''; 
-
+            document.getElementById('mysteryState').style.display = 'none'; document.getElementById('revealedState').style.display = 'block';
+            const prizeGrid = document.getElementById('prizeGrid'); const noPrizeMsg = document.getElementById('noPrizeMsg'); prizeGrid.innerHTML = ''; 
             const winners = students.filter(s => parseInt(s.Points) >= 15);
             if (winners.length === 0) noPrizeMsg.style.display = 'block';
             else {
                 noPrizeMsg.style.display = 'none';
                 winners.forEach((winner, index) => {
-                    const card = document.createElement('div');
-                    card.className = 'prize-card';
-                    card.style.animationDelay = `${index * 0.15}s`; 
-                    card.innerHTML = `<img src="${winner.AvatarURL}"><h3>${winner.Name}</h3><p>⭐ ${winner.Points}</p>`;
-                    prizeGrid.appendChild(card);
+                    const card = document.createElement('div'); card.className = 'prize-card'; card.style.animationDelay = `${index * 0.15}s`; 
+                    card.innerHTML = `<img src="${winner.AvatarURL}"><h3>${winner.Name}</h3><p>⭐ ${winner.Points}</p>`; prizeGrid.appendChild(card);
                 });
             }
         }
 
-        // 1. KIOSK SCANNER LOGIC
+        // --- KIOSK SCANNER LOGIC ---
         const html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: {width: 200, height: 200} }, false);
         html5QrcodeScanner.render((decodedText) => {
             const scannedName = decodedText.trim();
             const student = students.find(s => s.Name.toLowerCase() === scannedName.toLowerCase());
-            
             if (!student) return;
 
             if (isAutoMode) {
                 if (scannedThisSession.has(student.Name)) {
-                    const warning = document.getElementById('spamWarning');
-                    warning.style.display = 'block';
-                    setTimeout(() => warning.style.display = 'none', 3000);
+                    const warning = document.getElementById('spamWarning'); warning.style.display = 'block'; setTimeout(() => warning.style.display = 'none', 3000);
                     return;
                 }
                 scannedThisSession.add(student.Name);
                 fetch(`${GOOGLE_WEB_APP_URL}?action=addPoints&name=${encodeURIComponent(student.Name)}&points=1`, { mode: 'no-cors' });
-                
                 student.Points = parseInt(student.Points) + 1; 
+                updateLeaderboardPoints(); // Instantly update visually
                 celebrationQueue.push({ student: student, pointsGained: 1 });
                 processCelebrations();
 
             } else {
                 if (activeKioskStudent !== student.Name) {
                     activeKioskStudent = student.Name;
-                    clearInterval(heroInterval);
                     
-                    const heroArt = document.getElementById('heroArt');
-                    if (student.Artwork && student.Artwork !== "") {
-                        heroArt.style.backgroundImage = `url('${student.Artwork}')`;
-                        heroArt.style.display = 'block';
-                    } else {
-                        heroArt.style.display = 'none';
-                    }
-                    
-                    document.getElementById('heroContent').innerHTML = `Hi ${student.Name}!<br><span style="font-size:3rem; display:block; margin-top:20px;">Waiting for Teacher...</span>`;
+                    const popup = document.getElementById('kioskPopup');
+                    document.getElementById('kioskPopupName').textContent = student.Name;
+                    document.getElementById('kioskPopupStatus').textContent = "Waiting for Teacher...";
+                    popup.style.display = 'block';
                     
                     fetch(`${GOOGLE_WEB_APP_URL}?action=setActive&name=${encodeURIComponent(student.Name)}`, { mode: 'no-cors' });
                     
                     clearTimeout(kioskTimer);
-                    kioskTimer = setTimeout(() => { activeKioskStudent = null; updateHero(); heroInterval = setInterval(updateHero, 6000); }, 10000);
+                    kioskTimer = setTimeout(() => { activeKioskStudent = null; popup.style.display = 'none'; }, 10000);
                 }
             }
         }, () => {});
 
-        // 2. FETCH DATA & SYNC STATES
+        // --- FETCH DATA & SYNC STATES ---
         async function fetchStudentData() {
             try {
                 const response = await fetch(GOOGLE_WEB_APP_URL + '?action=get&t=' + new Date().getTime());
                 const rawResponse = await response.json();
                 
+                // Auto Mode Sync
                 if (rawResponse.autoMode === 'on' && !isAutoMode) {
-                    isAutoMode = true;
-                    document.getElementById('autoModeBadge').style.display = 'block';
-                    document.getElementById('kioskLabel').textContent = "AUTO-SCAN: GET +1 POINT!";
-                    document.getElementById('kioskLabel').style.color = "var(--green)";
+                    isAutoMode = true; document.getElementById('autoModeBadge').style.display = 'block'; document.getElementById('kioskLabel').textContent = "AUTO-SCAN: GET +1 POINT!"; document.getElementById('kioskLabel').style.color = "var(--green)";
                 } else if (rawResponse.autoMode === 'off' && isAutoMode) {
-                    isAutoMode = false;
-                    scannedThisSession.clear(); 
-                    document.getElementById('autoModeBadge').style.display = 'none';
-                    document.getElementById('kioskLabel').textContent = "SCAN CARD HERE";
-                    document.getElementById('kioskLabel').style.color = "var(--primary)";
+                    isAutoMode = false; scannedThisSession.clear(); document.getElementById('autoModeBadge').style.display = 'none'; document.getElementById('kioskLabel').textContent = "SCAN CARD HERE"; document.getElementById('kioskLabel').style.color = "var(--primary)";
                 }
 
                 const newStudents = rawResponse.students.map(s => ({
@@ -344,26 +317,22 @@
                 }
                 students = newStudents;
 
+                // Handle Phone Remote Commands
                 const remoteCommand = rawResponse.command;
                 const isVaultOpen = document.getElementById('prizeVaultOverlay').style.display === 'flex';
                 const isRevealed = document.getElementById('revealedState').style.display === 'block';
-                
-                if (remoteCommand === 'showVault' && !isVaultOpen) {
-                    document.getElementById('prizeVaultOverlay').style.display = 'flex';
-                    document.getElementById('mysteryState').style.display = 'block';
-                    document.getElementById('revealedState').style.display = 'none';
-                } else if (remoteCommand === 'revealVault' && isVaultOpen && !isRevealed) {
-                    revealPrizes();
-                } else if (remoteCommand === 'closeVault' && isVaultOpen) {
-                    closePrizeVault();
+                if (remoteCommand === 'showVault' && !isVaultOpen) openPrizeVault();
+                else if (remoteCommand === 'revealVault' && isVaultOpen && !isRevealed) revealPrizes();
+                else if (remoteCommand === 'closeVault' && isVaultOpen) closePrizeVault();
+
+                // Close manual kiosk popup if teacher cleared it
+                if (activeKioskStudent && rawResponse.activeScanned === 'none') {
+                    activeKioskStudent = null; document.getElementById('kioskPopup').style.display = 'none';
                 }
 
                 processCelebrations(); 
-                renderGrid(document.getElementById('searchInput').value);
-                
-                if (!heroInterval && students.length > 0 && !activeKioskStudent) {
-                    updateHero(); heroInterval = setInterval(updateHero, 6000); 
-                }
+                updateArtworkLoop();
+                renderLeaderboard();
             } catch (error) {}
         }
 
@@ -379,56 +348,77 @@
             setTimeout(() => { document.getElementById('celebrationOverlay').style.display = 'none'; isCelebrating = false; }, 4000); 
         }
 
-        // --- SPLIT SCREEN UI UPDATER ---
-        function updateHero() {
-            if (activeKioskStudent) return; 
-            const heroStudents = students.filter(s => parseInt(s.Points) > 0);
-            if (heroStudents.length === 0) return;
-            if (heroIndex >= heroStudents.length) heroIndex = 0;
-            const student = heroStudents[heroIndex];
-            
-            const heroContent = document.getElementById('heroContent');
-            const heroArt = document.getElementById('heroArt');
-            
-            heroContent.classList.remove('bounce-in'); void heroContent.offsetWidth; 
-            heroContent.innerHTML = `${student.Name}<br><span class="points-highlight">⭐ ${student.Points}</span>`;
-            heroContent.classList.add('bounce-in');
-
-            if (student.Artwork && student.Artwork !== "") {
-                heroArt.style.backgroundImage = `url('${student.Artwork}')`;
-                heroArt.style.display = 'block';
-            } else {
-                heroArt.style.display = 'none';
+        // --- ARTWORK GALLERY LOOP ---
+        function updateArtworkLoop() {
+            const newArtList = students.filter(s => s.Artwork && s.Artwork.trim() !== "").map(s => s.Artwork);
+            if (JSON.stringify(newArtList) !== JSON.stringify(artworkList)) {
+                artworkList = newArtList;
+                if (artworkList.length > 0) {
+                    document.getElementById('noArtText').style.display = 'none';
+                    if (!artInterval) {
+                        cycleArt(); artInterval = setInterval(cycleArt, 6000); // Change art every 6 seconds
+                    }
+                } else {
+                    document.getElementById('noArtText').style.display = 'block';
+                    document.getElementById('artFrame').style.backgroundImage = 'none';
+                    clearInterval(artInterval); artInterval = null;
+                }
             }
-            heroIndex = (heroIndex + 1) % heroStudents.length;
+        }
+        function cycleArt() {
+            if (artworkList.length === 0) return;
+            document.getElementById('artFrame').style.backgroundImage = `url('${artworkList[artIndex]}')`;
+            artIndex = (artIndex + 1) % artworkList.length;
         }
 
-        function renderGrid(searchTerm = "") {
-            const grid = document.getElementById('studentGrid'); grid.innerHTML = ''; 
+        // --- SEAMLESS SCROLLING LEADERBOARD ---
+        function renderLeaderboard() {
+            const track = document.getElementById('scrollTrack');
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+
+            if (searchTerm) {
+                // Search Mode (Pauses Scroll, Filters Data)
+                track.style.animation = 'none';
+                const filtered = orderedStudents.filter(s => s.Name.toLowerCase().includes(searchTerm));
+                track.innerHTML = buildCardsHTML(filtered);
+                return;
+            }
+
+            // Normal Scrolling Mode
+            track.style.animation = 'scrollUp 40s linear infinite';
             
-            // Filter, then SHUFFLE based on persistent random seed
-            const filteredAndShuffled = students
-                .filter(s => s.Name.toLowerCase().includes(searchTerm.toLowerCase()))
-                .sort((a, b) => getShuffleSeed(a.Name) - getShuffleSeed(b.Name));
-            
-            filteredAndShuffled.forEach(student => {
-                const card = document.createElement('div'); card.className = 'card';
-                card.onclick = () => {
-                    document.getElementById('modalName').textContent = student.Name;
-                    document.getElementById('modalPoints').textContent = student.Points;
-                    document.getElementById('modalFunFact').textContent = student.FunFact;
-                    document.getElementById('modalAvatar').src = student.AvatarURL;
-                    document.getElementById('playerModal').classList.add('active');
-                };
-                card.innerHTML = `<img src="${student.AvatarURL}"><h3>${student.Name}</h3><p>⭐ ${student.Points}</p>`;
-                grid.appendChild(card);
+            // Hard reconstruct DOM ONLY if the number of kids changes
+            if (knownStudentCount !== students.length) {
+                orderedStudents = shuffleArray([...students]);
+                track.innerHTML = buildCardsHTML(orderedStudents) + buildCardsHTML(orderedStudents); // Duplicated for infinite loop
+                knownStudentCount = students.length;
+            } else {
+                // Soft update: just change the points text so animation doesn't break!
+                updateLeaderboardPoints();
+            }
+        }
+
+        function buildCardsHTML(arr) {
+            return arr.map(s => `
+                <div class="lb-card">
+                    <img src="${s.AvatarURL}">
+                    <h3>${s.Name}</h3>
+                    <p class="pts-badge-${s.Name.replace(/\s+/g, '-')}">⭐ ${s.Points}</p>
+                </div>
+            `).join('');
+        }
+
+        function updateLeaderboardPoints() {
+            students.forEach(s => {
+                const safeName = s.Name.replace(/\s+/g, '-');
+                const badges = document.querySelectorAll(`.pts-badge-${safeName}`);
+                badges.forEach(b => b.innerHTML = `⭐ ${s.Points}`);
             });
         }
 
-        document.getElementById('searchInput').addEventListener('input', (e) => renderGrid(e.target.value));
-        function closeModal() { document.getElementById('playerModal').classList.remove('active'); }
-        window.onclick = function(e) { if (e.target === document.getElementById('playerModal')) closeModal(); }
+        document.getElementById('searchInput').addEventListener('input', renderLeaderboard);
 
+        // Start Engine
         fetchStudentData(); setInterval(fetchStudentData, 3000); 
     </script>
 </body>
