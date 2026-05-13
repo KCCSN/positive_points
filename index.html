@@ -54,7 +54,7 @@
         }
         .scroll-track {
             display: flex; flex-direction: column; gap: 15px; 
-            animation: scrollUp 80s linear infinite;
+            animation: scrollUp 90s linear infinite;
         }
         @keyframes scrollUp { 0% { transform: translateY(0); } 100% { transform: translateY(-50%); } }
         
@@ -385,7 +385,7 @@
             }
 
             // Normal Scrolling Mode
-            track.style.animation = 'scrollUp 40s linear infinite';
+            track.style.animation = 'scrollUp 90s linear infinite';
             
             // Hard reconstruct DOM ONLY if the number of kids changes
             if (knownStudentCount !== students.length) {
