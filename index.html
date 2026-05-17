@@ -6,6 +6,7 @@
     <title>Classroom Digital Display</title>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    
     <script src="https://cdn.pubnub.com/sdk/javascript/pubnub.7.2.2.min.js"></script>
 
     <style>
@@ -66,7 +67,6 @@
         @keyframes shake { 0%, 100% { transform: rotate(0deg); } 20%, 60% { transform: rotate(-10deg); } 40%, 80% { transform: rotate(10deg); } }
         
         #revealedState { width: 100%; display: none; flex-direction: column; align-items: center; z-index: 10; }
-        /* NEW: Added smooth scrolling so phone-controlled scrolling looks natural! */
         .prize-grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; max-width: 95vw; max-height: 60vh; overflow-y: auto; padding: 20px 10px; margin-top: 20px; scroll-behavior: smooth; }
         .prize-grid::-webkit-scrollbar { width: 16px; }
         .prize-grid::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); border-radius: 10px; }
@@ -220,7 +220,6 @@
                 else if (msg.action === "revealVault") revealPrizes(true);
                 else if (msg.action === "closeVault") closePrizeVault(true);
                 else if (msg.action === "toggleAuto") setAutoMode(msg.state);
-                // NEW: Listen for remote scroll events!
                 else if (msg.action === "scrollVault") {
                     const grid = document.getElementById('prizeGrid');
                     if (grid) grid.scrollTop = msg.percent * (grid.scrollHeight - grid.clientHeight);
@@ -295,10 +294,10 @@
                 
                 setAutoMode(rawResponse.autoMode);
 
-                // BULLETPROOF AVATAR FIX: Reverted to DiceBear Initials to permanently fix 404s
+                // REVERTED TO ROBOTS (BOTTTS) WITH STRICT URI ENCODING
                 const newStudents = rawResponse.students.map(s => {
                     const safeName = s.Name ? encodeURIComponent(s.Name.trim()) : 'Student';
-                    const safeAvatar = s.AvatarURL && s.AvatarURL.trim() !== "" ? s.AvatarURL : `https://api.dicebear.com/7.x/initials/svg?seed=${safeName}&backgroundColor=FFD166,06D6A0,FF4B72,2196F3`;
+                    const safeAvatar = s.AvatarURL && s.AvatarURL.trim() !== "" ? s.AvatarURL : `https://api.dicebear.com/7.x/bottts/svg?seed=${safeName}`;
                     return { Name: s.Name, Points: s.Points, Artwork: s.Artwork, AvatarURL: safeAvatar };
                 });
                 

@@ -42,7 +42,6 @@
         .msg-success { background: #d4edda; color: #155724; }
         .btn-cancel { background: transparent; color: #aaa; border: 3px solid #aaa; padding: 10px 20px; border-radius: 50px; font-size: 1.2rem; margin-top: 20px; width: 100%; cursor: pointer; font-family: 'Fredoka'; font-weight: 600;}
         
-        /* VAULT SCROLLING UI */
         .vault-list-container { flex: 1; overflow-y: auto; background: #333; border-radius: 15px; padding: 15px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; }
         .vault-winner-card { background: white; color: black; border-radius: 10px; padding: 10px 15px; display: flex; align-items: center; gap: 15px; font-weight: bold; font-size: 1.3rem; box-shadow: 0 4px 0 #111;}
         .vault-winner-card img { width: 50px; height: 50px; border-radius: 50%; border: 3px solid #222; background: white;}
@@ -132,7 +131,6 @@
                 else if (event.message.action === "showVault" || event.message.action === "triggerVault") openPrizeVaultLocal();
                 else if (event.message.action === "revealVault") revealPrizeVaultLocal();
                 else if (event.message.action === "closeVault") closePrizeVaultLocal();
-                // KEEP PHONE ARRAY IN SYNC WITH POINTS
                 else if (event.message.action === "addPoints") {
                     const student = students.find(s => s.Name.toLowerCase() === event.message.name.toLowerCase());
                     if (student) student.Points = parseInt(student.Points) + event.message.points;
@@ -170,8 +168,9 @@
             
             if(winners.length === 0) list.innerHTML = '<p style="color: #aaa; margin-top: 20px;">No winners yet.</p>';
             winners.forEach(w => {
+                // REVERTED TO ROBOTS (BOTTTS) WITH STRICT URI ENCODING
                 const safeName = w.Name ? encodeURIComponent(w.Name.trim()) : 'Student';
-                const avatar = w.AvatarURL && w.AvatarURL.trim() !== "" ? w.AvatarURL : `https://api.dicebear.com/7.x/initials/svg?seed=${safeName}&backgroundColor=FFD166,06D6A0,FF4B72,2196F3`;
+                const avatar = w.AvatarURL && w.AvatarURL.trim() !== "" ? w.AvatarURL : `https://api.dicebear.com/7.x/bottts/svg?seed=${safeName}`;
                 list.innerHTML += `<div class="vault-winner-card"><img src="${avatar}"> <div style="text-align: left;">${w.Name}<br><span style="color: #FF4B72;">⭐ ${w.Points}</span></div></div>`;
             });
         }
@@ -205,14 +204,12 @@
             stopCamera(); 
             document.getElementById('actionPanel').style.display = 'block';
             
+            // REVERTED TO ROBOTS (BOTTTS) WITH STRICT URI ENCODING
             const safeName = student.Name ? encodeURIComponent(student.Name.trim()) : 'Student';
-            document.getElementById('scanAvatar').src = student.AvatarURL && student.AvatarURL.trim() !== "" ? student.AvatarURL : `https://api.dicebear.com/7.x/initials/svg?seed=${safeName}&backgroundColor=FFD166,06D6A0,FF4B72,2196F3`;
+            document.getElementById('scanAvatar').src = student.AvatarURL && student.AvatarURL.trim() !== "" ? student.AvatarURL : `https://api.dicebear.com/7.x/bottts/svg?seed=${safeName}`;
             
             document.getElementById('scanName').textContent = student.Name;
-            
-            // Populate the new current points display
             document.getElementById('scanPoints').textContent = `⭐ ${student.Points}`;
-            
             document.getElementById('customAmount').value = '';
             document.getElementById('saveMessage').style.display = 'none';
         }
@@ -227,7 +224,6 @@
             msgBox.className = 'msg-success'; msgBox.textContent = `✅ Sent ${amount > 0 ? '+' : ''}${amount}!`;
             msgBox.style.display = 'block';
             
-            // Instantly update the points on the phone screen too so it feels responsive!
             const currentPointsSpan = document.getElementById('scanPoints');
             const currentVal = parseInt(currentPointsSpan.textContent.replace('⭐ ', ''));
             currentPointsSpan.textContent = `⭐ ${currentVal + amount}`;
