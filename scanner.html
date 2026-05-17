@@ -12,7 +12,6 @@
         body { margin: 0; font-family: 'Fredoka', sans-serif; background: #222; color: white; text-align: center; }
         header { background: #ff4b72; padding: 15px; font-size: 1.5rem; font-weight: 800; }
         
-        /* MAIN DASHBOARD VIEWS */
         #mainAppView { display: block; }
         #mobileVaultView { display: none; flex-direction: column; height: 100vh; background: #222; overflow: hidden; }
 
@@ -29,7 +28,7 @@
         .kiosk-status-text { color: #aaa; font-size: 1.2rem; margin-top: 15px; font-weight: 600; }
 
         #actionPanel { display: none; background: white; color: #333; margin: 15px; padding: 30px 20px; border-radius: 20px; }
-        #scanAvatar { width: 120px; height: 120px; border-radius: 50%; border: 6px solid #ff4b72; margin-bottom: 10px; }
+        #scanAvatar { width: 120px; height: 120px; border-radius: 50%; border: 6px solid #ff4b72; margin-bottom: 10px; background: white;}
         
         .btn-group { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
         .btn { border: none; padding: 15px 20px; font-size: 1.8rem; font-family: 'Fredoka'; font-weight: 800; border-radius: 15px; cursor: pointer; color: white; flex: 1; }
@@ -43,10 +42,10 @@
         .msg-success { background: #d4edda; color: #155724; }
         .btn-cancel { background: transparent; color: #aaa; border: 3px solid #aaa; padding: 10px 20px; border-radius: 50px; font-size: 1.2rem; margin-top: 20px; width: 100%; cursor: pointer; font-family: 'Fredoka'; font-weight: 600;}
         
-        /* NEW: MOBILE VAULT SCROLLING UI */
+        /* VAULT SCROLLING UI */
         .vault-list-container { flex: 1; overflow-y: auto; background: #333; border-radius: 15px; padding: 15px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; }
         .vault-winner-card { background: white; color: black; border-radius: 10px; padding: 10px 15px; display: flex; align-items: center; gap: 15px; font-weight: bold; font-size: 1.3rem; box-shadow: 0 4px 0 #111;}
-        .vault-winner-card img { width: 50px; height: 50px; border-radius: 50%; border: 3px solid #222;}
+        .vault-winner-card img { width: 50px; height: 50px; border-radius: 50%; border: 3px solid #222; background: white;}
     </style>
 </head>
 <body>
@@ -98,7 +97,7 @@
 
         <div id="vaultRevealedState" style="display: none; flex-direction: column; padding: 20px; flex: 1; min-height: 0;">
             <h2 style="color: #FFD166; margin-top: 0; font-size: 2rem;">🏆 15-Point Club</h2>
-            <div id="mobileWinnerList" class="vault-list-container">
+            <div id="mobileWinnerList" class="vault-list-container" onscroll="syncVaultScroll(event)">
                 </div>
         </div>
 
@@ -117,8 +116,8 @@
         pubnub.subscribe({ channels: ["classroom_channel"] });
 
         let students = []; let activeStudentName = 'none'; let isAutoMode = 'off'; let html5QrcodeScanner = null;
+        let scrollTimeout = null;
 
-        // Listen for signals from the Big Screen!
         pubnub.addListener({
             message: function(event) {
                 if (event.message.action === "setActive" && isAutoMode === 'off') {
@@ -126,14 +125,26 @@
                     const student = students.find(s => s.Name.toLowerCase() === activeStudentName.toLowerCase());
                     if (student) showActionPanel(student);
                 }
-                // Two-Way Vault Sync: If laptop opens vault, phone opens too!
                 else if (event.message.action === "showVault" || event.message.action === "triggerVault") openPrizeVaultLocal();
                 else if (event.message.action === "revealVault") revealPrizeVaultLocal();
                 else if (event.message.action === "closeVault") closePrizeVaultLocal();
             }
         });
 
-        // --- LOCAL VAULT UI LOGIC ---
+        // --- NEW: THROTTLED SCROLL SYNC ENGINE ---
+        function syncVaultScroll(e) {
+            if (scrollTimeout) return;
+            scrollTimeout = setTimeout(() => {
+                // Calculate how far down the list the teacher scrolled (0.0 to 1.0)
+                const maxScroll = e.target.scrollHeight - e.target.clientHeight || 1;
+                const pct = e.target.scrollTop / maxScroll;
+                
+                // Blast the position to the laptop!
+                pubnub.publish({ channel: "classroom_channel", message: { action: "scrollVault", percent: pct } });
+                scrollTimeout = null;
+            }, 100); 
+        }
+
         function openPrizeVaultLocal() {
             document.getElementById('mainAppView').style.display = 'none';
             document.getElementById('mobileVaultView').style.display = 'flex';
@@ -148,7 +159,6 @@
             document.getElementById('vaultLockedState').style.display = 'none';
             document.getElementById('vaultRevealedState').style.display = 'flex';
             
-            // Build the scrollable list on the phone
             const list = document.getElementById('mobileWinnerList');
             list.innerHTML = '';
             const winners = students.filter(s => parseInt(s.Points) >= 15);
@@ -156,7 +166,7 @@
             if(winners.length === 0) list.innerHTML = '<p style="color: #aaa; margin-top: 20px;">No winners yet.</p>';
             winners.forEach(w => {
                 const safeName = w.Name ? encodeURIComponent(w.Name.trim()) : 'Student';
-                const avatar = w.AvatarURL && w.AvatarURL !== "" ? w.AvatarURL : `https://api.dicebear.com/7.x/initials/svg?seed=${safeName}`;
+                const avatar = w.AvatarURL && w.AvatarURL.trim() !== "" ? w.AvatarURL : `https://api.dicebear.com/7.x/initials/svg?seed=${safeName}&backgroundColor=FFD166,06D6A0,FF4B72,2196F3`;
                 list.innerHTML += `<div class="vault-winner-card"><img src="${avatar}"> <div style="text-align: left;">${w.Name}<br><span style="color: #FF4B72;">⭐ ${w.Points}</span></div></div>`;
             });
         }
@@ -167,7 +177,6 @@
             startCamera();
         }
 
-        // --- SCANNER & POINTS LOGIC ---
         function startCamera() {
             if (html5QrcodeScanner) return; 
             document.getElementById('scannerView').style.display = 'block';
@@ -192,7 +201,7 @@
             document.getElementById('actionPanel').style.display = 'block';
             
             const safeName = student.Name ? encodeURIComponent(student.Name.trim()) : 'Student';
-            document.getElementById('scanAvatar').src = student.AvatarURL && student.AvatarURL !== "" ? student.AvatarURL : `https://api.dicebear.com/7.x/initials/svg?seed=${safeName}`;
+            document.getElementById('scanAvatar').src = student.AvatarURL && student.AvatarURL.trim() !== "" ? student.AvatarURL : `https://api.dicebear.com/7.x/initials/svg?seed=${safeName}&backgroundColor=FFD166,06D6A0,FF4B72,2196F3`;
             
             document.getElementById('scanName').textContent = student.Name;
             document.getElementById('customAmount').value = '';
