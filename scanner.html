@@ -163,13 +163,14 @@
         let html5QrcodeScanner = null; let scrollTimeout = null;
         let selectedTag = "None"; let undoData = null; let undoTimer = null;
 
-        // SAFE AVATAR FILTER
+        // --- UPGRADED SAFE AVATAR FILTER ---
         function getSafeAvatar(studentName, url) {
             const safeName = studentName ? encodeURIComponent(studentName.trim()) : 'Student';
-            if (!url || url.trim() === "" || url.includes("github.io")) {
+            const strUrl = url ? url.toString().trim() : "";
+            if (!strUrl || !strUrl.startsWith("http") || strUrl.includes("github.io")) {
                 return `https://api.dicebear.com/7.x/bottts/svg?seed=${safeName}`;
             }
-            return url;
+            return strUrl;
         }
 
         let offlineQueue = JSON.parse(localStorage.getItem('classroomQueue') || '[]');
