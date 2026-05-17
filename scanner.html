@@ -71,6 +71,10 @@
             <img id="scanAvatar" src="">
             <h2 id="scanName" style="font-size: 2.5rem; margin: 0;">Name</h2>
             
+            <div style="font-size: 1.5rem; color: #555; margin-top: 10px; font-weight: 800;">
+                Current: <span id="scanPoints" style="color: #FFD166; text-shadow: 1px 1px 0px #333;">⭐ 0</span>
+            </div>
+            
             <div class="btn-group">
                 <button class="btn btn-1" onclick="submitPoints(1)">+1</button>
                 <button class="btn btn-2" onclick="submitPoints(2)">+2</button>
@@ -128,18 +132,19 @@
                 else if (event.message.action === "showVault" || event.message.action === "triggerVault") openPrizeVaultLocal();
                 else if (event.message.action === "revealVault") revealPrizeVaultLocal();
                 else if (event.message.action === "closeVault") closePrizeVaultLocal();
+                // KEEP PHONE ARRAY IN SYNC WITH POINTS
+                else if (event.message.action === "addPoints") {
+                    const student = students.find(s => s.Name.toLowerCase() === event.message.name.toLowerCase());
+                    if (student) student.Points = parseInt(student.Points) + event.message.points;
+                }
             }
         });
 
-        // --- NEW: THROTTLED SCROLL SYNC ENGINE ---
         function syncVaultScroll(e) {
             if (scrollTimeout) return;
             scrollTimeout = setTimeout(() => {
-                // Calculate how far down the list the teacher scrolled (0.0 to 1.0)
                 const maxScroll = e.target.scrollHeight - e.target.clientHeight || 1;
                 const pct = e.target.scrollTop / maxScroll;
-                
-                // Blast the position to the laptop!
                 pubnub.publish({ channel: "classroom_channel", message: { action: "scrollVault", percent: pct } });
                 scrollTimeout = null;
             }, 100); 
@@ -204,6 +209,10 @@
             document.getElementById('scanAvatar').src = student.AvatarURL && student.AvatarURL.trim() !== "" ? student.AvatarURL : `https://api.dicebear.com/7.x/initials/svg?seed=${safeName}&backgroundColor=FFD166,06D6A0,FF4B72,2196F3`;
             
             document.getElementById('scanName').textContent = student.Name;
+            
+            // Populate the new current points display
+            document.getElementById('scanPoints').textContent = `⭐ ${student.Points}`;
+            
             document.getElementById('customAmount').value = '';
             document.getElementById('saveMessage').style.display = 'none';
         }
@@ -217,6 +226,11 @@
             const msgBox = document.getElementById('saveMessage');
             msgBox.className = 'msg-success'; msgBox.textContent = `✅ Sent ${amount > 0 ? '+' : ''}${amount}!`;
             msgBox.style.display = 'block';
+            
+            // Instantly update the points on the phone screen too so it feels responsive!
+            const currentPointsSpan = document.getElementById('scanPoints');
+            const currentVal = parseInt(currentPointsSpan.textContent.replace('⭐ ', ''));
+            currentPointsSpan.textContent = `⭐ ${currentVal + amount}`;
             
             pubnub.publish({ channel: "classroom_channel", message: { action: "addPoints", name: activeStudentName, points: amount } });
             fetch(`${GOOGLE_WEB_APP_URL}?action=addPoints&name=${encodeURIComponent(activeStudentName)}&points=${amount}&t=${new Date().getTime()}`, { mode: 'no-cors' });
