@@ -56,7 +56,8 @@
         #spamWarning { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 9999; display: none; background: #FF4B72; color: white; padding: 30px 50px; border-radius: 30px; font-size: 3rem; font-weight: 800; border: 8px solid var(--dark); box-shadow: 15px 15px 0 var(--dark); text-align: center; }
 
         /* CELEBRATIONS */
-        .celebration-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 9999; flex-direction: column;}
+        /* Fixed overlay to prevent sunburst scrollbars */
+        .celebration-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(43, 45, 66, 0.95); display: none; align-items: center; justify-content: center; z-index: 9999; flex-direction: column; overflow: hidden; }
         .sunburst { position: absolute; width: 200vw; height: 200vw; background: repeating-conic-gradient(var(--yellow) 0 15deg, #FFB703 15deg 30deg); animation: spinBurst 10s linear infinite; z-index: -1; opacity: 0.5; }
         .celebration-box { text-align: center; color: white; z-index: 10; }
         .celebration-box img { width: 300px; height: 300px; border-radius: 50%; border: 12px solid white; margin: 20px 0; }
@@ -71,9 +72,13 @@
         
         .mystery-box { font-size: 10rem; cursor: pointer; animation: shake 2s infinite ease-in-out; }
         @keyframes shake { 0%, 100% { transform: rotate(0deg); } 20%, 60% { transform: rotate(-10deg); } 40%, 80% { transform: rotate(10deg); } }
+        
+        /* UPDATED: Prize Vault Design Consistency */
         .prize-grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; max-width: 90vw; }
-        .prize-card { background: var(--yellow); padding: 20px; border-radius: 20px; border: 4px solid var(--dark); text-align: center; width: 200px;}
-        .prize-card img { width: 100px; border-radius: 50%; border: 4px solid var(--dark); }
+        .prize-card { background: var(--surface); padding: 25px 20px; border-radius: 20px; border: 6px solid var(--dark); box-shadow: 0 8px 0 var(--dark); text-align: center; width: 220px; }
+        .prize-card img { width: 110px; height: 110px; border-radius: 50%; border: 4px solid var(--dark); margin-bottom: 15px; background: white; }
+        .prize-card h3 { margin: 0 0 15px 0; font-size: 1.8rem; font-weight: 800; color: var(--dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .prize-card p { margin: 0; font-size: 1.8rem; font-weight: 800; background: var(--yellow); color: var(--dark); padding: 5px 20px; border-radius: 30px; border: 4px solid var(--dark); display: inline-block; }
     </style>
 </head>
 <body>
@@ -103,8 +108,8 @@
             </div>
 
             <div id="kioskPopup">
-                <h2 style="font-size: 2.5rem; margin:0;" id="kioskPopupName">Name</h2>
-                <p style="font-size: 1.5rem; color: #555; margin: 10px 0;" id="kioskPopupStatus">Waiting for teacher...</p>
+                <h2 style="font-size: 2.5rem; margin:0; color: var(--dark);" id="kioskPopupName">Name</h2>
+                <p style="font-size: 1.5rem; color: #555; margin: 15px 0 5px 0;" id="kioskPopupStatus">Waiting for teacher...</p>
             </div>
         </div>
 
@@ -154,7 +159,7 @@
     
     <div id="pinModal" class="modal-overlay">
         <div class="modal-content" style="max-width: 350px;">
-            <h2 style="margin-top: 0;">Admin Access</h2>
+            <h2 style="margin-top: 0; color: var(--dark);">Admin Access</h2>
             <input type="password" id="pinInput" style="width: 80%; padding: 15px; font-size: 2rem; text-align: center; border: 4px solid var(--dark); border-radius: 15px; letter-spacing: 10px; margin-bottom: 20px;" placeholder="****" maxlength="4">
             <div style="display: flex; gap: 10px; justify-content: center;">
                 <button onclick="closePinModal()" class="btn-admin" style="background: #eee;">Cancel</button>
@@ -200,7 +205,6 @@
                         updateLeaderboardPoints(); 
                         
                         if (msg.points > 0) {
-                            // Check if they just hit the 15 point milestone!
                             const isMilestone = (oldPoints < 15 && newPoints >= 15);
                             celebrationQueue.push({ student: student, pointsGained: msg.points, isMilestone: isMilestone });
                             processCelebrations(); 
@@ -262,8 +266,11 @@
         function triggerKioskPopup(student) {
             activeKioskStudent = student.Name;
             const popup = document.getElementById('kioskPopup');
-            document.getElementById('kioskPopupName').innerHTML = `${student.Name}<br><span style="color: var(--yellow); font-size: 2rem;">⭐ ${student.Points}</span>`;
-            document.getElementById('kioskPopupStatus').textContent = "Waiting for Teacher...";
+            
+            // UPDATED: Added identical thick-bordered yellow badge styling!
+            document.getElementById('kioskPopupName').innerHTML = `${student.Name}<br><span style="display: inline-block; margin-top: 10px; font-size: 2.2rem; font-weight: 800; color: var(--dark); background: var(--yellow); padding: 5px 25px; border-radius: 30px; border: 4px solid var(--dark); box-shadow: 0 4px 0 var(--dark);">⭐ ${student.Points}</span>`;
+            
+            document.getElementById('kioskPopupStatus').textContent = "Waiting for teacher...";
             popup.style.display = 'block';
             
             clearTimeout(kioskTimer); kioskTimer = setTimeout(() => { activeKioskStudent = null; popup.style.display = 'none'; }, 10000);
@@ -282,7 +289,6 @@
                 
                 setAutoMode(rawResponse.autoMode);
 
-                // Check for offline updates and trigger milestones if needed during fetch
                 const newStudents = rawResponse.students.map(s => ({ Name: s.Name, Points: s.Points, Artwork: s.Artwork, AvatarURL: s.AvatarURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(s.Name)}` }));
                 
                 if (students.length > 0) { 
@@ -317,14 +323,12 @@
             const event = celebrationQueue.shift();
             
             if (event.isMilestone) {
-                // Trigger massive 15-Point Club Animation
                 document.getElementById('milestoneAvatar').src = event.student.AvatarURL;
                 document.getElementById('milestoneName').textContent = event.student.Name;
                 document.getElementById('milestoneBox').className = 'celebration-box anim-pop';
                 document.getElementById('milestoneOverlay').style.display = 'flex';
                 setTimeout(() => { document.getElementById('milestoneOverlay').style.display = 'none'; isCelebrating = false; setTimeout(processCelebrations, 1000); }, 6000); 
             } else {
-                // Trigger normal Level Up Animation
                 document.getElementById('celebrationAvatar').src = event.student.AvatarURL;
                 document.getElementById('celebrationName').textContent = event.student.Name;
                 document.getElementById('celebrationPoints').textContent = event.pointsGained;
