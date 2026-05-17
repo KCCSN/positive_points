@@ -14,7 +14,10 @@
         body { margin: 0; font-family: 'Fredoka', sans-serif; color: var(--dark); background: #111; overflow: hidden; }
 
         .split-layout { display: flex; height: 100vh; width: 100vw; }
-        .left-panel { flex: 1; display: flex; flex-direction: column; position: relative; background: linear-gradient(-45deg, #FF9A9E, #FECFEF, #a8edea, #00C6FF); background-size: 400% 400%; animation: gradientBG 15s ease infinite; padding: 20px; box-sizing: border-box; }
+        
+        /* RENAMED & SWAPPED: Art Panel is now on the Left, Dashboard on the Right */
+        .art-panel { flex: 1; background: var(--dark); padding: 30px; display: flex; align-items: center; justify-content: center; }
+        .dashboard-panel { flex: 1; display: flex; flex-direction: column; position: relative; background: linear-gradient(-45deg, #FF9A9E, #FECFEF, #a8edea, #00C6FF); background-size: 400% 400%; animation: gradientBG 15s ease infinite; padding: 20px; box-sizing: border-box; }
         @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
         .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; z-index: 100; }
@@ -24,7 +27,9 @@
         .btn-prize { background: var(--yellow); }
 
         .leaderboard-wrapper { flex: 1; overflow: hidden; position: relative; margin-bottom: 20px; mask-image: linear-gradient(to bottom, transparent, black 5%, black 95%, transparent); -webkit-mask-image: linear-gradient(to bottom, transparent, black 5%, black 95%, transparent); }
-        .scroll-track { display: flex; flex-direction: column; gap: 15px; animation: scrollUp 40s linear infinite; }
+        
+        /* UPDATED SPEED TO 150s */
+        .scroll-track { display: flex; flex-direction: column; gap: 15px; animation: scrollUp 150s linear infinite; }
         @keyframes scrollUp { 0% { transform: translateY(0); } 100% { transform: translateY(-50%); } }
         
         .lb-card { background: var(--surface); border: 4px solid var(--dark); border-radius: 20px; padding: 15px 25px; display: flex; align-items: center; box-shadow: 0 6px 0 var(--dark); margin: 0 10px; }
@@ -39,11 +44,10 @@
         #kioskPopup { position: absolute; bottom: 30px; left: 250px; right: 20px; background: white; border: 6px solid var(--dark); border-radius: 20px; padding: 20px; text-align: center; box-shadow: 10px 10px 0 rgba(0,0,0,0.4); display: none; z-index: 200; animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; }
         @keyframes popIn { 0% { transform: scale(0); } 100% { transform: scale(1); } }
 
-        .right-panel { flex: 1; background: var(--dark); padding: 30px; display: flex; align-items: center; justify-content: center; }
         .art-frame { width: 100%; height: 100%; border-radius: 30px; border: 12px solid var(--surface); background-color: #222; background-size: contain; background-repeat: no-repeat; background-position: center; box-shadow: inset 0 0 50px rgba(0,0,0,0.8), 0 20px 40px rgba(0,0,0,0.5); transition: background-image 1s ease-in-out; display: flex; align-items: center; justify-content: center; }
         .no-art-text { color: #555; font-size: 2rem; font-weight: 800; display: none; }
 
-        #autoModeBadge { position: fixed; top: 90px; left: 40px; z-index: 110; display: none; background: var(--green); color: white; padding: 10px 20px; border-radius: 50px; font-size: 1.2rem; font-weight: 800; border: 4px solid var(--dark); box-shadow: 4px 4px 0 var(--dark); animation: pulse 2s infinite; }
+        #autoModeBadge { position: fixed; top: 90px; right: 40px; z-index: 110; display: none; background: var(--green); color: white; padding: 10px 20px; border-radius: 50px; font-size: 1.2rem; font-weight: 800; border: 4px solid var(--dark); box-shadow: 4px 4px 0 var(--dark); animation: pulse 2s infinite; }
         #spamWarning { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 9999; display: none; background: #FF4B72; color: white; padding: 30px 50px; border-radius: 30px; font-size: 3rem; font-weight: 800; border: 8px solid var(--dark); box-shadow: 15px 15px 0 var(--dark); text-align: center; }
 
         .celebration-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 9999; flex-direction: column;}
@@ -63,13 +67,19 @@
         .prize-grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; max-width: 90vw; }
         .prize-card { background: var(--yellow); padding: 20px; border-radius: 20px; border: 4px solid var(--dark); text-align: center; width: 200px;}
         .prize-card img { width: 100px; border-radius: 50%; border: 4px solid var(--dark); }
-        .bounce-in { animation: rubberBand 1.2s both; }
     </style>
 </head>
 <body>
 
     <div class="split-layout">
-        <div class="left-panel">
+        
+        <div class="art-panel">
+            <div class="art-frame" id="artFrame">
+                <div class="no-art-text" id="noArtText">Gathering Masterpieces...</div>
+            </div>
+        </div>
+
+        <div class="dashboard-panel">
             <div class="top-bar">
                 <input type="text" id="searchInput" class="search-bar" placeholder="🔍 Find a student...">
                 <div class="nav-buttons">
@@ -95,11 +105,6 @@
             </div>
         </div>
 
-        <div class="right-panel">
-            <div class="art-frame" id="artFrame">
-                <div class="no-art-text" id="noArtText">Gathering Masterpieces...</div>
-            </div>
-        </div>
     </div>
 
     <div id="spamWarning">Nice try!<br>Already checked in. 🛑</div>
@@ -145,7 +150,6 @@
         const ADMIN_SHEET_URL = "https://docs.google.com/spreadsheets/d/1_mwGR_ljLD3drdZ7F28jMZRLfia1Vg56Icvgtk2-N9Y/edit";
         const ADMIN_PIN = "2009";
 
-        // Initialize PubNub
         const pubnub = new PubNub({ publishKey: PUBNUB_PUBLISH_KEY, subscribeKey: PUBNUB_SUBSCRIBE_KEY, userId: "big_screen" });
         pubnub.subscribe({ channels: ["classroom_channel"] });
 
@@ -163,13 +167,16 @@
                 
                 if (msg.action === "addPoints") {
                     const student = students.find(s => s.Name.toLowerCase() === msg.name.toLowerCase());
-                    if (student) {
-                        student.Points = parseInt(student.Points) + msg.points;
-                        updateLeaderboardPoints(); // Instant text update
-                        if (msg.points > 0) {
-                            celebrationQueue.push({ student: student, pointsGained: msg.points });
-                            processCelebrations(); // Instant animation!
-                        }
+                    const orderedStudent = orderedStudents.find(s => s.Name.toLowerCase() === msg.name.toLowerCase());
+                    
+                    if (student) student.Points = parseInt(student.Points) + msg.points;
+                    if (orderedStudent) orderedStudent.Points = parseInt(orderedStudent.Points) + msg.points; // UPDATE CACHE!
+                    
+                    updateLeaderboardPoints(); 
+                    
+                    if (msg.points > 0) {
+                        celebrationQueue.push({ student: student, pointsGained: msg.points });
+                        processCelebrations(); 
                     }
                 } 
                 else if (msg.action === "setActive") {
@@ -180,7 +187,8 @@
                         if (student) triggerKioskPopup(student);
                     }
                 }
-                else if (msg.action === "showVault") openPrizeVault();
+                // FIXED THE REMOTE BUG: Now accepts triggerVault or showVault
+                else if (msg.action === "showVault" || msg.action === "triggerVault") openPrizeVault();
                 else if (msg.action === "revealVault") revealPrizes();
                 else if (msg.action === "closeVault") closePrizeVault();
                 else if (msg.action === "toggleAuto") setAutoMode(msg.state);
@@ -190,13 +198,11 @@
         function getShuffleSeed(name) { if (!window[name]) window[name] = Math.random(); return window[name]; }
         function shuffleArray(array) { return array.sort((a, b) => getShuffleSeed(a.Name) - getShuffleSeed(b.Name)); }
 
-        // ADMIN PIN LOGIC
         function openDatabase() { document.getElementById('pinInput').value = ''; document.getElementById('pinModal').classList.add('active'); document.getElementById('pinInput').focus(); }
         function closePinModal() { document.getElementById('pinModal').classList.remove('active'); }
         function verifyPin() { if (document.getElementById('pinInput').value === ADMIN_PIN) { closePinModal(); window.open(ADMIN_SHEET_URL, '_blank'); } else { alert("❌ Incorrect PIN!"); document.getElementById('pinInput').value = ''; } }
         document.getElementById('pinInput').addEventListener('keyup', (e) => { if (e.key === 'Enter') verifyPin(); });
 
-        // VAULT LOGIC
         function openPrizeVault() { document.getElementById('prizeVaultOverlay').style.display = 'flex'; document.getElementById('mysteryState').style.display = 'block'; document.getElementById('revealedState').style.display = 'none'; }
         function closePrizeVault() { document.getElementById('prizeVaultOverlay').style.display = 'none'; }
         function handleVaultClick(e) { if(e.target.id === 'prizeVaultOverlay' || e.target.id === 'revealedState') closePrizeVault(); }
@@ -208,7 +214,6 @@
             else { noPrizeMsg.style.display = 'none'; winners.forEach((w, i) => { const c = document.createElement('div'); c.className = 'prize-card'; c.style.animationDelay = `${i * 0.15}s`; c.innerHTML = `<img src="${w.AvatarURL}"><h3>${w.Name}</h3><p>⭐ ${w.Points}</p>`; prizeGrid.appendChild(c); }); }
         }
 
-        // KIOSK LOGIC (Physical Scans on Laptop)
         const html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: {width: 200, height: 200} }, false);
         html5QrcodeScanner.render((decodedText) => {
             const student = students.find(s => s.Name.toLowerCase() === decodedText.trim().toLowerCase());
@@ -218,8 +223,6 @@
                 if (scannedThisSession.has(student.Name)) { const warning = document.getElementById('spamWarning'); warning.style.display = 'block'; setTimeout(() => warning.style.display = 'none', 3000); return; }
                 scannedThisSession.add(student.Name);
                 fetch(`${GOOGLE_WEB_APP_URL}?action=addPoints&name=${encodeURIComponent(student.Name)}&points=1`, { mode: 'no-cors' });
-                
-                // Beam the point instantly so phone knows too
                 pubnub.publish({ channel: "classroom_channel", message: { action: "addPoints", name: student.Name, points: 1 } });
             } else {
                 if (activeKioskStudent !== student.Name) {
@@ -236,7 +239,6 @@
             document.getElementById('kioskPopupStatus').textContent = "Waiting for Teacher...";
             popup.style.display = 'block';
             
-            // Show their art if they have it
             if (student.Artwork && student.Artwork !== "") { document.getElementById('artFrame').style.backgroundImage = `url('${student.Artwork}')`; document.getElementById('artFrame').style.display = 'block'; }
             clearTimeout(kioskTimer); kioskTimer = setTimeout(() => { activeKioskStudent = null; popup.style.display = 'none'; }, 10000);
         }
@@ -247,7 +249,6 @@
             else { scannedThisSession.clear(); document.getElementById('autoModeBadge').style.display = 'none'; document.getElementById('kioskLabel').textContent = "SCAN CARD HERE"; document.getElementById('kioskLabel').style.color = "var(--primary)"; }
         }
 
-        // FETCH DATA (Now reduced to 15s since PubNub handles the speed!)
         async function fetchStudentData() {
             try {
                 const response = await fetch(GOOGLE_WEB_APP_URL + '?action=get&t=' + new Date().getTime());
@@ -257,6 +258,14 @@
 
                 students = rawResponse.students.map(s => ({ Name: s.Name, Points: s.Points, Artwork: s.Artwork, AvatarURL: s.AvatarURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(s.Name)}` }));
                 
+                // SMART CACHE SYNC: Ensure our scrolling array gets the latest points from the database
+                if (orderedStudents.length > 0) {
+                    orderedStudents.forEach(os => {
+                        const freshData = students.find(s => s.Name === os.Name);
+                        if (freshData) os.Points = freshData.Points;
+                    });
+                }
+
                 updateArtworkLoop(); renderLeaderboard();
             } catch (error) {}
         }
@@ -273,7 +282,6 @@
             setTimeout(() => { document.getElementById('celebrationOverlay').style.display = 'none'; isCelebrating = false; setTimeout(processCelebrations, 1000); }, 4000); 
         }
 
-        // ARTWORK GALLERY
         function updateArtworkLoop() {
             const newArtList = students.filter(s => s.Artwork && s.Artwork.trim() !== "").map(s => s.Artwork);
             if (JSON.stringify(newArtList) !== JSON.stringify(artworkList)) {
@@ -286,19 +294,29 @@
         }
         function cycleArt() { if (artworkList.length === 0) return; document.getElementById('artFrame').style.backgroundImage = `url('${artworkList[artIndex]}')`; artIndex = (artIndex + 1) % artworkList.length; }
 
-        // SCROLLING LEADERBOARD
         function renderLeaderboard() {
             const track = document.getElementById('scrollTrack'); const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             if (searchTerm) { wasSearching = true; track.style.animation = 'none'; track.innerHTML = buildCardsHTML(orderedStudents.filter(s => s.Name.toLowerCase().includes(searchTerm))); return; }
-            track.style.animation = 'scrollUp 40s linear infinite';
+            
+            // UPDATED SPEED TO 150s
+            track.style.animation = 'scrollUp 150s linear infinite';
             if (knownStudentCount !== students.length || wasSearching) {
                 if (orderedStudents.length !== students.length) orderedStudents = shuffleArray([...students]);
                 track.innerHTML = buildCardsHTML(orderedStudents) + buildCardsHTML(orderedStudents);
                 knownStudentCount = students.length; wasSearching = false;
             } else { updateLeaderboardPoints(); }
         }
-        function buildCardsHTML(arr) { return arr.map(s => `<div class="lb-card"><img src="${s.AvatarURL}"><h3>${s.Name}</h3><p class="pts-badge-${s.Name.replace(/\s+/g, '-')}">⭐ ${s.Points}</p></div>`).join(''); }
-        function updateLeaderboardPoints() { students.forEach(s => { const safeName = s.Name.replace(/\s+/g, '-'); document.querySelectorAll(`.pts-badge-${safeName}`).forEach(b => b.innerHTML = `⭐ ${s.Points}`); }); }
+        
+        // Added highly reliable data-attributes for bulletproof DOM targeting
+        function buildCardsHTML(arr) { return arr.map(s => `<div class="lb-card" data-student="${s.Name.replace(/[^a-zA-Z0-9]/g, '-')}"><img src="${s.AvatarURL}"><h3>${s.Name}</h3><p class="pts-badge">⭐ ${s.Points}</p></div>`).join(''); }
+        
+        // Bulletproof Cache HTML updater
+        function updateLeaderboardPoints() { 
+            students.forEach(s => { 
+                const safeName = s.Name.replace(/[^a-zA-Z0-9]/g, '-'); 
+                document.querySelectorAll(`[data-student="${safeName}"] .pts-badge`).forEach(b => b.innerHTML = `⭐ ${s.Points}`); 
+            }); 
+        }
         
         document.getElementById('searchInput').addEventListener('input', renderLeaderboard);
 

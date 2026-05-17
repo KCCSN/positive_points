@@ -90,7 +90,6 @@
 
         let students = []; let activeStudentName = 'none'; let isAutoMode = 'off'; let html5QrcodeScanner = null;
 
-        // Listen for Kiosk Scans from the Laptop in REAL TIME!
         pubnub.addListener({
             message: function(event) {
                 if (event.message.action === "setActive" && isAutoMode === 'off') {
@@ -112,7 +111,7 @@
                 
                 if (student) {
                     activeStudentName = student.Name;
-                    sendRealtimeCommand('setActive', { name: student.Name }); // Beams to laptop instantly
+                    sendRealtimeCommand('setActive', { name: student.Name }); 
                     showActionPanel(student);
                 }
             }, () => {});
@@ -139,10 +138,8 @@
             msgBox.className = 'msg-success'; msgBox.textContent = `✅ Sent ${amount > 0 ? '+' : ''}${amount}!`;
             msgBox.style.display = 'block';
             
-            // 1. Send INSTANT flare to laptop
             pubnub.publish({ channel: "classroom_channel", message: { action: "addPoints", name: activeStudentName, points: amount } });
             
-            // 2. Silently log to Google Sheets in background
             fetch(`${GOOGLE_WEB_APP_URL}?action=addPoints&name=${encodeURIComponent(activeStudentName)}&points=${amount}&t=${new Date().getTime()}`, { mode: 'no-cors' });
             
             setTimeout(resetRemote, 1000); 
@@ -151,14 +148,14 @@
         function resetRemote() {
             document.getElementById('actionPanel').style.display = 'none';
             activeStudentName = 'none';
-            sendRealtimeCommand('setActive', { name: 'none' }); // Clears laptop screen
+            sendRealtimeCommand('setActive', { name: 'none' }); 
             startCamera(); 
         }
 
         function toggleAutoMode() {
             isAutoMode = isAutoMode === 'off' ? 'on' : 'off';
             sendRealtimeCommand('toggleAuto', { state: isAutoMode });
-            fetch(`${GOOGLE_WEB_APP_URL}?action=toggleAuto&state=${isAutoMode}&t=${new Date().getTime()}`, { mode: 'no-cors' }); // Backup to sheets
+            fetch(`${GOOGLE_WEB_APP_URL}?action=toggleAuto&state=${isAutoMode}&t=${new Date().getTime()}`, { mode: 'no-cors' }); 
             
             const btn = document.getElementById('autoToggleBtn'); const txt = document.getElementById('autoToggleText');
             if (isAutoMode === 'on') { btn.className = 'auto-toggle auto-on'; txt.innerHTML = '⏹️ TURN OFF Auto-Check-In'; document.getElementById('kioskStatusMsg').innerHTML = '<span style="color: #06D6A0;">🟢 Kiosk handling scans automatically.</span>'; } 
@@ -169,7 +166,6 @@
             pubnub.publish({ channel: "classroom_channel", message: { action: action, ...extras } });
         }
 
-        // Just fetch students once so the phone knows the names
         async function loadData() {
             const res = await fetch(GOOGLE_WEB_APP_URL + '?action=get&t=' + new Date().getTime());
             const data = await res.json();
