@@ -6,33 +6,50 @@
     <title>Classroom Digital Display</title>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-    
     <script src="https://cdn.pubnub.com/sdk/javascript/pubnub.7.2.2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
     <style>
         :root { --dark: #2B2D42; --surface: #FFFFFF; --yellow: #FFD166; --primary: #FF4B72; --green: #06D6A0;}
         body { margin: 0; font-family: 'Fredoka', sans-serif; color: var(--dark); background: #111; overflow: hidden; }
 
-        .split-layout { display: flex; height: 100vh; width: 100vw; }
+        /* NEON DOUBLE POINTS MODE */
+        body.neon-mode .left-panel { box-shadow: inset 0 0 50px rgba(255, 75, 114, 0.5); }
+        body.neon-mode .right-panel { background: #111; box-shadow: inset 0 0 50px rgba(6, 214, 160, 0.5); animation: none; }
+        body.neon-mode .lb-card { box-shadow: 0 0 20px rgba(6, 214, 160, 0.8), inset 0 0 10px rgba(6, 214, 160, 0.5); border-color: var(--green); }
+        body.neon-mode .art-frame { box-shadow: 0 0 40px rgba(255, 75, 114, 0.8); border-color: var(--primary); }
+
+        /* CLASS PROGRESS BAR */
+        .class-progress-container { width: 100%; background: #222; height: 30px; position: relative; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; }
+        .class-progress-fill { position: absolute; left: 0; top: 0; height: 100%; background: linear-gradient(90deg, #FF4B72, #FFD166, #06D6A0); transition: width 1s ease-in-out; width: 0%; }
+        .class-progress-text { position: relative; z-index: 2; color: white; font-weight: 800; font-size: 1rem; text-shadow: 1px 1px 0 #000; }
+
+        .split-layout { display: flex; height: calc(100vh - 30px); width: 100vw; position: relative; }
         
-        .left-panel { flex: 1; display: flex; flex-direction: column; gap: 20px; background: var(--dark); padding: 25px; box-sizing: border-box; position: relative; }
-        .right-panel { flex: 1; display: flex; flex-direction: column; position: relative; background: linear-gradient(-45deg, #FF9A9E, #FECFEF, #a8edea, #00C6FF); background-size: 400% 400%; animation: gradientBG 15s ease infinite; padding: 20px; box-sizing: border-box; overflow: hidden; }
+        /* WEATHER OVERLAYS */
+        .weather-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 50; }
+        .weather-rain { background: url('https://cdn.pixabay.com/photo/2016/03/04/00/03/rain-1235240_1280.png'); opacity: 0.3; animation: rainFall 0.5s linear infinite; }
+        .weather-snow { background: url('https://cdn.pixabay.com/photo/2020/11/11/08/17/snowflakes-5731976_1280.png'); opacity: 0.5; animation: rainFall 15s linear infinite; background-size: cover; }
+        @keyframes rainFall { from { background-position: 0 0; } to { background-position: 0 100vh; } }
+
+        .left-panel { flex: 1; display: flex; flex-direction: column; gap: 20px; background: var(--dark); padding: 25px; box-sizing: border-box; position: relative; z-index: 100; transition: all 0.5s; }
+        .right-panel { flex: 1; display: flex; flex-direction: column; position: relative; background: linear-gradient(-45deg, #FF9A9E, #FECFEF, #a8edea, #00C6FF); background-size: 400% 400%; animation: gradientBG 15s ease infinite; padding: 20px; box-sizing: border-box; overflow: hidden; z-index: 100; transition: all 0.5s; }
         @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
         .top-bar { display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
-        .search-bar { width: 100%; max-width: 250px; padding: 15px; font-size: 1.2rem; font-family: var(--font-family); font-weight: 600; background: var(--surface); color: var(--dark); border: 5px solid var(--dark); border-radius: 50px; box-shadow: 0 6px 0 rgba(0,0,0,0.5); outline: none; }
+        .search-bar { width: 100%; max-width: 250px; padding: 15px; font-size: 1.2rem; font-family: var(--font-family); font-weight: 600; background: var(--surface); color: var(--dark); border: 5px solid var(--dark); border-radius: 50px; outline: none; }
         .nav-buttons { display: flex; gap: 10px; }
-        .btn-admin { background: var(--surface); color: var(--dark); border: 4px solid var(--dark); padding: 10px 15px; font-size: 1.1rem; font-family: var(--font-family); font-weight: 700; border-radius: 50px; cursor: pointer; box-shadow: 0 6px 0 rgba(0,0,0,0.5); }
+        .btn-admin { background: var(--surface); color: var(--dark); border: 4px solid var(--dark); padding: 10px 15px; font-size: 1.1rem; font-weight: 700; border-radius: 50px; cursor: pointer; }
         .btn-prize { background: var(--yellow); }
 
         .art-container { flex: 1; display: flex; flex-direction: column; min-height: 0; }
-        .art-frame { width: 100%; height: 100%; border-radius: 30px; border: 8px solid var(--surface); background-color: #1a1a1a; background-size: contain; background-repeat: no-repeat; background-position: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transition: background-image 1s ease-in-out; display: flex; align-items: center; justify-content: center; }
+        .art-frame { width: 100%; height: 100%; border-radius: 30px; border: 8px solid var(--surface); background-color: #1a1a1a; background-size: contain; background-repeat: no-repeat; background-position: center; transition: all 0.5s; display: flex; align-items: center; justify-content: center; }
         .no-art-text { color: #555; font-size: 2rem; font-weight: 800; display: none; }
 
-        .kiosk-bar { display: flex; align-items: center; justify-content: space-between; background: var(--surface); padding: 15px 25px; border-radius: 20px; border: 6px solid var(--dark); box-shadow: 0 8px 0 rgba(0,0,0,0.5); flex-shrink: 0; gap: 20px; }
+        .kiosk-bar { display: flex; align-items: center; justify-content: space-between; background: var(--surface); padding: 15px 25px; border-radius: 20px; border: 6px solid var(--dark); flex-shrink: 0; gap: 20px; }
         #reader { width: 150px; border-radius: 10px; overflow: hidden; border: 4px solid var(--dark); }
         .kiosk-info { display: flex; flex-direction: column; align-items: flex-end; justify-content: center; gap: 10px; }
-        #autoModeBadge { display: none; background: var(--green); color: white; padding: 10px 20px; border-radius: 50px; font-size: 1.1rem; font-weight: 800; border: 4px solid var(--dark); box-shadow: 4px 4px 0 var(--dark); animation: pulse 2s infinite; }
+        #autoModeBadge { display: none; background: var(--green); color: white; padding: 10px 20px; border-radius: 50px; font-size: 1.1rem; font-weight: 800; border: 4px solid var(--dark); animation: pulse 2s infinite; }
         .kiosk-label { font-size: 1.2rem; font-weight: 800; color: var(--primary); }
 
         #kioskPopup { position: absolute; bottom: 150px; left: 25px; right: 25px; background: white; border: 6px solid var(--dark); border-radius: 20px; padding: 20px 40px; text-align: center; box-shadow: 10px 10px 0 rgba(0,0,0,0.5); display: none; z-index: 200; animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; }
@@ -42,9 +59,15 @@
         .scroll-track { display: flex; flex-direction: column; gap: 15px; animation: scrollUp 150s linear infinite; }
         @keyframes scrollUp { 0% { transform: translateY(0); } 100% { transform: translateY(-50%); } }
         
-        .lb-card { background: var(--surface); border: 4px solid var(--dark); border-radius: 20px; padding: 20px 30px; display: flex; align-items: center; box-shadow: 0 6px 0 var(--dark); margin: 0 10px; }
+        .lb-card { background: var(--surface); border: 4px solid var(--dark); border-radius: 20px; padding: 20px 30px; display: flex; align-items: center; transition: all 0.3s; margin: 0 10px; }
         .lb-card img { width: 70px; height: 70px; border-radius: 50%; border: 3px solid var(--dark); margin-right: 20px; background: white; }
-        .lb-card h3 { flex: 1; margin: 0; font-size: 2.2rem; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+        .lb-card-info { flex: 1; display: flex; flex-direction: column; }
+        .lb-card h3 { margin: 0; font-size: 2.2rem; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+        
+        /* 15-POINT MINI PROGRESS BAR */
+        .mini-progress-bg { width: 100%; max-width: 200px; height: 8px; background: #eee; border-radius: 10px; margin-top: 5px; overflow: hidden; border: 2px solid #ccc;}
+        .mini-progress-fill { height: 100%; background: var(--green); transition: width 0.5s; }
+        
         .lb-card p { margin: 0; font-size: 2rem; font-weight: 800; background: var(--yellow); padding: 5px 25px; border-radius: 30px; border: 4px solid var(--dark); }
 
         #spamWarning { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 9999; display: none; background: #FF4B72; color: white; padding: 30px 50px; border-radius: 30px; font-size: 3rem; font-weight: 800; border: 8px solid var(--dark); box-shadow: 15px 15px 0 var(--dark); text-align: center; }
@@ -57,7 +80,7 @@
         .celebration-box img { width: 300px; height: 300px; border-radius: 50%; border: 12px solid white; margin: 20px 0; background: white;}
         .anim-pop { animation: pop 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; }
         @keyframes pop { 0% { transform: scale(0.2); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-
+        
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(43, 45, 66, 0.8); display: none; align-items: center; justify-content: center; z-index: 10000; backdrop-filter: blur(8px); }
         .modal-overlay.active { display: flex; }
         .modal-content { background: var(--surface); padding: 50px 40px 40px 40px; border-radius: 40px; max-width: 450px; text-align: center; position: relative; border: 8px solid var(--dark); box-shadow: 0 15px 0 rgba(0,0,0,0.3); }
@@ -80,14 +103,19 @@
 </head>
 <body>
 
+    <div class="class-progress-container">
+        <div class="class-progress-fill" id="classProgressBar"></div>
+        <div class="class-progress-text" id="classProgressText">Loading Class Goal...</div>
+    </div>
+
     <div class="split-layout">
+        <div class="weather-layer" id="weatherLayer"></div>
         
         <div class="left-panel">
             <div class="top-bar">
                 <input type="text" id="searchInput" class="search-bar" placeholder="🔍 Find a student...">
                 <div class="nav-buttons">
                     <button onclick="openPrizeVault(false)" class="btn-admin btn-prize">🎁 Prize Vault</button>
-                    <button onclick="openDatabase()" class="btn-admin">⚙️ Database</button>
                 </div>
             </div>
 
@@ -127,7 +155,7 @@
             <h1 style="font-size: 6rem; margin:0;">🎉 LEVEL UP! 🎉</h1>
             <img id="celebrationAvatar" src="">
             <h2 id="celebrationName" style="font-size: 5rem; margin:0;">Name</h2>
-            <div style="font-size: 6rem; color: var(--yellow); font-weight: 800;">+<span id="celebrationPoints">5</span></div>
+            <div style="font-size: 6rem; color: var(--yellow); font-weight: 800;" id="celebrationPoints">+5</div>
         </div>
     </div>
 
@@ -154,37 +182,34 @@
             <h2 id="noPrizeMsg" style="color: white; font-size: 3rem; display: none; margin-top: 50px;">Keep working hard! 🌟</h2>
         </div>
     </div>
-    
-    <div id="pinModal" class="modal-overlay">
-        <div class="modal-content" style="max-width: 350px;">
-            <h2 style="margin-top: 0; color: var(--dark);">Admin Access</h2>
-            <input type="password" id="pinInput" style="width: 80%; padding: 15px; font-size: 2rem; text-align: center; border: 4px solid var(--dark); border-radius: 15px; letter-spacing: 10px; margin-bottom: 20px;" placeholder="****" maxlength="4">
-            <div style="display: flex; gap: 10px; justify-content: center;">
-                <button onclick="closePinModal()" class="btn-admin" style="background: #eee;">Cancel</button>
-                <button onclick="verifyPin()" class="btn-admin" style="background: var(--green); color: white;">Unlock</button>
-            </div>
-        </div>
-    </div>
 
     <script>
         // ⚠️ PASTE YOUR KEYS AND URL HERE ⚠️
         const GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxlTv6HfOVB_AFua7XKePmCySDo5VsJeRpdF4jTgjt3nSm9v3Iz1pTdhO1GwkELAKNdhQ/exec";
         const PUBNUB_PUBLISH_KEY = "pub-c-88fdc434-b3b5-4eae-963f-2ad1eac8d271";
         const PUBNUB_SUBSCRIBE_KEY = "sub-c-dfcda561-cd3f-48c6-8fba-e3ff29235b19";
-        
-        const ADMIN_SHEET_URL = "https://docs.google.com/spreadsheets/d/1_mwGR_ljLD3drdZ7F28jMZRLfia1Vg56Icvgtk2-N9Y/edit";
-        const ADMIN_PIN = "2009";
 
         const pubnub = new PubNub({ publishKey: PUBNUB_PUBLISH_KEY, subscribeKey: PUBNUB_SUBSCRIBE_KEY, userId: "big_screen" });
         pubnub.subscribe({ channels: ["classroom_channel"] });
 
-        let students = []; let orderedStudents = [];
-        let celebrationQueue = []; let isCelebrating = false;
-        let activeKioskStudent = null; let kioskTimer = null;
-        let isAutoMode = false; let scannedThisSession = new Set(); 
-        let knownStudentCount = 0; let wasSearching = false;
-        let artworkList = []; let artIndex = 0; let artInterval = null;
+        let students = []; let orderedStudents = []; let celebrationQueue = []; let isCelebrating = false;
+        let activeKioskStudent = null; let kioskTimer = null; let isAutoMode = false; let scannedThisSession = new Set(); 
+        let knownStudentCount = 0; let wasSearching = false; let artworkList = []; let artIndex = 0; let artInterval = null;
 
+        // FETCH WEATHER FOR MARTON, NZ (Lat: -40.06, Lon: 175.38)
+        async function fetchWeather() {
+            try {
+                const res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=-40.06&longitude=175.38&current_weather=true");
+                const data = await res.json();
+                const code = data.current_weather.weathercode;
+                const layer = document.getElementById('weatherLayer');
+                if ([51,53,55,61,63,65,80,81,82].includes(code)) layer.className = 'weather-layer weather-rain';
+                else if ([71,73,75,77,85,86].includes(code)) layer.className = 'weather-layer weather-snow';
+            } catch(e) {}
+        }
+        fetchWeather();
+
+        // REALTIME LISTENER
         pubnub.addListener({
             message: function(event) {
                 const msg = event.message;
@@ -192,61 +217,59 @@
                 if (msg.action === "addPoints") {
                     const student = students.find(s => s.Name.toLowerCase() === msg.name.toLowerCase());
                     const orderedStudent = orderedStudents.find(s => s.Name.toLowerCase() === msg.name.toLowerCase());
-                    
                     if (student) {
-                        const oldPoints = parseInt(student.Points);
-                        student.Points = oldPoints + msg.points;
-                        const newPoints = student.Points;
-                        
-                        if (orderedStudent) orderedStudent.Points = newPoints;
-                        updateLeaderboardPoints(); 
+                        const oldPoints = parseInt(student.Points); student.Points = oldPoints + msg.points;
+                        if (orderedStudent) orderedStudent.Points = student.Points;
+                        updateLeaderboardPoints(); updateClassGoal();
                         
                         if (msg.points > 0) {
-                            const isMilestone = (oldPoints < 15 && newPoints >= 15);
-                            celebrationQueue.push({ student: student, pointsGained: msg.points, isMilestone: isMilestone });
+                            const isMilestone = (oldPoints < 15 && student.Points >= 15);
+                            celebrationQueue.push({ student: student, pointsGained: msg.points, isMilestone: isMilestone, isDouble: msg.isDouble });
                             processCelebrations(); 
                         }
                     }
                 } 
                 else if (msg.action === "setActive") {
-                    if (msg.name === 'none') {
-                        activeKioskStudent = null; document.getElementById('kioskPopup').style.display = 'none';
-                    } else {
-                        const student = students.find(s => s.Name.toLowerCase() === msg.name.toLowerCase());
-                        if (student) triggerKioskPopup(student);
-                    }
+                    if (msg.name === 'none') { activeKioskStudent = null; document.getElementById('kioskPopup').style.display = 'none'; } 
+                    else { const student = students.find(s => s.Name.toLowerCase() === msg.name.toLowerCase()); if (student) triggerKioskPopup(student); }
                 }
+                else if (msg.action === "toggleDouble") document.body.classList.toggle('neon-mode', msg.state);
+                else if (msg.action === "partyConfetti") fireConfetti();
                 else if (msg.action === "showVault" || msg.action === "triggerVault") openPrizeVault(true);
                 else if (msg.action === "revealVault") revealPrizes(true);
                 else if (msg.action === "closeVault") closePrizeVault(true);
                 else if (msg.action === "toggleAuto") setAutoMode(msg.state);
-                else if (msg.action === "scrollVault") {
-                    const grid = document.getElementById('prizeGrid');
-                    if (grid) grid.scrollTop = msg.percent * (grid.scrollHeight - grid.clientHeight);
-                }
+                else if (msg.action === "scrollVault") { const grid = document.getElementById('prizeGrid'); if (grid) grid.scrollTop = msg.percent * (grid.scrollHeight - grid.clientHeight); }
+                else if (msg.action === "refreshData") fetchStudentData(); // Phone can force sync
             }
         });
+
+        function fireConfetti() {
+            var duration = 3000; var end = Date.now() + duration;
+            (function frame() {
+                confetti({ particleCount: 10, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#FFD166', '#FF4B72', '#06D6A0'] });
+                confetti({ particleCount: 10, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#FFD166', '#FF4B72', '#06D6A0'] });
+                if (Date.now() < end) requestAnimationFrame(frame);
+            }());
+        }
+
+        function updateClassGoal() {
+            let total = 0; students.forEach(s => total += parseInt(s.Points) || 0);
+            let goal = Math.max(500, Math.ceil((students.length * 15) / 100) * 100); // Dynamic goal based on class size
+            if (total > goal) goal += 500;
+            const pct = Math.min((total / goal) * 100, 100);
+            document.getElementById('classProgressBar').style.width = pct + '%';
+            document.getElementById('classProgressText').textContent = `🍕 Pizza Party Goal: ${total} / ${goal} Points!`;
+        }
 
         function getShuffleSeed(name) { if (!window[name]) window[name] = Math.random(); return window[name]; }
         function shuffleArray(array) { return array.sort((a, b) => getShuffleSeed(a.Name) - getShuffleSeed(b.Name)); }
 
-        function openDatabase() { document.getElementById('pinInput').value = ''; document.getElementById('pinModal').classList.add('active'); document.getElementById('pinInput').focus(); }
-        function closePinModal() { document.getElementById('pinModal').classList.remove('active'); }
-        function verifyPin() { if (document.getElementById('pinInput').value === ADMIN_PIN) { closePinModal(); window.open(ADMIN_SHEET_URL, '_blank'); } else { alert("❌ Incorrect PIN!"); document.getElementById('pinInput').value = ''; } }
-        document.getElementById('pinInput').addEventListener('keyup', (e) => { if (e.key === 'Enter') verifyPin(); });
-
-        function openPrizeVault(fromRemote = false) { 
-            document.getElementById('prizeVaultOverlay').style.display = 'flex'; document.getElementById('mysteryState').style.display = 'block'; document.getElementById('revealedState').style.display = 'none'; 
-            if(!fromRemote) pubnub.publish({ channel: "classroom_channel", message: { action: "showVault" } });
-        }
-        function closePrizeVault(fromRemote = false) { 
-            document.getElementById('prizeVaultOverlay').style.display = 'none'; 
-            if(!fromRemote) pubnub.publish({ channel: "classroom_channel", message: { action: "closeVault" } });
-        }
+        function openPrizeVault(fromRemote = false) { document.getElementById('prizeVaultOverlay').style.display = 'flex'; document.getElementById('mysteryState').style.display = 'block'; document.getElementById('revealedState').style.display = 'none'; if(!fromRemote) pubnub.publish({ channel: "classroom_channel", message: { action: "showVault" } }); }
+        function closePrizeVault(fromRemote = false) { document.getElementById('prizeVaultOverlay').style.display = 'none'; if(!fromRemote) pubnub.publish({ channel: "classroom_channel", message: { action: "closeVault" } }); }
         function handleVaultClick(e) { if(e.target.id === 'prizeVaultOverlay' || e.target.id === 'revealedState') closePrizeVault(false); }
         function revealPrizes(fromRemote = false) {
-            document.getElementById('mysteryState').style.display = 'none'; 
-            document.getElementById('revealedState').style.display = 'flex'; 
+            document.getElementById('mysteryState').style.display = 'none'; document.getElementById('revealedState').style.display = 'flex'; 
             const prizeGrid = document.getElementById('prizeGrid'); const noPrizeMsg = document.getElementById('noPrizeMsg'); prizeGrid.innerHTML = ''; 
             const winners = students.filter(s => parseInt(s.Points) >= 15);
             if (winners.length === 0) noPrizeMsg.style.display = 'block';
@@ -262,8 +285,9 @@
             if (isAutoMode) {
                 if (scannedThisSession.has(student.Name)) { const warning = document.getElementById('spamWarning'); warning.style.display = 'block'; setTimeout(() => warning.style.display = 'none', 3000); return; }
                 scannedThisSession.add(student.Name);
-                fetch(`${GOOGLE_WEB_APP_URL}?action=addPoints&name=${encodeURIComponent(student.Name)}&points=1`, { mode: 'no-cors' });
-                pubnub.publish({ channel: "classroom_channel", message: { action: "addPoints", name: student.Name, points: 1 } });
+                let pts = document.body.classList.contains('neon-mode') ? 2 : 1; // Double points check
+                pubnub.publish({ channel: "classroom_channel", message: { action: "addPoints", name: student.Name, points: pts, isDouble: pts===2 } });
+                fetch(`${GOOGLE_WEB_APP_URL}?action=addPoints&name=${encodeURIComponent(student.Name)}&points=${pts}`, { mode: 'no-cors' });
             } else {
                 if (activeKioskStudent !== student.Name) {
                     triggerKioskPopup(student);
@@ -275,7 +299,7 @@
         function triggerKioskPopup(student) {
             activeKioskStudent = student.Name;
             const popup = document.getElementById('kioskPopup');
-            document.getElementById('kioskPopupName').innerHTML = `${student.Name}<br><span style="display: inline-block; margin-top: 10px; font-size: 2.2rem; font-weight: 800; color: var(--dark); background: var(--yellow); padding: 5px 25px; border-radius: 30px; border: 4px solid var(--dark); box-shadow: 0 4px 0 var(--dark);">⭐ ${student.Points}</span>`;
+            document.getElementById('kioskPopupName').innerHTML = `${student.Name}<br><span style="display: inline-block; margin-top: 10px; font-size: 2.2rem; font-weight: 800; color: var(--dark); background: var(--yellow); padding: 5px 25px; border-radius: 30px; border: 4px solid var(--dark);">⭐ ${student.Points}</span>`;
             document.getElementById('kioskPopupStatus').textContent = "Waiting for teacher...";
             popup.style.display = 'block';
             clearTimeout(kioskTimer); kioskTimer = setTimeout(() => { activeKioskStudent = null; popup.style.display = 'none'; }, 10000);
@@ -291,10 +315,8 @@
             try {
                 const response = await fetch(GOOGLE_WEB_APP_URL + '?action=get&t=' + new Date().getTime());
                 const rawResponse = await response.json();
-                
                 setAutoMode(rawResponse.autoMode);
 
-                // REVERTED TO ROBOTS (BOTTTS) WITH STRICT URI ENCODING
                 const newStudents = rawResponse.students.map(s => {
                     const safeName = s.Name ? encodeURIComponent(s.Name.trim()) : 'Student';
                     const safeAvatar = s.AvatarURL && s.AvatarURL.trim() !== "" ? s.AvatarURL : `https://api.dicebear.com/7.x/bottts/svg?seed=${safeName}`;
@@ -315,15 +337,9 @@
                 }
                 
                 students = newStudents;
-                
-                if (orderedStudents.length > 0) {
-                    orderedStudents.forEach(os => {
-                        const freshData = students.find(s => s.Name === os.Name);
-                        if (freshData) os.Points = freshData.Points;
-                    });
-                }
+                if (orderedStudents.length > 0) { orderedStudents.forEach(os => { const freshData = students.find(s => s.Name === os.Name); if (freshData) os.Points = freshData.Points; }); }
 
-                updateArtworkLoop(); renderLeaderboard(); processCelebrations();
+                updateClassGoal(); updateArtworkLoop(); renderLeaderboard(); processCelebrations();
             } catch (error) {}
         }
 
@@ -339,9 +355,10 @@
                 document.getElementById('milestoneOverlay').style.display = 'flex';
                 setTimeout(() => { document.getElementById('milestoneOverlay').style.display = 'none'; isCelebrating = false; setTimeout(processCelebrations, 1000); }, 6000); 
             } else {
+                let ptsText = event.isDouble ? `DOUBLE! +${event.pointsGained}` : `+${event.pointsGained}`;
                 document.getElementById('celebrationAvatar').src = event.student.AvatarURL;
                 document.getElementById('celebrationName').textContent = event.student.Name;
-                document.getElementById('celebrationPoints').textContent = event.pointsGained;
+                document.getElementById('celebrationPoints').textContent = ptsText;
                 document.getElementById('celebrationBox').className = 'celebration-box anim-pop';
                 document.getElementById('celebrationOverlay').style.display = 'flex';
                 setTimeout(() => { document.getElementById('celebrationOverlay').style.display = 'none'; isCelebrating = false; setTimeout(processCelebrations, 1000); }, 4000); 
@@ -372,12 +389,23 @@
             } else { updateLeaderboardPoints(); }
         }
         
-        function buildCardsHTML(arr) { return arr.map(s => `<div class="lb-card" data-student="${s.Name.replace(/[^a-zA-Z0-9]/g, '-')}"><img src="${s.AvatarURL}"><h3>${s.Name}</h3><p class="pts-badge">⭐ ${s.Points}</p></div>`).join(''); }
+        function buildCardsHTML(arr) { 
+            return arr.map(s => `
+                <div class="lb-card" data-student="${s.Name.replace(/[^a-zA-Z0-9]/g, '-')}">
+                    <img src="${s.AvatarURL}">
+                    <div class="lb-card-info">
+                        <h3>${s.Name}</h3>
+                        <div class="mini-progress-bg"><div class="mini-progress-fill" style="width: ${Math.min((s.Points/15)*100, 100)}%"></div></div>
+                    </div>
+                    <p class="pts-badge">⭐ ${s.Points}</p>
+                </div>`).join(''); 
+        }
         
         function updateLeaderboardPoints() { 
             students.forEach(s => { 
                 const safeName = s.Name.replace(/[^a-zA-Z0-9]/g, '-'); 
                 document.querySelectorAll(`[data-student="${safeName}"] .pts-badge`).forEach(b => b.innerHTML = `⭐ ${s.Points}`); 
+                document.querySelectorAll(`[data-student="${safeName}"] .mini-progress-fill`).forEach(b => b.style.width = `${Math.min((s.Points/15)*100, 100)}%`); 
             }); 
         }
         
