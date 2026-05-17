@@ -15,7 +15,7 @@
 
         .split-layout { display: flex; height: 100vh; width: 100vw; }
         
-        /* LEFT PANEL: Controls, Art Box, and Camera */
+        /* LEFT PANEL: Streamer Layout */
         .left-panel { flex: 1; display: flex; flex-direction: column; position: relative; background: var(--dark); padding: 25px; box-sizing: border-box; }
         
         /* RIGHT PANEL: Massive Leaderboard */
@@ -29,9 +29,9 @@
         .btn-admin { background: var(--surface); color: var(--dark); border: 4px solid var(--dark); padding: 10px 15px; font-size: 1.1rem; font-family: var(--font-family); font-weight: 700; border-radius: 50px; cursor: pointer; box-shadow: 0 6px 0 rgba(0,0,0,0.5); transition: all 0.15s; }
         .btn-prize { background: var(--yellow); }
 
-        /* ART FRAME (Left Side Center) */
-        .art-container { flex: 1; min-height: 0; display: flex; padding-bottom: 20px; }
-        .art-frame { width: 100%; height: 100%; border-radius: 30px; border: 8px solid var(--surface); background-color: #222; background-size: contain; background-repeat: no-repeat; background-position: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transition: background-image 1s ease-in-out; display: flex; align-items: center; justify-content: center; }
+        /* ART FRAME (Now Fills 100% of Space!) */
+        .art-container { flex: 1; display: flex; flex-direction: column; min-height: 0; padding-bottom: 5px; }
+        .art-frame { width: 100%; height: 100%; border-radius: 30px; border: 8px solid var(--surface); background-color: #1a1a1a; background-size: contain; background-repeat: no-repeat; background-position: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transition: background-image 1s ease-in-out; display: flex; align-items: center; justify-content: center; }
         .no-art-text { color: #555; font-size: 2rem; font-weight: 800; display: none; }
 
         /* LEADERBOARD (Right Side) */
@@ -44,23 +44,24 @@
         .lb-card h3 { flex: 1; margin: 0; font-size: 2.2rem; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
         .lb-card p { margin: 0; font-size: 2rem; font-weight: 800; background: var(--yellow); padding: 5px 25px; border-radius: 30px; border: 4px solid var(--dark); }
 
-        /* KIOSK CAMERA (Left Side Bottom) */
-        .kiosk-cam-container { background: var(--surface); padding: 10px; border-radius: 20px; border: 6px solid var(--dark); box-shadow: 8px 8px 0 rgba(0,0,0,0.5); width: 200px; z-index: 100; }
+        /* KIOSK CAMERA (Now a Streamer Overlay) */
+        .kiosk-cam-container { position: absolute; bottom: 35px; left: 35px; background: var(--surface); padding: 10px; border-radius: 20px; border: 6px solid var(--dark); box-shadow: 8px 8px 0 rgba(0,0,0,0.5); width: 180px; z-index: 100; }
         #reader { border-radius: 10px; overflow: hidden; }
         .kiosk-label { text-align: center; font-weight: 800; font-size: 1rem; margin-top: 10px; color: var(--primary); }
 
-        #kioskPopup { position: absolute; bottom: 30px; left: 250px; right: 20px; background: white; border: 6px solid var(--dark); border-radius: 20px; padding: 20px; text-align: center; box-shadow: 10px 10px 0 rgba(0,0,0,0.4); display: none; z-index: 200; animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; }
+        #kioskPopup { position: absolute; bottom: 35px; left: 240px; background: white; border: 6px solid var(--dark); border-radius: 20px; padding: 20px 30px; text-align: center; box-shadow: 10px 10px 0 rgba(0,0,0,0.4); display: none; z-index: 200; animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; }
         @keyframes popIn { 0% { transform: scale(0); } 100% { transform: scale(1); } }
 
-        #autoModeBadge { position: fixed; top: 90px; left: 30px; z-index: 110; display: none; background: var(--green); color: white; padding: 10px 20px; border-radius: 50px; font-size: 1.2rem; font-weight: 800; border: 4px solid var(--dark); box-shadow: 4px 4px 0 var(--dark); animation: pulse 2s infinite; }
+        #autoModeBadge { position: absolute; top: 25px; right: 25px; z-index: 110; display: none; background: var(--green); color: white; padding: 10px 20px; border-radius: 50px; font-size: 1.2rem; font-weight: 800; border: 4px solid var(--dark); box-shadow: 4px 4px 0 var(--dark); animation: pulse 2s infinite; }
         #spamWarning { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 9999; display: none; background: #FF4B72; color: white; padding: 30px 50px; border-radius: 30px; font-size: 3rem; font-weight: 800; border: 8px solid var(--dark); box-shadow: 15px 15px 0 var(--dark); text-align: center; }
 
-        /* CELEBRATIONS */
-        /* Fixed overlay to prevent sunburst scrollbars */
+        /* CELEBRATIONS & SUNBURST FIX */
         .celebration-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(43, 45, 66, 0.95); display: none; align-items: center; justify-content: center; z-index: 9999; flex-direction: column; overflow: hidden; }
-        .sunburst { position: absolute; width: 200vw; height: 200vw; background: repeating-conic-gradient(var(--yellow) 0 15deg, #FFB703 15deg 30deg); animation: spinBurst 10s linear infinite; z-index: -1; opacity: 0.5; }
+        .sunburst { position: absolute; top: 50%; left: 50%; width: 200vw; height: 200vw; background: repeating-conic-gradient(var(--yellow) 0 15deg, #FFB703 15deg 30deg); animation: spinBurst 15s linear infinite; z-index: -1; opacity: 0.5; transform: translate(-50%, -50%); }
+        @keyframes spinBurst { 0% { transform: translate(-50%, -50%) rotate(0deg); } 100% { transform: translate(-50%, -50%) rotate(360deg); } }
+        
         .celebration-box { text-align: center; color: white; z-index: 10; }
-        .celebration-box img { width: 300px; height: 300px; border-radius: 50%; border: 12px solid white; margin: 20px 0; }
+        .celebration-box img { width: 300px; height: 300px; border-radius: 50%; border: 12px solid white; margin: 20px 0; background: white;}
         .anim-pop { animation: pop 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; }
         @keyframes pop { 0% { transform: scale(0.2); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
@@ -73,12 +74,19 @@
         .mystery-box { font-size: 10rem; cursor: pointer; animation: shake 2s infinite ease-in-out; }
         @keyframes shake { 0%, 100% { transform: rotate(0deg); } 20%, 60% { transform: rotate(-10deg); } 40%, 80% { transform: rotate(10deg); } }
         
-        /* UPDATED: Prize Vault Design Consistency */
-        .prize-grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; max-width: 90vw; }
-        .prize-card { background: var(--surface); padding: 25px 20px; border-radius: 20px; border: 6px solid var(--dark); box-shadow: 0 8px 0 var(--dark); text-align: center; width: 220px; }
-        .prize-card img { width: 110px; height: 110px; border-radius: 50%; border: 4px solid var(--dark); margin-bottom: 15px; background: white; }
-        .prize-card h3 { margin: 0 0 15px 0; font-size: 1.8rem; font-weight: 800; color: var(--dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .prize-card p { margin: 0; font-size: 1.8rem; font-weight: 800; background: var(--yellow); color: var(--dark); padding: 5px 20px; border-radius: 30px; border: 4px solid var(--dark); display: inline-block; }
+        /* UPDATED: Prize Vault Custom Scrolling Layout */
+        #revealedState { width: 100%; display: none; flex-direction: column; align-items: center; z-index: 10; }
+        .prize-grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; max-width: 95vw; max-height: 60vh; overflow-y: auto; padding: 20px 10px; margin-top: 20px;}
+        
+        /* Custom Scrollbar for Prize Vault */
+        .prize-grid::-webkit-scrollbar { width: 16px; }
+        .prize-grid::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); border-radius: 10px; }
+        .prize-grid::-webkit-scrollbar-thumb { background: var(--yellow); border-radius: 10px; border: 4px solid rgba(43, 45, 66, 0.95); }
+
+        .prize-card { background: var(--surface); padding: 20px; border-radius: 20px; border: 6px solid var(--dark); box-shadow: 0 8px 0 var(--dark); text-align: center; width: 190px; }
+        .prize-card img { width: 90px; height: 90px; border-radius: 50%; border: 4px solid var(--dark); margin-bottom: 15px; background: white; }
+        .prize-card h3 { margin: 0 0 15px 0; font-size: 1.6rem; font-weight: 800; color: var(--dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .prize-card p { margin: 0; font-size: 1.6rem; font-weight: 800; background: var(--yellow); color: var(--dark); padding: 5px 20px; border-radius: 30px; border: 4px solid var(--dark); display: inline-block; }
     </style>
 </head>
 <body>
@@ -94,13 +102,13 @@
                 </div>
             </div>
 
-            <div id="autoModeBadge">🟢 AUTO-SCAN ACTIVE</div>
-            
             <div class="art-container">
                 <div class="art-frame" id="artFrame">
                     <div class="no-art-text" id="noArtText">Gathering Masterpieces...</div>
                 </div>
             </div>
+
+            <div id="autoModeBadge">🟢 AUTO-SCAN ACTIVE</div>
 
             <div class="kiosk-cam-container">
                 <div id="reader"></div>
@@ -149,11 +157,11 @@
             <h1 style="color: white; font-size: 6rem;">Who Unlocked a Prize?</h1>
             <div class="mystery-box" onclick="revealPrizes()">🎁</div>
         </div>
-        <div id="revealedState" style="display: none; text-align: center; z-index: 10;">
+        <div id="revealedState">
             <div class="sunburst" style="opacity: 0.2;"></div>
-            <h1 style="color: var(--yellow); font-size: 6rem; text-shadow: 6px 6px 0 var(--dark);">🏆 15-Point Club 🏆</h1>
+            <h1 style="color: var(--yellow); font-size: 6rem; text-shadow: 6px 6px 0 var(--dark); margin: 0;">🏆 15-Point Club 🏆</h1>
             <div id="prizeGrid" class="prize-grid"></div>
-            <h2 id="noPrizeMsg" style="color: white; font-size: 3rem; display: none;">Keep working hard! 🌟</h2>
+            <h2 id="noPrizeMsg" style="color: white; font-size: 3rem; display: none; margin-top: 50px;">Keep working hard! 🌟</h2>
         </div>
     </div>
     
@@ -187,7 +195,6 @@
         let knownStudentCount = 0; let wasSearching = false;
         let artworkList = []; let artIndex = 0; let artInterval = null;
 
-        // --- REALTIME LISTENER ---
         pubnub.addListener({
             message: function(event) {
                 const msg = event.message;
@@ -237,8 +244,10 @@
         function openPrizeVault() { document.getElementById('prizeVaultOverlay').style.display = 'flex'; document.getElementById('mysteryState').style.display = 'block'; document.getElementById('revealedState').style.display = 'none'; }
         function closePrizeVault() { document.getElementById('prizeVaultOverlay').style.display = 'none'; }
         function handleVaultClick(e) { if(e.target.id === 'prizeVaultOverlay' || e.target.id === 'revealedState') closePrizeVault(); }
+        
         function revealPrizes() {
-            document.getElementById('mysteryState').style.display = 'none'; document.getElementById('revealedState').style.display = 'block';
+            document.getElementById('mysteryState').style.display = 'none'; 
+            document.getElementById('revealedState').style.display = 'flex'; // Changed to flex for vertical centering
             const prizeGrid = document.getElementById('prizeGrid'); const noPrizeMsg = document.getElementById('noPrizeMsg'); prizeGrid.innerHTML = ''; 
             const winners = students.filter(s => parseInt(s.Points) >= 15);
             if (winners.length === 0) noPrizeMsg.style.display = 'block';
@@ -267,7 +276,6 @@
             activeKioskStudent = student.Name;
             const popup = document.getElementById('kioskPopup');
             
-            // UPDATED: Added identical thick-bordered yellow badge styling!
             document.getElementById('kioskPopupName').innerHTML = `${student.Name}<br><span style="display: inline-block; margin-top: 10px; font-size: 2.2rem; font-weight: 800; color: var(--dark); background: var(--yellow); padding: 5px 25px; border-radius: 30px; border: 4px solid var(--dark); box-shadow: 0 4px 0 var(--dark);">⭐ ${student.Points}</span>`;
             
             document.getElementById('kioskPopupStatus').textContent = "Waiting for teacher...";
@@ -289,7 +297,8 @@
                 
                 setAutoMode(rawResponse.autoMode);
 
-                const newStudents = rawResponse.students.map(s => ({ Name: s.Name, Points: s.Points, Artwork: s.Artwork, AvatarURL: s.AvatarURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(s.Name)}` }));
+                // ULTRA-RELIABLE AVATAR FALLBACK
+                const newStudents = rawResponse.students.map(s => ({ Name: s.Name, Points: s.Points, Artwork: s.Artwork, AvatarURL: s.AvatarURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(s.Name)}&background=random&color=fff&size=150&bold=true` }));
                 
                 if (students.length > 0) { 
                     newStudents.forEach(newStudent => {
