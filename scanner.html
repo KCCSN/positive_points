@@ -6,13 +6,16 @@
     <title>Teacher Remote & Scanner</title>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-    
     <script src="https://cdn.pubnub.com/sdk/javascript/pubnub.7.2.2.min.js"></script>
     
     <style>
         body { margin: 0; font-family: 'Fredoka', sans-serif; background: #222; color: white; text-align: center; }
         header { background: #ff4b72; padding: 15px; font-size: 1.5rem; font-weight: 800; }
         
+        /* MAIN DASHBOARD VIEWS */
+        #mainAppView { display: block; }
+        #mobileVaultView { display: none; flex-direction: column; height: 100vh; background: #222; overflow: hidden; }
+
         .remote-bar { background: #333; padding: 15px; display: flex; gap: 8px; justify-content: center; }
         .btn-remote { border: none; padding: 15px 10px; font-size: 1.1rem; font-family: 'Fredoka'; font-weight: 800; border-radius: 10px; cursor: pointer; flex: 1; }
         .btn-vault { background: #FFD166; color: #333; } .btn-reveal { background: #06D6A0; color: white; } .btn-close { background: #555; color: white; }
@@ -39,43 +42,69 @@
         #saveMessage { font-size: 1.2rem; font-weight: 800; padding: 15px; border-radius: 10px; display: none; margin-top: 15px; }
         .msg-success { background: #d4edda; color: #155724; }
         .btn-cancel { background: transparent; color: #aaa; border: 3px solid #aaa; padding: 10px 20px; border-radius: 50px; font-size: 1.2rem; margin-top: 20px; width: 100%; cursor: pointer; font-family: 'Fredoka'; font-weight: 600;}
+        
+        /* NEW: MOBILE VAULT SCROLLING UI */
+        .vault-list-container { flex: 1; overflow-y: auto; background: #333; border-radius: 15px; padding: 15px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; }
+        .vault-winner-card { background: white; color: black; border-radius: 10px; padding: 10px 15px; display: flex; align-items: center; gap: 15px; font-weight: bold; font-size: 1.3rem; box-shadow: 0 4px 0 #111;}
+        .vault-winner-card img { width: 50px; height: 50px; border-radius: 50%; border: 3px solid #222;}
     </style>
 </head>
 <body>
 
-    <header>📱 Teacher Hybrid Remote</header>
-    
-    <div class="remote-bar">
-        <button class="btn-remote btn-vault" onclick="sendRealtimeCommand('triggerVault')">🎁 Vault</button>
-        <button class="btn-remote btn-reveal" onclick="sendRealtimeCommand('revealVault')">🎉 Reveal</button>
-        <button class="btn-remote btn-close" onclick="sendRealtimeCommand('closeVault')">✖ Close</button>
-    </div>
-
-    <div id="autoToggleBtn" class="auto-toggle" onclick="toggleAutoMode()">
-        <h2 id="autoToggleText">▶️ Turn ON Auto-Check-In</h2>
-    </div>
-
-    <div id="scannerView">
-        <div id="reader"></div>
-        <div class="kiosk-status-text" id="kioskStatusMsg">...or waiting for laptop kiosk scan...</div>
-    </div>
-
-    <div id="actionPanel">
-        <img id="scanAvatar" src="">
-        <h2 id="scanName" style="font-size: 2.5rem; margin: 0;">Name</h2>
+    <div id="mainAppView">
+        <header>📱 Teacher Hybrid Remote</header>
         
-        <div class="btn-group">
-            <button class="btn btn-1" onclick="submitPoints(1)">+1</button>
-            <button class="btn btn-2" onclick="submitPoints(2)">+2</button>
+        <div class="remote-bar">
+            <button class="btn-remote btn-vault" onclick="sendRealtimeCommand('showVault'); openPrizeVaultLocal();">🎁 Vault</button>
+            <button class="btn-remote btn-reveal" onclick="sendRealtimeCommand('revealVault'); revealPrizeVaultLocal();">🎉 Reveal</button>
         </div>
 
-        <div class="custom-input-wrap">
-            <input type="number" id="customAmount" class="custom-input" placeholder="+/-">
-            <button class="btn btn-custom" onclick="submitCustomPoints()">Send</button>
+        <div id="autoToggleBtn" class="auto-toggle" onclick="toggleAutoMode()">
+            <h2 id="autoToggleText">▶️ Turn ON Auto-Check-In</h2>
         </div>
 
-        <div id="saveMessage">Saving...</div>
-        <button class="btn-cancel" onclick="resetRemote()">Cancel / Back to Camera</button>
+        <div id="scannerView">
+            <div id="reader"></div>
+            <div class="kiosk-status-text" id="kioskStatusMsg">...or waiting for laptop kiosk scan...</div>
+        </div>
+
+        <div id="actionPanel">
+            <img id="scanAvatar" src="">
+            <h2 id="scanName" style="font-size: 2.5rem; margin: 0;">Name</h2>
+            
+            <div class="btn-group">
+                <button class="btn btn-1" onclick="submitPoints(1)">+1</button>
+                <button class="btn btn-2" onclick="submitPoints(2)">+2</button>
+            </div>
+
+            <div class="custom-input-wrap">
+                <input type="number" id="customAmount" class="custom-input" placeholder="+/-">
+                <button class="btn btn-custom" onclick="submitCustomPoints()">Send</button>
+            </div>
+
+            <div id="saveMessage">Saving...</div>
+            <button class="btn-cancel" onclick="resetRemote()">Cancel / Back to Camera</button>
+        </div>
+    </div>
+
+    <div id="mobileVaultView">
+        <header style="background: #FFD166; color: #333;">🎁 Prize Vault Control</header>
+        
+        <div id="vaultLockedState" style="flex:1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;">
+            <h1 style="font-size: 5rem; margin:0;">🔒</h1>
+            <h2 style="color: #aaa;">Vault is on the Big Screen</h2>
+            <button class="btn-remote btn-reveal" style="padding: 20px; font-size: 2rem; width: 100%; margin-top: 20px;" onclick="sendRealtimeCommand('revealVault'); revealPrizeVaultLocal();">🎉 Reveal Winners</button>
+        </div>
+
+        <div id="vaultRevealedState" style="display: none; flex-direction: column; padding: 20px; flex: 1; min-height: 0;">
+            <h2 style="color: #FFD166; margin-top: 0; font-size: 2rem;">🏆 15-Point Club</h2>
+            <div id="mobileWinnerList" class="vault-list-container">
+                </div>
+        </div>
+
+        <div style="padding: 20px;">
+            <button class="btn-cancel" style="width: 100%; border-color: #FFD166; color: #FFD166; margin: 0;" onclick="sendRealtimeCommand('closeVault'); closePrizeVaultLocal();">✖ Close Vault Everywhere</button>
+        </div>
     </div>
 
     <script>
@@ -84,12 +113,12 @@
         const PUBNUB_PUBLISH_KEY = "pub-c-88fdc434-b3b5-4eae-963f-2ad1eac8d271";
         const PUBNUB_SUBSCRIBE_KEY = "sub-c-dfcda561-cd3f-48c6-8fba-e3ff29235b19";
 
-        // Initialize PubNub
         const pubnub = new PubNub({ publishKey: PUBNUB_PUBLISH_KEY, subscribeKey: PUBNUB_SUBSCRIBE_KEY, userId: "teacher_phone" });
         pubnub.subscribe({ channels: ["classroom_channel"] });
 
         let students = []; let activeStudentName = 'none'; let isAutoMode = 'off'; let html5QrcodeScanner = null;
 
+        // Listen for signals from the Big Screen!
         pubnub.addListener({
             message: function(event) {
                 if (event.message.action === "setActive" && isAutoMode === 'off') {
@@ -97,9 +126,48 @@
                     const student = students.find(s => s.Name.toLowerCase() === activeStudentName.toLowerCase());
                     if (student) showActionPanel(student);
                 }
+                // Two-Way Vault Sync: If laptop opens vault, phone opens too!
+                else if (event.message.action === "showVault" || event.message.action === "triggerVault") openPrizeVaultLocal();
+                else if (event.message.action === "revealVault") revealPrizeVaultLocal();
+                else if (event.message.action === "closeVault") closePrizeVaultLocal();
             }
         });
 
+        // --- LOCAL VAULT UI LOGIC ---
+        function openPrizeVaultLocal() {
+            document.getElementById('mainAppView').style.display = 'none';
+            document.getElementById('mobileVaultView').style.display = 'flex';
+            document.getElementById('vaultLockedState').style.display = 'flex';
+            document.getElementById('vaultRevealedState').style.display = 'none';
+            stopCamera();
+        }
+
+        function revealPrizeVaultLocal() {
+            document.getElementById('mainAppView').style.display = 'none';
+            document.getElementById('mobileVaultView').style.display = 'flex';
+            document.getElementById('vaultLockedState').style.display = 'none';
+            document.getElementById('vaultRevealedState').style.display = 'flex';
+            
+            // Build the scrollable list on the phone
+            const list = document.getElementById('mobileWinnerList');
+            list.innerHTML = '';
+            const winners = students.filter(s => parseInt(s.Points) >= 15);
+            
+            if(winners.length === 0) list.innerHTML = '<p style="color: #aaa; margin-top: 20px;">No winners yet.</p>';
+            winners.forEach(w => {
+                const safeName = w.Name ? encodeURIComponent(w.Name.trim()) : 'Student';
+                const avatar = w.AvatarURL && w.AvatarURL !== "" ? w.AvatarURL : `https://api.dicebear.com/7.x/initials/svg?seed=${safeName}`;
+                list.innerHTML += `<div class="vault-winner-card"><img src="${avatar}"> <div style="text-align: left;">${w.Name}<br><span style="color: #FF4B72;">⭐ ${w.Points}</span></div></div>`;
+            });
+        }
+
+        function closePrizeVaultLocal() {
+            document.getElementById('mobileVaultView').style.display = 'none';
+            document.getElementById('mainAppView').style.display = 'block';
+            startCamera();
+        }
+
+        // --- SCANNER & POINTS LOGIC ---
         function startCamera() {
             if (html5QrcodeScanner) return; 
             document.getElementById('scannerView').style.display = 'block';
@@ -122,7 +190,10 @@
         function showActionPanel(student) {
             stopCamera(); 
             document.getElementById('actionPanel').style.display = 'block';
-            document.getElementById('scanAvatar').src = student.AvatarURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${student.Name}`;
+            
+            const safeName = student.Name ? encodeURIComponent(student.Name.trim()) : 'Student';
+            document.getElementById('scanAvatar').src = student.AvatarURL && student.AvatarURL !== "" ? student.AvatarURL : `https://api.dicebear.com/7.x/initials/svg?seed=${safeName}`;
+            
             document.getElementById('scanName').textContent = student.Name;
             document.getElementById('customAmount').value = '';
             document.getElementById('saveMessage').style.display = 'none';
@@ -139,7 +210,6 @@
             msgBox.style.display = 'block';
             
             pubnub.publish({ channel: "classroom_channel", message: { action: "addPoints", name: activeStudentName, points: amount } });
-            
             fetch(`${GOOGLE_WEB_APP_URL}?action=addPoints&name=${encodeURIComponent(activeStudentName)}&points=${amount}&t=${new Date().getTime()}`, { mode: 'no-cors' });
             
             setTimeout(resetRemote, 1000); 
