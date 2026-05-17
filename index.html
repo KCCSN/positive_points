@@ -13,20 +13,17 @@
         :root { --dark: #2B2D42; --surface: #FFFFFF; --yellow: #FFD166; --primary: #FF4B72; --green: #06D6A0;}
         body { margin: 0; font-family: 'Fredoka', sans-serif; color: var(--dark); background: #111; overflow: hidden; }
 
-        /* NEON DOUBLE POINTS MODE */
         body.neon-mode .left-panel { box-shadow: inset 0 0 50px rgba(255, 75, 114, 0.5); }
         body.neon-mode .right-panel { background: #111; box-shadow: inset 0 0 50px rgba(6, 214, 160, 0.5); animation: none; }
         body.neon-mode .lb-card { box-shadow: 0 0 20px rgba(6, 214, 160, 0.8), inset 0 0 10px rgba(6, 214, 160, 0.5); border-color: var(--green); }
         body.neon-mode .art-frame { box-shadow: 0 0 40px rgba(255, 75, 114, 0.8); border-color: var(--primary); }
 
-        /* CLASS PROGRESS BAR */
         .class-progress-container { width: 100%; background: #222; height: 30px; position: relative; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; }
         .class-progress-fill { position: absolute; left: 0; top: 0; height: 100%; background: linear-gradient(90deg, #FF4B72, #FFD166, #06D6A0); transition: width 1s ease-in-out; width: 0%; }
-        .class-progress-text { position: relative; z-index: 2; color: white; font-weight: 800; font-size: 1rem; text-shadow: 1px 1px 0 #000; }
+        .class-progress-text { position: relative; z-index: 2; color: white; font-weight: 800; font-size: 1.1rem; text-shadow: 1px 1px 0 #000; }
 
         .split-layout { display: flex; height: calc(100vh - 30px); width: 100vw; position: relative; }
         
-        /* WEATHER OVERLAYS */
         .weather-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 50; }
         .weather-rain { background: url('https://cdn.pixabay.com/photo/2016/03/04/00/03/rain-1235240_1280.png'); opacity: 0.3; animation: rainFall 0.5s linear infinite; }
         .weather-snow { background: url('https://cdn.pixabay.com/photo/2020/11/11/08/17/snowflakes-5731976_1280.png'); opacity: 0.5; animation: rainFall 15s linear infinite; background-size: cover; }
@@ -41,6 +38,7 @@
         .nav-buttons { display: flex; gap: 10px; }
         .btn-admin { background: var(--surface); color: var(--dark); border: 4px solid var(--dark); padding: 10px 15px; font-size: 1.1rem; font-weight: 700; border-radius: 50px; cursor: pointer; }
         .btn-prize { background: var(--yellow); }
+        .btn-goal { background: #9C27B0; color: white; }
 
         .art-container { flex: 1; display: flex; flex-direction: column; min-height: 0; }
         .art-frame { width: 100%; height: 100%; border-radius: 30px; border: 8px solid var(--surface); background-color: #1a1a1a; background-size: contain; background-repeat: no-repeat; background-position: center; transition: all 0.5s; display: flex; align-items: center; justify-content: center; }
@@ -64,7 +62,6 @@
         .lb-card-info { flex: 1; display: flex; flex-direction: column; }
         .lb-card h3 { margin: 0; font-size: 2.2rem; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
         
-        /* 15-POINT MINI PROGRESS BAR */
         .mini-progress-bg { width: 100%; max-width: 200px; height: 8px; background: #eee; border-radius: 10px; margin-top: 5px; overflow: hidden; border: 2px solid #ccc;}
         .mini-progress-fill { height: 100%; background: var(--green); transition: width 0.5s; }
         
@@ -83,7 +80,7 @@
         
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(43, 45, 66, 0.8); display: none; align-items: center; justify-content: center; z-index: 10000; backdrop-filter: blur(8px); }
         .modal-overlay.active { display: flex; }
-        .modal-content { background: var(--surface); padding: 50px 40px 40px 40px; border-radius: 40px; max-width: 450px; text-align: center; position: relative; border: 8px solid var(--dark); box-shadow: 0 15px 0 rgba(0,0,0,0.3); }
+        .modal-content { background: var(--surface); padding: 40px; border-radius: 40px; max-width: 450px; width: 90%; text-align: center; position: relative; border: 8px solid var(--dark); box-shadow: 0 15px 0 rgba(0,0,0,0.3); }
         .close-btn { position: absolute; top: 15px; right: 25px; font-size: 2.5rem; font-weight: 700; cursor: pointer; color: var(--dark); }
         
         .mystery-box { font-size: 10rem; cursor: pointer; animation: shake 2s infinite ease-in-out; }
@@ -99,6 +96,10 @@
         .prize-card img { width: 90px; height: 90px; border-radius: 50%; border: 4px solid var(--dark); margin-bottom: 15px; background: white; }
         .prize-card h3 { margin: 0 0 15px 0; font-size: 1.6rem; font-weight: 800; color: var(--dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .prize-card p { margin: 0; font-size: 1.6rem; font-weight: 800; background: var(--yellow); color: var(--dark); padding: 5px 20px; border-radius: 30px; border: 4px solid var(--dark); display: inline-block; }
+
+        /* MODAL INPUTS */
+        .settings-input { width: 100%; padding: 12px; font-size: 1.2rem; border-radius: 10px; border: 3px solid #ddd; margin-bottom: 15px; box-sizing: border-box; font-family: 'Fredoka'; }
+        .settings-label { text-align: left; display: block; font-weight: 800; color: #555; margin-bottom: 5px; }
     </style>
 </head>
 <body>
@@ -116,6 +117,8 @@
                 <input type="text" id="searchInput" class="search-bar" placeholder="🔍 Find a student...">
                 <div class="nav-buttons">
                     <button onclick="openPrizeVault(false)" class="btn-admin btn-prize">🎁 Prize Vault</button>
+                    <button onclick="openPinModal('goal')" class="btn-admin btn-goal">🎯 Edit Goal</button>
+                    <button onclick="openPinModal('database')" class="btn-admin">⚙️ Database</button>
                 </div>
             </div>
 
@@ -183,6 +186,33 @@
         </div>
     </div>
 
+    <div id="pinModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 350px;">
+            <span class="close-btn" onclick="closePinModal()">&times;</span>
+            <h2 style="margin-top: 0; color: var(--dark);">Admin Access</h2>
+            <input type="password" id="pinInput" style="width: 80%; padding: 15px; font-size: 2rem; text-align: center; border: 4px solid var(--dark); border-radius: 15px; letter-spacing: 10px; margin-bottom: 20px;" placeholder="****" maxlength="4">
+            <button onclick="verifyPin()" class="btn-admin" style="background: var(--green); color: white; width: 100%; font-size: 1.5rem;">Unlock</button>
+        </div>
+    </div>
+
+    <div id="goalModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 400px;">
+            <span class="close-btn" onclick="document.getElementById('goalModal').classList.remove('active')">&times;</span>
+            <h2 style="margin-top: 0; color: var(--dark);">🎯 Edit Class Goal</h2>
+            
+            <label class="settings-label">Goal Emoji:</label>
+            <input type="text" id="goalEmojiInput" class="settings-input" value="🍕">
+            
+            <label class="settings-label">Goal Name:</label>
+            <input type="text" id="goalNameInput" class="settings-input" value="Pizza Party">
+            
+            <label class="settings-label">Target Amount:</label>
+            <input type="number" id="goalAmountInput" class="settings-input" value="500">
+            
+            <button class="btn-admin btn-prize" style="width: 100%; font-size: 1.5rem; margin-top: 10px;" onclick="saveGoalSettings()">Save Settings</button>
+        </div>
+    </div>
+
     <script>
         // ⚠️ PASTE YOUR KEYS AND URL HERE ⚠️
         const GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxlTv6HfOVB_AFua7XKePmCySDo5VsJeRpdF4jTgjt3nSm9v3Iz1pTdhO1GwkELAKNdhQ/exec";
@@ -195,8 +225,18 @@
         let students = []; let orderedStudents = []; let celebrationQueue = []; let isCelebrating = false;
         let activeKioskStudent = null; let kioskTimer = null; let isAutoMode = false; let scannedThisSession = new Set(); 
         let knownStudentCount = 0; let wasSearching = false; let artworkList = []; let artIndex = 0; let artInterval = null;
+        const ADMIN_SHEET_URL = "https://docs.google.com/spreadsheets/d/1_mwGR_ljLD3drdZ7F28jMZRLfia1Vg56Icvgtk2-N9Y/edit";
+        const ADMIN_PIN = "2009";
 
-        // FETCH WEATHER FOR MARTON, NZ (Lat: -40.06, Lon: 175.38)
+        // --- SAFE AVATAR FILTER ---
+        function getSafeAvatar(studentName, url) {
+            const safeName = studentName ? encodeURIComponent(studentName.trim()) : 'Student';
+            if (!url || url.trim() === "" || url.includes("github.io")) {
+                return `https://api.dicebear.com/7.x/bottts/svg?seed=${safeName}`;
+            }
+            return url;
+        }
+
         async function fetchWeather() {
             try {
                 const res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=-40.06&longitude=175.38&current_weather=true");
@@ -209,11 +249,9 @@
         }
         fetchWeather();
 
-        // REALTIME LISTENER
         pubnub.addListener({
             message: function(event) {
                 const msg = event.message;
-                
                 if (msg.action === "addPoints") {
                     const student = students.find(s => s.Name.toLowerCase() === msg.name.toLowerCase());
                     const orderedStudent = orderedStudents.find(s => s.Name.toLowerCase() === msg.name.toLowerCase());
@@ -221,7 +259,6 @@
                         const oldPoints = parseInt(student.Points); student.Points = oldPoints + msg.points;
                         if (orderedStudent) orderedStudent.Points = student.Points;
                         updateLeaderboardPoints(); updateClassGoal();
-                        
                         if (msg.points > 0) {
                             const isMilestone = (oldPoints < 15 && student.Points >= 15);
                             celebrationQueue.push({ student: student, pointsGained: msg.points, isMilestone: isMilestone, isDouble: msg.isDouble });
@@ -240,9 +277,57 @@
                 else if (msg.action === "closeVault") closePrizeVault(true);
                 else if (msg.action === "toggleAuto") setAutoMode(msg.state);
                 else if (msg.action === "scrollVault") { const grid = document.getElementById('prizeGrid'); if (grid) grid.scrollTop = msg.percent * (grid.scrollHeight - grid.clientHeight); }
-                else if (msg.action === "refreshData") fetchStudentData(); // Phone can force sync
+                else if (msg.action === "updateGoal") {
+                    localStorage.setItem('customGoalEmoji', msg.emoji); localStorage.setItem('customGoalName', msg.name); localStorage.setItem('customGoalAmount', msg.amount); updateClassGoal();
+                }
+                else if (msg.action === "refreshData") fetchStudentData(); 
             }
         });
+
+        // ADMIN & GOALS
+        let pinTarget = '';
+        function openPinModal(target) {
+            pinTarget = target; document.getElementById('pinInput').value = ''; 
+            document.getElementById('pinModal').classList.add('active'); document.getElementById('pinInput').focus(); 
+        }
+        function closePinModal() { document.getElementById('pinModal').classList.remove('active'); }
+        function verifyPin() { 
+            if (document.getElementById('pinInput').value === ADMIN_PIN) { 
+                closePinModal(); 
+                if(pinTarget === 'database') window.open(ADMIN_SHEET_URL, '_blank'); 
+                else if(pinTarget === 'goal') {
+                    document.getElementById('goalEmojiInput').value = localStorage.getItem('customGoalEmoji') || '🍕';
+                    document.getElementById('goalNameInput').value = localStorage.getItem('customGoalName') || 'Pizza Party';
+                    document.getElementById('goalAmountInput').value = localStorage.getItem('customGoalAmount') || 500;
+                    document.getElementById('goalModal').classList.add('active');
+                }
+            } else { alert("❌ Incorrect PIN!"); document.getElementById('pinInput').value = ''; } 
+        }
+        document.getElementById('pinInput').addEventListener('keyup', (e) => { if (e.key === 'Enter') verifyPin(); });
+
+        function saveGoalSettings() {
+            const emoji = document.getElementById('goalEmojiInput').value || '🍕';
+            const name = document.getElementById('goalNameInput').value || 'Pizza Party';
+            const amount = document.getElementById('goalAmountInput').value || 500;
+            
+            localStorage.setItem('customGoalEmoji', emoji);
+            localStorage.setItem('customGoalName', name);
+            localStorage.setItem('customGoalAmount', amount);
+            
+            document.getElementById('goalModal').classList.remove('active');
+            updateClassGoal();
+        }
+
+        function updateClassGoal() {
+            let total = 0; students.forEach(s => total += parseInt(s.Points) || 0);
+            let goalAmount = parseInt(localStorage.getItem('customGoalAmount')) || 500;
+            let goalEmoji = localStorage.getItem('customGoalEmoji') || '🍕';
+            let goalName = localStorage.getItem('customGoalName') || 'Pizza Party';
+
+            const pct = Math.min((total / goalAmount) * 100, 100);
+            document.getElementById('classProgressBar').style.width = pct + '%';
+            document.getElementById('classProgressText').textContent = `${goalEmoji} ${goalName} Goal: ${total} / ${goalAmount} Points!`;
+        }
 
         function fireConfetti() {
             var duration = 3000; var end = Date.now() + duration;
@@ -251,15 +336,6 @@
                 confetti({ particleCount: 10, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#FFD166', '#FF4B72', '#06D6A0'] });
                 if (Date.now() < end) requestAnimationFrame(frame);
             }());
-        }
-
-        function updateClassGoal() {
-            let total = 0; students.forEach(s => total += parseInt(s.Points) || 0);
-            let goal = Math.max(500, Math.ceil((students.length * 15) / 100) * 100); // Dynamic goal based on class size
-            if (total > goal) goal += 500;
-            const pct = Math.min((total / goal) * 100, 100);
-            document.getElementById('classProgressBar').style.width = pct + '%';
-            document.getElementById('classProgressText').textContent = `🍕 Pizza Party Goal: ${total} / ${goal} Points!`;
         }
 
         function getShuffleSeed(name) { if (!window[name]) window[name] = Math.random(); return window[name]; }
@@ -285,7 +361,7 @@
             if (isAutoMode) {
                 if (scannedThisSession.has(student.Name)) { const warning = document.getElementById('spamWarning'); warning.style.display = 'block'; setTimeout(() => warning.style.display = 'none', 3000); return; }
                 scannedThisSession.add(student.Name);
-                let pts = document.body.classList.contains('neon-mode') ? 2 : 1; // Double points check
+                let pts = document.body.classList.contains('neon-mode') ? 2 : 1;
                 pubnub.publish({ channel: "classroom_channel", message: { action: "addPoints", name: student.Name, points: pts, isDouble: pts===2 } });
                 fetch(`${GOOGLE_WEB_APP_URL}?action=addPoints&name=${encodeURIComponent(student.Name)}&points=${pts}`, { mode: 'no-cors' });
             } else {
@@ -318,9 +394,7 @@
                 setAutoMode(rawResponse.autoMode);
 
                 const newStudents = rawResponse.students.map(s => {
-                    const safeName = s.Name ? encodeURIComponent(s.Name.trim()) : 'Student';
-                    const safeAvatar = s.AvatarURL && s.AvatarURL.trim() !== "" ? s.AvatarURL : `https://api.dicebear.com/7.x/bottts/svg?seed=${safeName}`;
-                    return { Name: s.Name, Points: s.Points, Artwork: s.Artwork, AvatarURL: safeAvatar };
+                    return { Name: s.Name, Points: s.Points, Artwork: s.Artwork, AvatarURL: getSafeAvatar(s.Name, s.AvatarURL) };
                 });
                 
                 if (students.length > 0) { 

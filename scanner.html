@@ -18,6 +18,7 @@
         .remote-bar { background: #333; padding: 15px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
         .btn-remote { border: none; padding: 12px 10px; font-size: 1rem; font-family: 'Fredoka'; font-weight: 800; border-radius: 10px; cursor: pointer; flex: 1; min-width: 80px;}
         .btn-vault { background: #FFD166; color: #333; } .btn-reveal { background: #06D6A0; color: white; } .btn-close { background: #555; color: white; } .btn-fun { background: #9C27B0; color: white; }
+        .btn-admin { background: #FFFFFF; color: #222; } .btn-goal { background: #2196F3; color: white; }
         
         .auto-toggle { margin: 15px; padding: 15px; background: #444; border-radius: 20px; border: 4px solid #555; cursor: pointer; transition: 0.2s; }
         .auto-toggle h2 { margin: 0; font-size: 1.6rem; }
@@ -31,7 +32,6 @@
         #actionPanel { display: none; background: white; color: #333; margin: 15px; padding: 25px 20px; border-radius: 20px; position: relative;}
         #scanAvatar { width: 100px; height: 100px; border-radius: 50%; border: 6px solid #ff4b72; background: white;}
         
-        /* BEHAVIOR TAGS & COLOR */
         .color-picker { position: absolute; top: 20px; right: 20px; width: 40px; height: 40px; padding: 0; border: none; border-radius: 50%; cursor: pointer; }
         .tag-row { display: flex; gap: 5px; justify-content: center; margin-top: 15px; flex-wrap: wrap;}
         .tag-btn { background: #eee; border: 2px solid #ccc; padding: 8px 12px; border-radius: 20px; font-family: 'Fredoka'; font-weight: 700; cursor: pointer; color: #555; }
@@ -41,13 +41,20 @@
         .btn { border: none; padding: 15px 20px; font-size: 1.8rem; font-family: 'Fredoka'; font-weight: 800; border-radius: 15px; cursor: pointer; color: white; flex: 1; }
         .btn-1 { background: #4CAF50; } .btn-2 { background: #2196F3; }
 
-        /* UNDO TOAST */
         #undoToast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 15px 30px; border-radius: 50px; font-size: 1.2rem; font-weight: 800; box-shadow: 0 10px 20px rgba(0,0,0,0.5); display: none; z-index: 9000; cursor: pointer; border: 3px solid #ff4b72;}
         
         .btn-cancel { background: transparent; color: #aaa; border: 3px solid #aaa; padding: 10px 20px; border-radius: 50px; font-size: 1.2rem; margin-top: 15px; width: 100%; cursor: pointer; font-family: 'Fredoka'; font-weight: 600;}
         .vault-list-container { flex: 1; overflow-y: auto; background: #333; border-radius: 15px; padding: 15px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; }
         .vault-winner-card { background: white; color: black; border-radius: 10px; padding: 10px 15px; display: flex; align-items: center; gap: 15px; font-weight: bold; font-size: 1.3rem; box-shadow: 0 4px 0 #111;}
         .vault-winner-card img { width: 50px; height: 50px; border-radius: 50%; border: 3px solid #222; background: white;}
+
+        /* MODALS */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(43, 45, 66, 0.8); display: none; align-items: center; justify-content: center; z-index: 10000; backdrop-filter: blur(8px); }
+        .modal-overlay.active { display: flex; }
+        .modal-content { background: var(--surface, #FFF); padding: 40px; border-radius: 40px; max-width: 450px; width: 90%; text-align: center; position: relative; border: 8px solid var(--dark, #2B2D42); box-shadow: 0 15px 0 rgba(0,0,0,0.3); color: #2B2D42;}
+        .close-btn { position: absolute; top: 15px; right: 25px; font-size: 2.5rem; font-weight: 700; cursor: pointer; color: #2B2D42; }
+        .settings-input { width: 100%; padding: 12px; font-size: 1.2rem; border-radius: 10px; border: 3px solid #ddd; margin-bottom: 15px; box-sizing: border-box; font-family: 'Fredoka'; }
+        .settings-label { text-align: left; display: block; font-weight: 800; color: #555; margin-bottom: 5px; }
     </style>
 </head>
 <body>
@@ -63,7 +70,9 @@
         <div class="remote-bar">
             <button class="btn-remote btn-vault" onclick="sendRealtimeCommand('showVault'); openPrizeVaultLocal();">🎁 Vault</button>
             <button class="btn-remote btn-reveal" onclick="sendRealtimeCommand('revealVault'); revealPrizeVaultLocal();">🏆 Reveal</button>
-            <button id="doubleBtn" class="btn-remote" style="background:#555; color:white;" onclick="toggleDouble()">🔥 x2 Points</button>
+            <button class="btn-remote btn-goal" onclick="openPinModal('goal')">🎯 Goal</button>
+            <button class="btn-remote btn-admin" onclick="openPinModal('database')">⚙️ Admin</button>
+            <button id="doubleBtn" class="btn-remote" style="background:#555; color:white; min-width: 100%; margin-top: 5px;" onclick="toggleDouble()">🔥 Enable x2 Points</button>
         </div>
 
         <div id="autoToggleBtn" class="auto-toggle" onclick="toggleAutoMode()">
@@ -111,11 +120,41 @@
         <div style="padding: 20px;"><button class="btn-cancel" style="width: 100%; border-color: #FFD166; color: #FFD166; margin: 0;" onclick="sendRealtimeCommand('closeVault'); closePrizeVaultLocal();">✖ Close Vault Everywhere</button></div>
     </div>
 
+    <div id="pinModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 350px;">
+            <span class="close-btn" onclick="closePinModal()">&times;</span>
+            <h2 style="margin-top: 0;">Admin Access</h2>
+            <input type="password" id="pinInput" style="width: 80%; padding: 15px; font-size: 2rem; text-align: center; border: 4px solid #2B2D42; border-radius: 15px; letter-spacing: 10px; margin-bottom: 20px;" placeholder="****" maxlength="4">
+            <button onclick="verifyPin()" class="btn-remote" style="background: #06D6A0; color: white; width: 100%; font-size: 1.5rem; padding: 15px;">Unlock</button>
+        </div>
+    </div>
+
+    <div id="goalModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 400px;">
+            <span class="close-btn" onclick="document.getElementById('goalModal').classList.remove('active')">&times;</span>
+            <h2 style="margin-top: 0;">🎯 Edit Class Goal</h2>
+            
+            <label class="settings-label">Goal Emoji:</label>
+            <input type="text" id="goalEmojiInput" class="settings-input" value="🍕">
+            
+            <label class="settings-label">Goal Name:</label>
+            <input type="text" id="goalNameInput" class="settings-input" value="Pizza Party">
+            
+            <label class="settings-label">Target Amount:</label>
+            <input type="number" id="goalAmountInput" class="settings-input" value="500">
+            
+            <button class="btn-remote" style="background: #FFD166; color: #333; width: 100%; font-size: 1.5rem; margin-top: 10px; padding: 15px;" onclick="saveGoalSettings()">Broadcast Goal</button>
+        </div>
+    </div>
+
     <script>
         // ⚠️ PASTE YOUR KEYS AND URL HERE ⚠️
         const GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxlTv6HfOVB_AFua7XKePmCySDo5VsJeRpdF4jTgjt3nSm9v3Iz1pTdhO1GwkELAKNdhQ/exec";
         const PUBNUB_PUBLISH_KEY = "pub-c-88fdc434-b3b5-4eae-963f-2ad1eac8d271";
         const PUBNUB_SUBSCRIBE_KEY = "sub-c-dfcda561-cd3f-48c6-8fba-e3ff29235b19";
+
+        const ADMIN_SHEET_URL = "https://docs.google.com/spreadsheets/d/1_mwGR_ljLD3drdZ7F28jMZRLfia1Vg56Icvgtk2-N9Y/edit";
+        const ADMIN_PIN = "2009";
 
         const pubnub = new PubNub({ publishKey: PUBNUB_PUBLISH_KEY, subscribeKey: PUBNUB_SUBSCRIBE_KEY, userId: "teacher_phone" });
         pubnub.subscribe({ channels: ["classroom_channel"] });
@@ -124,7 +163,15 @@
         let html5QrcodeScanner = null; let scrollTimeout = null;
         let selectedTag = "None"; let undoData = null; let undoTimer = null;
 
-        // OFFLINE QUEUE MANAGER (Idea 19)
+        // SAFE AVATAR FILTER
+        function getSafeAvatar(studentName, url) {
+            const safeName = studentName ? encodeURIComponent(studentName.trim()) : 'Student';
+            if (!url || url.trim() === "" || url.includes("github.io")) {
+                return `https://api.dicebear.com/7.x/bottts/svg?seed=${safeName}`;
+            }
+            return url;
+        }
+
         let offlineQueue = JSON.parse(localStorage.getItem('classroomQueue') || '[]');
         function robustFetch(url) {
             fetch(url, { mode: 'no-cors' }).catch(err => {
@@ -143,7 +190,7 @@
                 if (event.message.action === "setActive" && isAutoMode === 'off') {
                     activeStudentName = event.message.name;
                     const student = students.find(s => s.Name.toLowerCase() === activeStudentName.toLowerCase());
-                    if (student) showActionPanel(student, true); // True means it came from kiosk, play sound!
+                    if (student) showActionPanel(student, true); 
                 }
                 else if (event.message.action === "showVault" || event.message.action === "triggerVault") openPrizeVaultLocal();
                 else if (event.message.action === "revealVault") revealPrizeVaultLocal();
@@ -164,7 +211,42 @@
             const list = document.getElementById('mobileWinnerList'); list.innerHTML = '';
             const winners = students.filter(s => parseInt(s.Points) >= 15);
             if(winners.length === 0) list.innerHTML = '<p style="color: #aaa;">No winners yet.</p>';
-            winners.forEach(w => { const safeName = w.Name ? encodeURIComponent(w.Name.trim()) : 'Student'; const avatar = w.AvatarURL && w.AvatarURL.trim() !== "" ? w.AvatarURL : `https://api.dicebear.com/7.x/bottts/svg?seed=${safeName}`; list.innerHTML += `<div class="vault-winner-card"><img src="${avatar}"> <div style="text-align: left;">${w.Name}<br><span style="color: #FF4B72;">⭐ ${w.Points}</span></div></div>`; });
+            winners.forEach(w => { 
+                const avatar = getSafeAvatar(w.Name, w.AvatarURL);
+                list.innerHTML += `<div class="vault-winner-card"><img src="${avatar}"> <div style="text-align: left;">${w.Name}<br><span style="color: #FF4B72;">⭐ ${w.Points}</span></div></div>`; 
+            });
+        }
+
+        // ADMIN PIN & GOALS
+        let pinTarget = '';
+        function openPinModal(target) {
+            pinTarget = target; document.getElementById('pinInput').value = ''; 
+            document.getElementById('pinModal').classList.add('active'); document.getElementById('pinInput').focus(); 
+        }
+        function closePinModal() { document.getElementById('pinModal').classList.remove('active'); }
+        function verifyPin() { 
+            if (document.getElementById('pinInput').value === ADMIN_PIN) { 
+                closePinModal(); 
+                if(pinTarget === 'database') window.open(ADMIN_SHEET_URL, '_blank'); 
+                else if(pinTarget === 'goal') {
+                    // Pre-fill with reasonable defaults just to seed the UI
+                    document.getElementById('goalEmojiInput').value = '🍕';
+                    document.getElementById('goalNameInput').value = 'Pizza Party';
+                    document.getElementById('goalAmountInput').value = 500;
+                    document.getElementById('goalModal').classList.add('active');
+                }
+            } else { alert("❌ Incorrect PIN!"); document.getElementById('pinInput').value = ''; } 
+        }
+        document.getElementById('pinInput').addEventListener('keyup', (e) => { if (e.key === 'Enter') verifyPin(); });
+
+        function saveGoalSettings() {
+            const emoji = document.getElementById('goalEmojiInput').value || '🍕';
+            const name = document.getElementById('goalNameInput').value || 'Pizza Party';
+            const amount = document.getElementById('goalAmountInput').value || 500;
+            
+            pubnub.publish({ channel: "classroom_channel", message: { action: "updateGoal", emoji: emoji, name: name, amount: amount } });
+            document.getElementById('goalModal').classList.remove('active');
+            alert("✅ Goal settings beamed to Big Screen!");
         }
 
         function startCamera() {
@@ -181,17 +263,15 @@
             stopCamera(); 
             if (isKioskScan) {
                 if (navigator.vibrate) navigator.vibrate([200]);
-                document.getElementById('dingSound').play().catch(e => {}); // Play sound if possible
+                document.getElementById('dingSound').play().catch(e => {}); 
             }
             document.getElementById('actionPanel').style.display = 'block';
             
-            const safeName = student.Name ? encodeURIComponent(student.Name.trim()) : 'Student';
-            document.getElementById('scanAvatar').src = student.AvatarURL && student.AvatarURL.trim() !== "" ? student.AvatarURL : `https://api.dicebear.com/7.x/bottts/svg?seed=${safeName}`;
+            document.getElementById('scanAvatar').src = getSafeAvatar(student.Name, student.AvatarURL);
             
             document.getElementById('scanName').textContent = student.Name;
             document.getElementById('scanPoints').textContent = student.Points;
             
-            // Reset tags
             document.querySelectorAll('.tag-btn').forEach(btn => btn.classList.remove('active'));
             selectedTag = "None";
         }
@@ -201,6 +281,7 @@
             const btn = document.getElementById('doubleBtn');
             btn.className = isDouble ? 'btn-remote double-on' : 'btn-remote';
             btn.style.background = isDouble ? '#FF4B72' : '#555';
+            btn.innerHTML = isDouble ? '🔥 Disable x2 Points' : '🔥 Enable x2 Points';
             sendRealtimeCommand('toggleDouble', { state: isDouble });
         }
 
@@ -216,15 +297,13 @@
             const newUrl = `https://api.dicebear.com/7.x/bottts/svg?seed=${safeName}&backgroundColor=${hex}`;
             document.getElementById('scanAvatar').src = newUrl;
             
-            // Send to sheets
             robustFetch(`${GOOGLE_WEB_APP_URL}?action=updateAvatar&name=${encodeURIComponent(activeStudentName)}&url=${encodeURIComponent(newUrl)}&t=${new Date().getTime()}`);
-            sendRealtimeCommand('refreshData'); // Tell laptop to re-download avatars
+            sendRealtimeCommand('refreshData'); 
         }
 
         function submitPoints(amount) {
             const finalAmount = isDouble ? amount * 2 : amount;
             
-            // Store for Undo
             undoData = { name: activeStudentName, points: finalAmount, tag: selectedTag };
             document.getElementById('undoToast').style.display = 'block';
             clearTimeout(undoTimer); undoTimer = setTimeout(() => { document.getElementById('undoToast').style.display = 'none'; undoData = null; }, 5000);
@@ -237,12 +316,11 @@
 
         function undoLastPoint() {
             if (!undoData) return;
-            // Reverse the point
             pubnub.publish({ channel: "classroom_channel", message: { action: "addPoints", name: undoData.name, points: -undoData.points, isDouble: false } });
             robustFetch(`${GOOGLE_WEB_APP_URL}?action=addPoints&name=${encodeURIComponent(undoData.name)}&points=${-undoData.points}&tag=UNDO&t=${new Date().getTime()}`);
             
             document.getElementById('undoToast').style.display = 'none'; undoData = null;
-            if (navigator.vibrate) navigator.vibrate([50, 50, 50]); // Error vibrate
+            if (navigator.vibrate) navigator.vibrate([50, 50, 50]); 
         }
 
         function resetRemote() {
