@@ -4,120 +4,129 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Classroom Digital Display</title>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;800&display=swap" rel="stylesheet">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;800&family=Nunito:wght@700;800&display=swap" rel="stylesheet">
+    
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <script src="https://cdn.pubnub.com/sdk/javascript/pubnub.7.2.2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
     <style>
         :root { 
-            --dark: #2B2D42; 
+            --dark: #1A1A24; 
             --surface: #FFFFFF; 
             --yellow: #FFD166; 
             --primary: #FF4B72; 
-            --green: #06D6A0;
+            --green: #06D6A0; 
+            --bg: #f4f4f0; 
         }
+        
         body { 
             margin: 0; 
-            font-family: 'Fredoka', sans-serif; 
             color: var(--dark); 
-            background: #111; 
             overflow: hidden; 
+            font-family: 'Nunito', sans-serif; 
+            background-color: var(--bg);
+            background-image: radial-gradient(#d1d1d1 2.5px, transparent 2.5px);
+            background-size: 25px 25px;
         }
+        
+        h1, h2, h3, .fredoka, .pts-badge { font-family: 'Fredoka', sans-serif; }
 
-        body.neon-mode .left-panel { box-shadow: inset 0 0 50px rgba(255, 75, 114, 0.5); }
-        body.neon-mode .right-panel { background: #111; box-shadow: inset 0 0 50px rgba(6, 214, 160, 0.5); animation: none; }
-        body.neon-mode .lb-card { box-shadow: 0 0 20px rgba(6, 214, 160, 0.8), inset 0 0 10px rgba(6, 214, 160, 0.5); border-color: var(--green); }
-        body.neon-mode .art-frame { box-shadow: 0 0 40px rgba(255, 75, 114, 0.8); border-color: var(--primary); }
+        body.neon-mode .lb-card { box-shadow: 4px 4px 0 var(--primary); border-color: var(--primary); }
+        body.neon-mode .polaroid { box-shadow: 8px 8px 0 var(--green); border-color: var(--green); }
+        body.neon-mode .class-progress-container { border-bottom: 5px solid var(--primary); }
 
-        .class-progress-container { width: 100%; background: #222; height: 30px; position: relative; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; }
-        .class-progress-fill { position: absolute; left: 0; top: 0; height: 100%; background: linear-gradient(90deg, #FF4B72, #FFD166, #06D6A0); transition: width 1s ease-in-out; width: 0%; }
-        .class-progress-text { position: relative; z-index: 2; color: white; font-weight: 800; font-size: 1.1rem; text-shadow: 1px 1px 0 #000; }
+        .class-progress-container { width: 100%; background: var(--surface); height: 30px; position: relative; z-index: 1000; border-bottom: 4px solid var(--dark); display: flex; align-items: center; justify-content: center; }
+        .class-progress-fill { position: absolute; left: 0; top: 0; height: 100%; background: var(--green); border-right: 4px solid var(--dark); transition: width 1s ease-in-out; width: 0%; }
+        .class-progress-text { position: relative; z-index: 2; color: var(--dark); font-weight: 800; font-size: 1rem; }
 
-        .split-layout { display: flex; height: calc(100vh - 30px); width: 100vw; position: relative; }
+        .split-layout { display: flex; height: calc(100vh - 30px); width: 100vw; position: relative; gap: 10px; padding: 10px; box-sizing: border-box;}
         
         .weather-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 50; }
         .weather-rain { background: url('https://cdn.pixabay.com/photo/2016/03/04/00/03/rain-1235240_1280.png'); opacity: 0.3; animation: rainFall 0.5s linear infinite; }
         .weather-snow { background: url('https://cdn.pixabay.com/photo/2020/11/11/08/17/snowflakes-5731976_1280.png'); opacity: 0.5; animation: rainFall 15s linear infinite; background-size: cover; }
         @keyframes rainFall { from { background-position: 0 0; } to { background-position: 0 100vh; } }
 
-        .left-panel { flex: 1; display: flex; flex-direction: column; gap: 20px; background: var(--dark); padding: 25px; box-sizing: border-box; position: relative; z-index: 100; transition: all 0.5s; }
-        .right-panel { flex: 1; display: flex; flex-direction: column; position: relative; background: linear-gradient(-45deg, #FF9A9E, #FECFEF, #a8edea, #00C6FF); background-size: 400% 400%; animation: gradientBG 15s ease infinite; padding: 20px; box-sizing: border-box; overflow: hidden; z-index: 100; transition: all 0.5s; }
-        @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        .left-panel { flex: 1; display: flex; flex-direction: column; gap: 15px; position: relative; z-index: 100; min-width: 0; }
+        .right-panel { flex: 1.2; display: flex; flex-direction: column; position: relative; overflow: hidden; z-index: 100; min-width: 0; }
 
-        .top-bar { display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
-        .search-bar { width: 100%; max-width: 250px; padding: 15px; font-size: 1.2rem; font-family: 'Fredoka', sans-serif; font-weight: 600; background: var(--surface); color: var(--dark); border: 5px solid var(--dark); border-radius: 50px; outline: none; }
-        .nav-buttons { display: flex; gap: 10px; }
-        .btn-admin { background: var(--surface); color: var(--dark); border: 4px solid var(--dark); padding: 10px 15px; font-size: 1.1rem; font-weight: 700; border-radius: 50px; cursor: pointer; font-family: 'Fredoka', sans-serif; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; gap: 10px; }
+        .search-bar { flex: 1; padding: 12px 20px; font-size: 1.1rem; font-weight: 800; background: var(--surface); color: var(--dark); border: 3px solid var(--dark); border-radius: 8px; box-shadow: 4px 4px 0 var(--dark); outline: none; }
+        .nav-buttons { display: flex; gap: 8px; }
+        .btn-admin { background: var(--surface); color: var(--dark); border: 3px solid var(--dark); padding: 10px 15px; font-size: 1rem; font-weight: 800; border-radius: 8px; cursor: pointer; box-shadow: 4px 4px 0 var(--dark); transition: transform 0.1s, box-shadow 0.1s; }
+        .btn-admin:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--dark); }
         .btn-prize { background: var(--yellow); }
         .btn-goal { background: #9C27B0; color: white; }
 
-        .art-container { flex: 1; display: flex; flex-direction: column; min-height: 0; }
-        .art-frame { width: 100%; height: 100%; border-radius: 30px; border: 8px solid var(--surface); background-color: #1a1a1a; background-size: contain; background-repeat: no-repeat; background-position: center; transition: all 0.5s; display: flex; align-items: center; justify-content: center; }
-        .no-art-text { color: #555; font-size: 2rem; font-weight: 800; display: none; }
+        .art-container { flex: 1; display: flex; align-items: center; justify-content: center; min-height: 0; padding: 10px; }
+        .polaroid { background: white; border: 4px solid var(--dark); box-shadow: 8px 8px 0 var(--dark); padding: 15px 15px 45px 15px; width: 100%; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; position: relative; transform: rotate(-1.5deg); border-radius: 3px; transition: all 0.3s;}
+        .art-frame { flex: 1; border: 3px solid var(--dark); background-color: #eaeaea; background-size: contain; background-repeat: no-repeat; background-position: center; border-radius: 2px; }
+        .polaroid-text { position: absolute; bottom: 10px; left: 0; width: 100%; text-align: center; font-size: 1.5rem; font-weight: 800; color: var(--dark); }
+        .no-art-text { display: none; }
 
-        .kiosk-bar { display: flex; align-items: center; justify-content: space-between; background: var(--surface); padding: 15px 25px; border-radius: 20px; border: 6px solid var(--dark); flex-shrink: 0; gap: 20px; }
-        #reader { width: 150px; border-radius: 10px; overflow: hidden; border: 4px solid var(--dark); }
-        .kiosk-info { display: flex; flex-direction: column; align-items: flex-end; justify-content: center; gap: 10px; }
-        #autoModeBadge { display: none; background: var(--green); color: white; padding: 10px 20px; border-radius: 50px; font-size: 1.1rem; font-weight: 800; border: 4px solid var(--dark); animation: pulse 2s infinite; }
-        .kiosk-label { font-size: 1.2rem; font-weight: 800; color: var(--primary); }
+        .kiosk-bar { display: flex; align-items: center; justify-content: space-between; background: var(--surface); padding: 10px 20px; border-radius: 8px; border: 3px solid var(--dark); box-shadow: 4px 4px 0 var(--dark); flex-shrink: 0; gap: 15px; }
+        #reader { width: 120px; border-radius: 5px; overflow: hidden; border: 3px solid var(--dark); }
+        .kiosk-info { display: flex; flex-direction: column; align-items: flex-end; justify-content: center; gap: 5px; }
+        #autoModeBadge { display: none; background: var(--green); color: white; padding: 5px 15px; border-radius: 5px; border: 3px solid var(--dark); font-weight: 800; }
+        .kiosk-label { font-size: 1.1rem; font-weight: 800; color: var(--primary); text-transform: uppercase; }
 
-        #kioskPopup { position: absolute; bottom: 150px; left: 25px; right: 25px; background: white; border: 6px solid var(--dark); border-radius: 20px; padding: 20px 40px; text-align: center; box-shadow: 10px 10px 0 rgba(0,0,0,0.5); display: none; z-index: 200; animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; }
+        #kioskPopup { position: absolute; bottom: 120px; left: 20px; right: 20px; background: white; border: 5px solid var(--dark); border-radius: 10px; padding: 20px; text-align: center; box-shadow: 8px 8px 0 var(--dark); display: none; z-index: 200; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; }
         @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
-        .leaderboard-wrapper { flex: 1; overflow: hidden; position: relative; mask-image: linear-gradient(to bottom, transparent, black 3%, black 97%, transparent); -webkit-mask-image: linear-gradient(to bottom, transparent, black 3%, black 97%, transparent); }
-        .scroll-track { display: flex; flex-direction: column; gap: 15px; animation: scrollUp 150s linear infinite; }
+        .leaderboard-wrapper { flex: 1; overflow: hidden; position: relative; mask-image: linear-gradient(to bottom, transparent, black 2%, black 98%, transparent); -webkit-mask-image: linear-gradient(to bottom, transparent, black 2%, black 98%, transparent); }
+        .scroll-track { display: flex; flex-direction: column; gap: 10px; animation: scrollUp 150s linear infinite; padding-right: 10px;}
         @keyframes scrollUp { 0% { transform: translateY(0); } 100% { transform: translateY(-50%); } }
         
-        .lb-card { background: var(--surface); border: 4px solid var(--dark); border-radius: 20px; padding: 20px 30px; display: flex; align-items: center; transition: all 0.3s; margin: 0 10px; }
-        .lb-card img { width: 70px; height: 70px; border-radius: 50%; border: 3px solid var(--dark); margin-right: 20px; background: white; }
-        .lb-card-info { flex: 1; display: flex; flex-direction: column; }
-        .lb-card h3 { margin: 0; font-size: 2.2rem; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+        .lb-card { background: var(--surface); border: 3px solid var(--dark); border-radius: 10px; padding: 10px 15px; display: flex; align-items: center; margin: 0 5px; box-shadow: 4px 4px 0 var(--dark); }
+        .lb-card img { width: 50px; height: 50px; border-radius: 5px; border: 3px solid var(--dark); margin-right: 15px; background: white; }
+        .lb-card-info { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+        .lb-card h3 { margin: 0; font-size: 1.8rem; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
         
-        .mini-progress-bg { width: 100%; max-width: 200px; height: 8px; background: #eee; border-radius: 10px; margin-top: 5px; overflow: hidden; border: 2px solid #ccc;}
+        .mini-progress-bg { width: 100%; max-width: 150px; height: 8px; background: #eee; border-radius: 4px; margin-top: 5px; overflow: hidden; border: 2px solid var(--dark);}
         .mini-progress-fill { height: 100%; background: var(--green); transition: width 0.5s; }
         
-        .lb-card p { margin: 0; font-size: 2rem; font-weight: 800; background: var(--yellow); padding: 5px 25px; border-radius: 30px; border: 4px solid var(--dark); }
+        .lb-card p { margin: 0; font-size: 1.5rem; font-weight: 800; background: var(--yellow); padding: 5px 20px; border-radius: 8px; border: 3px solid var(--dark); box-shadow: 2px 2px 0 var(--dark); }
 
-        #spamWarning { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 9999; display: none; background: #FF4B72; color: white; padding: 30px 50px; border-radius: 30px; font-size: 3rem; font-weight: 800; border: 8px solid var(--dark); box-shadow: 15px 15px 0 var(--dark); text-align: center; }
+        #spamWarning { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 9999; display: none; background: #FF4B72; color: white; padding: 20px 40px; border-radius: 10px; font-size: 2.5rem; font-weight: 800; border: 5px solid var(--dark); box-shadow: 10px 10px 0 var(--dark); text-align: center; }
 
-        .celebration-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(43, 45, 66, 0.95); display: none; align-items: center; justify-content: center; z-index: 9999; flex-direction: column; overflow: hidden; }
-        .sunburst { position: absolute; top: 50%; left: 50%; width: 200vw; height: 200vw; background: repeating-conic-gradient(var(--yellow) 0 15deg, #FFB703 15deg 30deg); animation: spinBurst 15s linear infinite; z-index: -1; opacity: 0.5; transform: translate(-50%, -50%); }
+        .celebration-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(244, 244, 240, 0.95); display: none; align-items: center; justify-content: center; z-index: 9999; flex-direction: column; overflow: hidden; }
+        .sunburst { position: absolute; top: 50%; left: 50%; width: 200vw; height: 200vw; background: repeating-conic-gradient(var(--yellow) 0 15deg, transparent 15deg 30deg); animation: spinBurst 15s linear infinite; z-index: -1; opacity: 0.3; transform: translate(-50%, -50%); }
         @keyframes spinBurst { 0% { transform: translate(-50%, -50%) rotate(0deg); } 100% { transform: translate(-50%, -50%) rotate(360deg); } }
         
-        .celebration-box { text-align: center; color: white; z-index: 10; }
-        .celebration-box img { width: 300px; height: 300px; border-radius: 50%; border: 12px solid white; margin: 20px 0; background: white;}
-        .anim-pop { animation: pop 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; }
+        .celebration-box { text-align: center; color: var(--dark); z-index: 10; background: white; border: 6px solid var(--dark); box-shadow: 15px 15px 0 var(--dark); padding: 40px; border-radius: 20px;}
+        .celebration-box img { width: 250px; height: 250px; border-radius: 10px; border: 5px solid var(--dark); margin: 20px 0; background: white; box-shadow: 8px 8px 0 var(--dark);}
+        .anim-pop { animation: pop 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; }
         @keyframes pop { 0% { transform: scale(0.2); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
         
-        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(43, 45, 66, 0.8); display: none; align-items: center; justify-content: center; z-index: 10000; backdrop-filter: blur(8px); }
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(26, 26, 36, 0.9); display: none; align-items: center; justify-content: center; z-index: 10000; backdrop-filter: blur(4px); }
         .modal-overlay.active { display: flex; }
-        .modal-content { background: var(--surface); padding: 40px; border-radius: 40px; max-width: 450px; width: 90%; text-align: center; position: relative; border: 8px solid var(--dark); box-shadow: 0 15px 0 rgba(0,0,0,0.3); }
-        .close-btn { position: absolute; top: 15px; right: 25px; font-size: 2.5rem; font-weight: 700; cursor: pointer; color: var(--dark); }
+        .modal-content { background: var(--surface); padding: 30px; border-radius: 10px; max-width: 400px; width: 90%; text-align: center; position: relative; border: 5px solid var(--dark); box-shadow: 8px 8px 0 var(--dark); }
+        .close-btn { position: absolute; top: 10px; right: 20px; font-size: 2rem; font-weight: 800; cursor: pointer; color: var(--dark); }
         
-        .mystery-box { font-size: 10rem; cursor: pointer; animation: shake 2s infinite ease-in-out; }
+        .mystery-box { font-size: 8rem; cursor: pointer; animation: shake 2s infinite ease-in-out; }
         @keyframes shake { 0%, 100% { transform: rotate(0deg); } 20%, 60% { transform: rotate(-10deg); } 40%, 80% { transform: rotate(10deg); } }
         
         #revealedState { width: 100%; display: none; flex-direction: column; align-items: center; z-index: 10; }
-        .prize-grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; max-width: 95vw; max-height: 60vh; overflow-y: auto; padding: 20px 10px; margin-top: 20px; scroll-behavior: smooth; }
-        .prize-grid::-webkit-scrollbar { width: 16px; }
-        .prize-grid::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); border-radius: 10px; }
-        .prize-grid::-webkit-scrollbar-thumb { background: var(--yellow); border-radius: 10px; border: 4px solid rgba(43, 45, 66, 0.95); }
+        .prize-grid { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; max-width: 95vw; max-height: 65vh; overflow-y: auto; padding: 10px; margin-top: 15px; scroll-behavior: smooth; }
+        .prize-grid::-webkit-scrollbar { width: 12px; }
+        .prize-grid::-webkit-scrollbar-track { background: var(--surface); border-left: 3px solid var(--dark); }
+        .prize-grid::-webkit-scrollbar-thumb { background: var(--yellow); border: 3px solid var(--dark); }
 
-        .prize-card { background: var(--surface); padding: 20px; border-radius: 20px; border: 6px solid var(--dark); box-shadow: 0 8px 0 var(--dark); text-align: center; width: 190px; }
-        .prize-card img { width: 90px; height: 90px; border-radius: 50%; border: 4px solid var(--dark); margin-bottom: 15px; background: white; }
-        .prize-card h3 { margin: 0 0 15px 0; font-size: 1.6rem; font-weight: 800; color: var(--dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .prize-card p { margin: 0; font-size: 1.6rem; font-weight: 800; background: var(--yellow); color: var(--dark); padding: 5px 20px; border-radius: 30px; border: 4px solid var(--dark); display: inline-block; }
+        .prize-card { background: var(--surface); padding: 15px; border-radius: 10px; border: 4px solid var(--dark); box-shadow: 4px 4px 0 var(--dark); text-align: center; width: 160px; }
+        .prize-card img { width: 80px; height: 80px; border-radius: 5px; border: 3px solid var(--dark); margin-bottom: 10px; background: white; }
+        .prize-card h3 { margin: 0 0 10px 0; font-size: 1.4rem; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .prize-card p { margin: 0; font-size: 1.4rem; font-weight: 800; background: var(--yellow); padding: 5px 15px; border-radius: 5px; border: 3px solid var(--dark); display: inline-block; }
 
-        .settings-input { width: 100%; padding: 12px; font-size: 1.2rem; border-radius: 10px; border: 3px solid #ddd; margin-bottom: 15px; box-sizing: border-box; font-family: 'Fredoka', sans-serif; }
-        .settings-label { text-align: left; display: block; font-weight: 800; color: #555; margin-bottom: 5px; }
+        .settings-input { width: 100%; padding: 10px; font-size: 1.2rem; border-radius: 8px; border: 3px solid var(--dark); margin-bottom: 15px; box-sizing: border-box; font-family: 'Nunito', sans-serif; font-weight: 800; box-shadow: inset 2px 2px 0 rgba(0,0,0,0.1);}
+        .settings-label { text-align: left; display: block; font-weight: 800; margin-bottom: 5px; }
     </style>
 </head>
 <body>
 
     <div class="class-progress-container">
         <div class="class-progress-fill" id="classProgressBar"></div>
-        <div class="class-progress-text" id="classProgressText">Loading Class Goal...</div>
+        <div class="class-progress-text fredoka" id="classProgressText">Loading Class Goal...</div>
     </div>
 
     <div class="split-layout">
@@ -135,8 +144,9 @@
             </div>
 
             <div class="art-container">
-                <div class="art-frame" id="artFrame">
-                    <div class="no-art-text" id="noArtText">Gathering Masterpieces...</div>
+                <div class="polaroid">
+                    <div class="art-frame" id="artFrame"></div>
+                    <div class="polaroid-text fredoka">🖼️ Student Gallery</div>
                 </div>
             </div>
 
@@ -149,8 +159,8 @@
             </div>
 
             <div id="kioskPopup">
-                <h2 style="font-size: 2.5rem; margin:0; color: var(--dark);" id="kioskPopupName">Name</h2>
-                <p style="font-size: 1.5rem; color: #555; margin: 15px 0 5px 0;" id="kioskPopupStatus">Waiting for teacher...</p>
+                <h2 style="font-size: 2.5rem; margin:0;" class="fredoka" id="kioskPopupName">Name</h2>
+                <p style="font-size: 1.3rem; margin: 10px 0 0 0;" id="kioskPopupStatus">Waiting for teacher...</p>
             </div>
         </div>
 
@@ -159,58 +169,57 @@
                 <div class="scroll-track" id="scrollTrack"></div>
             </div>
         </div>
-
     </div>
 
-    <div id="spamWarning">Nice try!<br>Already checked in. 🛑</div>
+    <div id="spamWarning" class="fredoka">Nice try!<br>Already checked in. 🛑</div>
     
     <div id="celebrationOverlay" class="celebration-overlay">
         <div class="sunburst"></div>
         <div id="celebrationBox" class="celebration-box">
-            <h1 style="font-size: 6rem; margin:0;">🎉 LEVEL UP! 🎉</h1>
+            <h1 style="font-size: 5rem; margin:0;" class="fredoka">🎉 LEVEL UP! 🎉</h1>
             <img id="celebrationAvatar" src="" alt="Student Avatar">
-            <h2 id="celebrationName" style="font-size: 5rem; margin:0;">Name</h2>
-            <div style="font-size: 6rem; color: var(--yellow); font-weight: 800;" id="celebrationPoints">+5</div>
+            <h2 id="celebrationName" style="font-size: 4rem; margin:0;" class="fredoka">Name</h2>
+            <div style="font-size: 5rem; color: var(--primary); font-weight: 800;" class="fredoka" id="celebrationPoints">+5</div>
         </div>
     </div>
 
     <div id="milestoneOverlay" class="celebration-overlay" style="z-index: 10005;">
-        <div class="sunburst" style="background: repeating-conic-gradient(#06D6A0 0 15deg, #05b586 15deg 30deg);"></div>
-        <div id="milestoneBox" class="celebration-box">
-            <h1 style="font-size: 6rem; margin:0; color: white; text-shadow: 4px 4px 0px #333;">🏆 15-POINT CLUB! 🏆</h1>
+        <div class="sunburst" style="background: repeating-conic-gradient(#06D6A0 0 15deg, transparent 15deg 30deg);"></div>
+        <div id="milestoneBox" class="celebration-box" style="border-color: var(--green); box-shadow: 15px 15px 0 var(--green);">
+            <h1 style="font-size: 5rem; margin:0; color: var(--green);" class="fredoka">🏆 15-POINT CLUB! 🏆</h1>
             <img id="milestoneAvatar" src="" alt="Student Avatar">
-            <h2 id="milestoneName" style="font-size: 6rem; margin:0;">Name</h2>
-            <div style="font-size: 4rem; color: var(--yellow); font-weight: 800; text-shadow: 4px 4px 0px #333; margin-top: 20px;">Unlocked the Prize Vault!</div>
+            <h2 id="milestoneName" style="font-size: 5rem; margin:0;" class="fredoka">Name</h2>
+            <div style="font-size: 3rem; color: var(--dark); font-weight: 800; margin-top: 15px;">Unlocked the Prize Vault!</div>
         </div>
     </div>
 
     <div id="prizeVaultOverlay" class="celebration-overlay">
-        <span class="close-btn" onclick="closePrizeVault(false)" style="color: white; right: 40px; top: 30px; font-size: 4rem; z-index: 100;">&times;</span>
+        <span class="close-btn" onclick="closePrizeVault(false)">&times;</span>
         <div id="mysteryState" style="text-align: center; z-index: 10;">
-            <h1 style="color: white; font-size: 6rem;">Who Unlocked a Prize?</h1>
+            <h1 style="font-size: 5rem; color: white;" class="fredoka">Who Unlocked a Prize?</h1>
             <div class="mystery-box" onclick="revealPrizes(false)">🎁</div>
         </div>
         <div id="revealedState">
-            <div class="sunburst" style="opacity: 0.2;"></div>
-            <h1 style="color: var(--yellow); font-size: 6rem; text-shadow: 6px 6px 0 var(--dark); margin: 0;">🏆 15-Point Club 🏆</h1>
+            <div class="sunburst"></div>
+            <h1 style="color: var(--dark); font-size: 5rem; margin: 0; background: white; padding: 10px 40px; border: 5px solid var(--dark); box-shadow: 8px 8px 0 var(--dark); border-radius: 15px;" class="fredoka">🏆 15-Point Club 🏆</h1>
             <div id="prizeGrid" class="prize-grid"></div>
-            <h2 id="noPrizeMsg" style="color: white; font-size: 3rem; display: none; margin-top: 50px;">Keep working hard! 🌟</h2>
+            <h2 id="noPrizeMsg" style="font-size: 3rem; color: white; display: none; margin-top: 50px;">Keep working hard! 🌟</h2>
         </div>
     </div>
 
     <div id="pinModal" class="modal-overlay">
-        <div class="modal-content" style="max-width: 350px;">
+        <div class="modal-content">
             <span class="close-btn" onclick="closePinModal()">&times;</span>
-            <h2 style="margin-top: 0; color: var(--dark);">Admin Access</h2>
-            <input type="password" id="pinInput" style="width: 80%; padding: 15px; font-size: 2rem; text-align: center; border: 4px solid var(--dark); border-radius: 15px; letter-spacing: 10px; margin-bottom: 20px;" placeholder="****" maxlength="4">
+            <h2 style="margin-top: 0;" class="fredoka">Admin Access</h2>
+            <input type="password" id="pinInput" class="settings-input" style="text-align: center; letter-spacing: 10px; font-size: 2rem;" placeholder="****" maxlength="4">
             <button type="button" onclick="verifyPin()" class="btn-admin" style="background: var(--green); color: white; width: 100%; font-size: 1.5rem;">Unlock</button>
         </div>
     </div>
 
     <div id="goalModal" class="modal-overlay">
-        <div class="modal-content" style="max-width: 400px;">
+        <div class="modal-content">
             <span class="close-btn" onclick="document.getElementById('goalModal').classList.remove('active')">&times;</span>
-            <h2 style="margin-top: 0; color: var(--dark);">🎯 Edit Class Goal</h2>
+            <h2 style="margin-top: 0;" class="fredoka">🎯 Edit Class Goal</h2>
             
             <label class="settings-label">Goal Emoji:</label>
             <input type="text" id="goalEmojiInput" class="settings-input" value="🍕">
@@ -226,7 +235,7 @@
     </div>
 
     <script>
-        // ⚠️ PASTE YOUR KEYS AND URL HERE ⚠️
+        // ⚠️ PRE-FILLED WITH YOUR KEYS! ⚠️
         const GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxlTv6HfOVB_AFua7XKePmCySDo5VsJeRpdF4jTgjt3nSm9v3Iz1pTdhO1GwkELAKNdhQ/exec";
         const PUBNUB_PUBLISH_KEY = "pub-c-88fdc434-b3b5-4eae-963f-2ad1eac8d271";
         const PUBNUB_SUBSCRIBE_KEY = "sub-c-dfcda561-cd3f-48c6-8fba-e3ff29235b19";
@@ -234,17 +243,33 @@
         const ADMIN_SHEET_URL = "https://docs.google.com/spreadsheets/d/1_mwGR_ljLD3drdZ7F28jMZRLfia1Vg56Icvgtk2-N9Y/edit";
         const ADMIN_PIN = "2009";
 
-        const pubnub = new PubNub({ publishKey: PUBNUB_PUBLISH_KEY, subscribeKey: PUBNUB_SUBSCRIBE_KEY, userId: "big_screen" });
+        const pubnub = new PubNub({ 
+            publishKey: PUBNUB_PUBLISH_KEY, 
+            subscribeKey: PUBNUB_SUBSCRIBE_KEY, 
+            userId: "big_screen" 
+        });
+        
         pubnub.subscribe({ channels: ["classroom_channel"] });
 
-        let students = []; let orderedStudents = []; let celebrationQueue = []; let isCelebrating = false;
-        let activeKioskStudent = null; let kioskTimer = null; let isAutoMode = false; let scannedThisSession = new Set(); 
-        let knownStudentCount = 0; let wasSearching = false; let artworkList = []; let artIndex = 0; let artInterval = null;
-        let isScrollPaused = false;
+        let students = []; 
+        let orderedStudents = []; 
+        let celebrationQueue = []; 
+        let isCelebrating = false;
+        let activeKioskStudent = null; 
+        let kioskTimer = null; 
+        let isAutoMode = false; 
+        let scannedThisSession = new Set(); 
+        let knownStudentCount = 0; 
+        let wasSearching = false; 
+        let artworkList = []; 
+        let artIndex = 0; 
+        let artInterval = null;
+        let isScrollPaused = false; 
 
         function getSafeAvatar(studentName, url) {
             const safeName = studentName ? encodeURIComponent(studentName.trim()) : 'Student';
             const strUrl = url ? url.toString().trim() : "";
+            
             if (!strUrl || !strUrl.startsWith("http") || strUrl.includes("github.io")) {
                 return `https://api.dicebear.com/7.x/bottts/svg?seed=${safeName}`;
             }
@@ -257,8 +282,12 @@
                 const data = await res.json();
                 const code = data.current_weather.weathercode;
                 const layer = document.getElementById('weatherLayer');
-                if ([51,53,55,61,63,65,80,81,82].includes(code)) layer.className = 'weather-layer weather-rain';
-                else if ([71,73,75,77,85,86].includes(code)) layer.className = 'weather-layer weather-snow';
+                
+                if ([51,53,55,61,63,65,80,81,82].includes(code)) {
+                    layer.className = 'weather-layer weather-rain';
+                } else if ([71,73,75,77,85,86].includes(code)) {
+                    layer.className = 'weather-layer weather-snow';
+                }
             } catch(e) {}
         }
         fetchWeather();
@@ -266,13 +295,19 @@
         pubnub.addListener({
             message: function(event) {
                 const msg = event.message;
+                
                 if (msg.action === "addPoints") {
                     const student = students.find(s => s.Name.toLowerCase() === msg.name.toLowerCase());
                     const orderedStudent = orderedStudents.find(s => s.Name.toLowerCase() === msg.name.toLowerCase());
+                    
                     if (student) {
-                        const oldPoints = parseInt(student.Points); student.Points = oldPoints + msg.points;
+                        const oldPoints = parseInt(student.Points); 
+                        student.Points = oldPoints + msg.points;
                         if (orderedStudent) orderedStudent.Points = student.Points;
-                        updateLeaderboardPoints(); updateClassGoal();
+                        
+                        updateLeaderboardPoints(); 
+                        updateClassGoal();
+                        
                         if (msg.points > 0) {
                             const isMilestone = (oldPoints < 15 && student.Points >= 15);
                             celebrationQueue.push({ student: student, pointsGained: msg.points, isMilestone: isMilestone, isDouble: msg.isDouble });
@@ -281,24 +316,35 @@
                     }
                 } 
                 else if (msg.action === "setActive") {
-                    if (msg.name === 'none') { activeKioskStudent = null; document.getElementById('kioskPopup').style.display = 'none'; } 
-                    else { const student = students.find(s => s.Name.toLowerCase() === msg.name.toLowerCase()); if (student) triggerKioskPopup(student); }
+                    if (msg.name === 'none') { 
+                        activeKioskStudent = null; 
+                        document.getElementById('kioskPopup').style.display = 'none'; 
+                    } else { 
+                        const student = students.find(s => s.Name.toLowerCase() === msg.name.toLowerCase()); 
+                        if (student) triggerKioskPopup(student); 
+                    }
                 }
-                else if (msg.action === "toggleDouble") document.body.classList.toggle('neon-mode', msg.state);
-                else if (msg.action === "partyConfetti") fireConfetti();
-                else if (msg.action === "showVault" || msg.action === "triggerVault") openPrizeVault(true);
-                else if (msg.action === "revealVault") revealPrizes(true);
-                else if (msg.action === "closeVault") closePrizeVault(true);
-                else if (msg.action === "toggleAuto") setAutoMode(msg.state);
+                else if (msg.action === "toggleDouble") { document.body.classList.toggle('neon-mode', msg.state); }
+                else if (msg.action === "partyConfetti") { fireConfetti(); }
+                else if (msg.action === "showVault" || msg.action === "triggerVault") { openPrizeVault(true); }
+                else if (msg.action === "revealVault") { revealPrizes(true); }
+                else if (msg.action === "closeVault") { closePrizeVault(true); }
+                else if (msg.action === "toggleAuto") { setAutoMode(msg.state); }
                 else if (msg.action === "toggleScroll") {
                     isScrollPaused = msg.paused;
                     applyScrollState();
                 }
-                else if (msg.action === "scrollVault") { const grid = document.getElementById('prizeGrid'); if (grid) grid.scrollTop = msg.percent * (grid.scrollHeight - grid.clientHeight); }
-                else if (msg.action === "updateGoal") {
-                    localStorage.setItem('customGoalEmoji', msg.emoji); localStorage.setItem('customGoalName', msg.name); localStorage.setItem('customGoalAmount', msg.amount); updateClassGoal();
+                else if (msg.action === "scrollVault") { 
+                    const grid = document.getElementById('prizeGrid'); 
+                    if (grid) grid.scrollTop = msg.percent * (grid.scrollHeight - grid.clientHeight); 
                 }
-                else if (msg.action === "refreshData") fetchStudentData(); 
+                else if (msg.action === "updateGoal") {
+                    localStorage.setItem('customGoalEmoji', msg.emoji); 
+                    localStorage.setItem('customGoalName', msg.name); 
+                    localStorage.setItem('customGoalAmount', msg.amount); 
+                    updateClassGoal();
+                }
+                else if (msg.action === "refreshData") { fetchStudentData(); }
             }
         });
 
@@ -311,31 +357,32 @@
         function applyScrollState() {
             const track = document.getElementById('scrollTrack');
             const btn = document.getElementById('btnPauseScroll');
-            if (track) {
-                track.style.animationPlayState = isScrollPaused ? 'paused' : 'running';
-            }
-            if (btn) {
-                btn.innerHTML = isScrollPaused ? '▶️ Play' : '⏸️ Pause';
-            }
+            if (track) track.style.animationPlayState = isScrollPaused ? 'paused' : 'running';
+            if (btn) btn.innerHTML = isScrollPaused ? '▶️ Play' : '⏸️ Pause';
         }
 
         let pinTarget = '';
         function openPinModal(target) {
-            pinTarget = target; document.getElementById('pinInput').value = ''; 
-            document.getElementById('pinModal').classList.add('active'); document.getElementById('pinInput').focus(); 
+            pinTarget = target; 
+            document.getElementById('pinInput').value = ''; 
+            document.getElementById('pinModal').classList.add('active'); 
+            document.getElementById('pinInput').focus(); 
         }
         function closePinModal() { document.getElementById('pinModal').classList.remove('active'); }
         function verifyPin() { 
             if (document.getElementById('pinInput').value === ADMIN_PIN) { 
                 closePinModal(); 
-                if(pinTarget === 'database') window.open(ADMIN_SHEET_URL, '_blank'); 
-                else if(pinTarget === 'goal') {
+                if (pinTarget === 'database') window.open(ADMIN_SHEET_URL, '_blank'); 
+                else if (pinTarget === 'goal') {
                     document.getElementById('goalEmojiInput').value = localStorage.getItem('customGoalEmoji') || '🍕';
                     document.getElementById('goalNameInput').value = localStorage.getItem('customGoalName') || 'Pizza Party';
                     document.getElementById('goalAmountInput').value = localStorage.getItem('customGoalAmount') || 500;
                     document.getElementById('goalModal').classList.add('active');
                 }
-            } else { alert("❌ Incorrect PIN!"); document.getElementById('pinInput').value = ''; } 
+            } else { 
+                alert("❌ Incorrect PIN!"); 
+                document.getElementById('pinInput').value = ''; 
+            } 
         }
         document.getElementById('pinInput').addEventListener('keyup', (e) => { if (e.key === 'Enter') verifyPin(); });
 
@@ -375,25 +422,52 @@
         function getShuffleSeed(name) { if (!window[name]) window[name] = Math.random(); return window[name]; }
         function shuffleArray(array) { return array.sort((a, b) => getShuffleSeed(a.Name) - getShuffleSeed(b.Name)); }
 
-        function openPrizeVault(fromRemote = false) { document.getElementById('prizeVaultOverlay').style.display = 'flex'; document.getElementById('mysteryState').style.display = 'block'; document.getElementById('revealedState').style.display = 'none'; if(!fromRemote) pubnub.publish({ channel: "classroom_channel", message: { action: "showVault" } }); }
-        function closePrizeVault(fromRemote = false) { document.getElementById('prizeVaultOverlay').style.display = 'none'; if(!fromRemote) pubnub.publish({ channel: "classroom_channel", message: { action: "closeVault" } }); }
-        function handleVaultClick(e) { if(e.target.id === 'prizeVaultOverlay' || e.target.id === 'revealedState') closePrizeVault(false); }
+        function openPrizeVault(fromRemote = false) { 
+            document.getElementById('prizeVaultOverlay').style.display = 'flex'; 
+            document.getElementById('mysteryState').style.display = 'block'; 
+            document.getElementById('revealedState').style.display = 'none'; 
+            if (!fromRemote) pubnub.publish({ channel: "classroom_channel", message: { action: "showVault" } });
+        }
+        function closePrizeVault(fromRemote = false) { 
+            document.getElementById('prizeVaultOverlay').style.display = 'none'; 
+            if (!fromRemote) pubnub.publish({ channel: "classroom_channel", message: { action: "closeVault" } });
+        }
+        function handleVaultClick(e) { if (e.target.id === 'prizeVaultOverlay' || e.target.id === 'revealedState') closePrizeVault(false); }
         function revealPrizes(fromRemote = false) {
-            document.getElementById('mysteryState').style.display = 'none'; document.getElementById('revealedState').style.display = 'flex'; 
-            const prizeGrid = document.getElementById('prizeGrid'); const noPrizeMsg = document.getElementById('noPrizeMsg'); prizeGrid.innerHTML = ''; 
+            document.getElementById('mysteryState').style.display = 'none'; 
+            document.getElementById('revealedState').style.display = 'flex'; 
+            
+            const prizeGrid = document.getElementById('prizeGrid'); 
+            const noPrizeMsg = document.getElementById('noPrizeMsg'); 
+            prizeGrid.innerHTML = ''; 
+            
             const winners = students.filter(s => parseInt(s.Points) >= 15);
-            if (winners.length === 0) noPrizeMsg.style.display = 'block';
-            else { noPrizeMsg.style.display = 'none'; winners.forEach((w, i) => { const c = document.createElement('div'); c.className = 'prize-card'; c.style.animationDelay = `${i * 0.15}s`; c.innerHTML = `<img src="${w.AvatarURL}" alt="Avatar"><h3>${w.Name}</h3><p>⭐ ${w.Points}</p>`; prizeGrid.appendChild(c); }); }
-            if(!fromRemote) pubnub.publish({ channel: "classroom_channel", message: { action: "revealVault" } });
+            if (winners.length === 0) { noPrizeMsg.style.display = 'block'; } 
+            else { 
+                noPrizeMsg.style.display = 'none'; 
+                winners.forEach((w, i) => { 
+                    const c = document.createElement('div'); 
+                    c.className = 'prize-card'; 
+                    c.style.animationDelay = `${i * 0.15}s`; 
+                    c.innerHTML = `<img src="${w.AvatarURL}" alt="Winner Avatar"><h3 class="fredoka">${w.Name}</h3><p class="pts-badge">⭐ ${w.Points}</p>`; 
+                    prizeGrid.appendChild(c); 
+                }); 
+            }
+            if (!fromRemote) pubnub.publish({ channel: "classroom_channel", message: { action: "revealVault" } });
         }
 
-        const html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: {width: 150, height: 150} }, false);
+        const html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: {width: 100, height: 100} }, false);
         html5QrcodeScanner.render((decodedText) => {
             const student = students.find(s => s.Name.toLowerCase() === decodedText.trim().toLowerCase());
             if (!student) return;
 
             if (isAutoMode) {
-                if (scannedThisSession.has(student.Name)) { const warning = document.getElementById('spamWarning'); warning.style.display = 'block'; setTimeout(() => warning.style.display = 'none', 3000); return; }
+                if (scannedThisSession.has(student.Name)) { 
+                    const warning = document.getElementById('spamWarning'); 
+                    warning.style.display = 'block'; 
+                    setTimeout(() => warning.style.display = 'none', 3000); 
+                    return; 
+                }
                 scannedThisSession.add(student.Name);
                 let pts = document.body.classList.contains('neon-mode') ? 2 : 1;
                 pubnub.publish({ channel: "classroom_channel", message: { action: "addPoints", name: student.Name, points: pts, isDouble: pts===2 } });
@@ -409,16 +483,22 @@
         function triggerKioskPopup(student) {
             activeKioskStudent = student.Name;
             const popup = document.getElementById('kioskPopup');
-            document.getElementById('kioskPopupName').innerHTML = `${student.Name}<br><span style="display: inline-block; margin-top: 10px; font-size: 2.2rem; font-weight: 800; color: var(--dark); background: var(--yellow); padding: 5px 25px; border-radius: 30px; border: 4px solid var(--dark);">⭐ ${student.Points}</span>`;
+            document.getElementById('kioskPopupName').innerHTML = `${student.Name}<br><span class="pts-badge" style="display: inline-block; margin-top: 10px; font-size: 1.8rem; background: var(--yellow); padding: 5px 25px; border-radius: 8px; border: 3px solid var(--dark); box-shadow: 2px 2px 0 var(--dark);">⭐ ${student.Points}</span>`;
             document.getElementById('kioskPopupStatus').textContent = "Waiting for teacher...";
             popup.style.display = 'block';
-            clearTimeout(kioskTimer); kioskTimer = setTimeout(() => { activeKioskStudent = null; popup.style.display = 'none'; }, 10000);
+            clearTimeout(kioskTimer); 
+            kioskTimer = setTimeout(() => { activeKioskStudent = null; popup.style.display = 'none'; }, 10000);
         }
 
         function setAutoMode(state) {
             isAutoMode = state === 'on';
-            if (isAutoMode) { document.getElementById('autoModeBadge').style.display = 'block'; document.querySelector('.kiosk-label').textContent = "AUTO-SCAN: GET +1 POINT!"; document.querySelector('.kiosk-label').style.color = "var(--green)"; } 
-            else { scannedThisSession.clear(); document.getElementById('autoModeBadge').style.display = 'none'; document.querySelector('.kiosk-label').textContent = "SCAN CARD HERE"; document.querySelector('.kiosk-label').style.color = "var(--primary)"; }
+            const badge = document.getElementById('autoModeBadge');
+            const label = document.querySelector('.kiosk-label');
+            if (isAutoMode) { 
+                badge.style.display = 'block'; label.textContent = "AUTO-SCAN: +1 POINT"; label.style.color = "var(--green)"; 
+            } else { 
+                scannedThisSession.clear(); badge.style.display = 'none'; label.textContent = "SCAN CARD HERE"; label.style.color = "var(--primary)"; 
+            }
         }
 
         async function fetchStudentData() {
@@ -480,23 +560,42 @@
                 if (artworkList.length > 0) {
                     document.getElementById('noArtText').style.display = 'none';
                     if (!artInterval) { cycleArt(); artInterval = setInterval(cycleArt, 6000); }
-                } else { document.getElementById('noArtText').style.display = 'block'; document.getElementById('artFrame').style.backgroundImage = 'none'; clearInterval(artInterval); artInterval = null; }
+                } else { 
+                    document.getElementById('noArtText').style.display = 'block'; 
+                    document.getElementById('artFrame').style.backgroundImage = 'none'; 
+                    clearInterval(artInterval); artInterval = null; 
+                }
             }
         }
-        function cycleArt() { if (artworkList.length === 0) return; document.getElementById('artFrame').style.backgroundImage = `url('${artworkList[artIndex]}')`; artIndex = (artIndex + 1) % artworkList.length; }
+        
+        function cycleArt() { 
+            if (artworkList.length === 0) return; 
+            document.getElementById('artFrame').style.backgroundImage = `url('${artworkList[artIndex]}')`; 
+            artIndex = (artIndex + 1) % artworkList.length; 
+        }
 
         function renderLeaderboard() {
-            const track = document.getElementById('scrollTrack'); const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            if (searchTerm) { wasSearching = true; track.style.animation = 'none'; track.innerHTML = buildCardsHTML(orderedStudents.filter(s => s.Name.toLowerCase().includes(searchTerm))); return; }
+            const track = document.getElementById('scrollTrack'); 
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            if (searchTerm) { 
+                wasSearching = true; 
+                track.style.animation = 'none'; 
+                track.innerHTML = buildCardsHTML(orderedStudents.filter(s => s.Name.toLowerCase().includes(searchTerm))); 
+                return; 
+            }
             
             track.style.animation = 'scrollUp 150s linear infinite';
             track.style.animationPlayState = isScrollPaused ? 'paused' : 'running';
-
+            
             if (knownStudentCount !== students.length || wasSearching) {
                 if (orderedStudents.length !== students.length) orderedStudents = shuffleArray([...students]);
                 track.innerHTML = buildCardsHTML(orderedStudents) + buildCardsHTML(orderedStudents);
-                knownStudentCount = students.length; wasSearching = false;
-            } else { updateLeaderboardPoints(); }
+                knownStudentCount = students.length; 
+                wasSearching = false;
+            } else { 
+                updateLeaderboardPoints(); 
+            }
         }
         
         function buildCardsHTML(arr) { 
@@ -504,24 +603,28 @@
                 <div class="lb-card" data-student="${s.Name.replace(/[^a-zA-Z0-9]/g, '-')}">
                     <img src="${s.AvatarURL}" alt="Student Avatar">
                     <div class="lb-card-info">
-                        <h3>${s.Name}</h3>
-                        <div class="mini-progress-bg"><div class="mini-progress-fill" style="width: ${Math.min((s.Points/15)*100, 100)}%"></div></div>
+                        <h3 class="fredoka">${s.Name}</h3>
+                        <div class="mini-progress-bg">
+                            <div class="mini-progress-fill" style="width: ${Math.min((s.Points/15)*100, 100)}%"></div>
+                        </div>
                     </div>
                     <p class="pts-badge">⭐ ${s.Points}</p>
-                </div>`).join(''); 
+                </div>`
+            ).join(''); 
         }
         
         function updateLeaderboardPoints() { 
             students.forEach(s => { 
                 const safeName = s.Name.replace(/[^a-zA-Z0-9]/g, '-'); 
-                document.querySelectorAll(`[data-student="${safeName}"] .pts-badge`).forEach(b => b.innerHTML = `⭐ ${s.Points}`); 
-                document.querySelectorAll(`[data-student="${safeName}"] .mini-progress-fill`).forEach(b => b.style.width = `${Math.min((s.Points/15)*100, 100)}%`); 
+                document.querySelectorAll(`[data-student="${safeName}"] .pts-badge`).forEach(b => { b.innerHTML = `⭐ ${s.Points}`; }); 
+                document.querySelectorAll(`[data-student="${safeName}"] .mini-progress-fill`).forEach(b => { b.style.width = `${Math.min((s.Points/15)*100, 100)}%`; }); 
             }); 
         }
         
         document.getElementById('searchInput').addEventListener('input', renderLeaderboard);
 
-        fetchStudentData(); setInterval(fetchStudentData, 15000); 
+        fetchStudentData(); 
+        setInterval(fetchStudentData, 15000); 
     </script>
 </body>
 </html>
