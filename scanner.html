@@ -16,7 +16,7 @@
         #mobileVaultView { display: none; flex-direction: column; height: 100vh; background: #222; overflow: hidden; }
 
         .remote-bar { background: #333; padding: 15px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
-        .btn-remote { border: none; padding: 12px 10px; font-size: 1rem; font-family: 'Fredoka'; font-weight: 800; border-radius: 10px; cursor: pointer; flex: 1; min-width: 80px;}
+        .btn-remote { border: none; padding: 12px 10px; font-size: 1rem; font-family: 'Fredoka', sans-serif; font-weight: 800; border-radius: 10px; cursor: pointer; flex: 1; min-width: 80px;}
         .btn-vault { background: #FFD166; color: #333; } .btn-reveal { background: #06D6A0; color: white; } .btn-close { background: #555; color: white; } .btn-fun { background: #9C27B0; color: white; }
         .btn-admin { background: #FFFFFF; color: #222; } .btn-goal { background: #2196F3; color: white; }
         
@@ -24,6 +24,10 @@
         .auto-toggle h2 { margin: 0; font-size: 1.6rem; }
         .auto-on { background: #06D6A0; border-color: white; color: black; box-shadow: 0 0 20px rgba(6, 214, 160, 0.5); }
         .double-on { background: #FF4B72; border-color: white; color: white; box-shadow: 0 0 20px rgba(255, 75, 114, 0.5); }
+
+        /* SEARCH UI */
+        .search-container { margin: 0 15px 15px 15px; position: relative; }
+        .remote-search { width: 100%; padding: 15px; font-size: 1.2rem; font-family: 'Fredoka', sans-serif; font-weight: 800; border: 3px solid #222; border-radius: 10px; box-shadow: 4px 4px 0 #222; outline: none; box-sizing: border-box; text-align: center; }
 
         #scannerView { padding: 15px; }
         #reader { border-radius: 15px; overflow: hidden; background: #000; min-height: 250px; border: 4px solid #444;}
@@ -34,16 +38,16 @@
         
         .color-picker { position: absolute; top: 20px; right: 20px; width: 40px; height: 40px; padding: 0; border: none; border-radius: 50%; cursor: pointer; }
         .tag-row { display: flex; gap: 5px; justify-content: center; margin-top: 15px; flex-wrap: wrap;}
-        .tag-btn { background: #eee; border: 2px solid #ccc; padding: 8px 12px; border-radius: 20px; font-family: 'Fredoka'; font-weight: 700; cursor: pointer; color: #555; }
+        .tag-btn { background: #eee; border: 2px solid #ccc; padding: 8px 12px; border-radius: 20px; font-family: 'Fredoka', sans-serif; font-weight: 700; cursor: pointer; color: #555; }
         .tag-btn.active { background: #06D6A0; color: white; border-color: #06D6A0; }
         
         .btn-group { display: flex; gap: 10px; justify-content: center; margin-top: 15px; }
-        .btn { border: none; padding: 15px 20px; font-size: 1.8rem; font-family: 'Fredoka'; font-weight: 800; border-radius: 15px; cursor: pointer; color: white; flex: 1; }
+        .btn { border: none; padding: 15px 20px; font-size: 1.8rem; font-family: 'Fredoka', sans-serif; font-weight: 800; border-radius: 15px; cursor: pointer; color: white; flex: 1; }
         .btn-1 { background: #4CAF50; } .btn-2 { background: #2196F3; }
 
         #undoToast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 15px 30px; border-radius: 50px; font-size: 1.2rem; font-weight: 800; box-shadow: 0 10px 20px rgba(0,0,0,0.5); display: none; z-index: 9000; cursor: pointer; border: 3px solid #ff4b72;}
         
-        .btn-cancel { background: transparent; color: #aaa; border: 3px solid #aaa; padding: 10px 20px; border-radius: 50px; font-size: 1.2rem; margin-top: 15px; width: 100%; cursor: pointer; font-family: 'Fredoka'; font-weight: 600;}
+        .btn-cancel { background: transparent; color: #aaa; border: 3px solid #aaa; padding: 10px 20px; border-radius: 50px; font-size: 1.2rem; margin-top: 15px; width: 100%; cursor: pointer; font-family: 'Fredoka', sans-serif; font-weight: 600;}
         .vault-list-container { flex: 1; overflow-y: auto; background: #333; border-radius: 15px; padding: 15px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; }
         .vault-winner-card { background: white; color: black; border-radius: 10px; padding: 10px 15px; display: flex; align-items: center; gap: 15px; font-weight: bold; font-size: 1.3rem; box-shadow: 0 4px 0 #111;}
         .vault-winner-card img { width: 50px; height: 50px; border-radius: 50%; border: 3px solid #222; background: white;}
@@ -53,7 +57,7 @@
         .modal-overlay.active { display: flex; }
         .modal-content { background: var(--surface, #FFF); padding: 40px; border-radius: 40px; max-width: 450px; width: 90%; text-align: center; position: relative; border: 8px solid var(--dark, #2B2D42); box-shadow: 0 15px 0 rgba(0,0,0,0.3); color: #2B2D42;}
         .close-btn { position: absolute; top: 15px; right: 25px; font-size: 2.5rem; font-weight: 700; cursor: pointer; color: #2B2D42; }
-        .settings-input { width: 100%; padding: 12px; font-size: 1.2rem; border-radius: 10px; border: 3px solid #ddd; margin-bottom: 15px; box-sizing: border-box; font-family: 'Fredoka'; }
+        .settings-input { width: 100%; padding: 12px; font-size: 1.2rem; border-radius: 10px; border: 3px solid #ddd; margin-bottom: 15px; box-sizing: border-box; font-family: 'Fredoka', sans-serif; }
         .settings-label { text-align: left; display: block; font-weight: 800; color: #555; margin-bottom: 5px; }
     </style>
 </head>
@@ -68,6 +72,7 @@
         </header>
         
         <div class="remote-bar">
+            <button id="btnPauseScrollRemote" class="btn-remote" style="background:#ddd; color:#333;" onclick="toggleScrollRemote()">⏸️ Pause</button>
             <button class="btn-remote btn-vault" onclick="sendRealtimeCommand('showVault'); openPrizeVaultLocal();">🎁 Vault</button>
             <button class="btn-remote btn-reveal" onclick="sendRealtimeCommand('revealVault'); revealPrizeVaultLocal();">🏆 Reveal</button>
             <button class="btn-remote btn-goal" onclick="openPinModal('goal')">🎯 Goal</button>
@@ -79,6 +84,11 @@
             <h2 id="autoToggleText">▶️ Turn ON Auto-Check-In</h2>
         </div>
 
+        <div class="search-container">
+            <input type="text" id="remoteSearchInput" class="remote-search" list="studentDatalist" placeholder="🔍 Search & Select Student..." onchange="handleRemoteSearch(this.value)">
+            <datalist id="studentDatalist"></datalist>
+        </div>
+
         <div id="scannerView">
             <div id="reader"></div>
             <div class="kiosk-status-text" id="kioskStatusMsg">...or waiting for laptop kiosk scan...</div>
@@ -86,7 +96,7 @@
 
         <div id="actionPanel">
             <input type="color" id="avatarColor" class="color-picker" title="Change Avatar Color" onchange="updateAvatarColor(this.value)">
-            <img id="scanAvatar" src="">
+            <img id="scanAvatar" src="" alt="Student Avatar">
             <h2 id="scanName" style="font-size: 2.2rem; margin: 0;">Name</h2>
             <div style="font-size: 1.5rem; color: #555; font-weight: 800;">⭐ <span id="scanPoints">0</span></div>
             
@@ -125,7 +135,7 @@
             <span class="close-btn" onclick="closePinModal()">&times;</span>
             <h2 style="margin-top: 0;">Admin Access</h2>
             <input type="password" id="pinInput" style="width: 80%; padding: 15px; font-size: 2rem; text-align: center; border: 4px solid #2B2D42; border-radius: 15px; letter-spacing: 10px; margin-bottom: 20px;" placeholder="****" maxlength="4">
-            <button onclick="verifyPin()" class="btn-remote" style="background: #06D6A0; color: white; width: 100%; font-size: 1.5rem; padding: 15px;">Unlock</button>
+            <button type="button" onclick="verifyPin()" class="btn-remote" style="background: #06D6A0; color: white; width: 100%; font-size: 1.5rem; padding: 15px;">Unlock</button>
         </div>
     </div>
 
@@ -143,7 +153,7 @@
             <label class="settings-label">Target Amount:</label>
             <input type="number" id="goalAmountInput" class="settings-input" value="500">
             
-            <button class="btn-remote" style="background: #FFD166; color: #333; width: 100%; font-size: 1.5rem; margin-top: 10px; padding: 15px;" onclick="saveGoalSettings()">Broadcast Goal</button>
+            <button type="button" class="btn-remote" style="background: #FFD166; color: #333; width: 100%; font-size: 1.5rem; margin-top: 10px; padding: 15px;" onclick="saveGoalSettings()">Broadcast Goal</button>
         </div>
     </div>
 
@@ -156,14 +166,26 @@
         const ADMIN_SHEET_URL = "https://docs.google.com/spreadsheets/d/1_mwGR_ljLD3drdZ7F28jMZRLfia1Vg56Icvgtk2-N9Y/edit";
         const ADMIN_PIN = "2009";
 
-        const pubnub = new PubNub({ publishKey: PUBNUB_PUBLISH_KEY, subscribeKey: PUBNUB_SUBSCRIBE_KEY, userId: "teacher_phone" });
+        const pubnub = new PubNub({ 
+            publishKey: PUBNUB_PUBLISH_KEY, 
+            subscribeKey: PUBNUB_SUBSCRIBE_KEY, 
+            userId: "teacher_phone" 
+        });
+        
         pubnub.subscribe({ channels: ["classroom_channel"] });
 
-        let students = []; let activeStudentName = 'none'; let isAutoMode = 'off'; let isDouble = false; 
-        let html5QrcodeScanner = null; let scrollTimeout = null;
-        let selectedTag = "None"; let undoData = null; let undoTimer = null;
+        let students = []; 
+        let activeStudentName = 'none'; 
+        let isAutoMode = 'off'; 
+        let isDouble = false; 
+        let html5QrcodeScanner = null; 
+        let scrollTimeout = null;
+        let selectedTag = "None"; 
+        let undoData = null; 
+        let undoTimer = null;
+        let isScrollPaused = false; // NEW PAUSE STATE
 
-        // --- UPGRADED SAFE AVATAR FILTER ---
+        // SAFE AVATAR FILTER
         function getSafeAvatar(studentName, url) {
             const safeName = studentName ? encodeURIComponent(studentName.trim()) : 'Student';
             const strUrl = url ? url.toString().trim() : "";
@@ -174,15 +196,20 @@
         }
 
         let offlineQueue = JSON.parse(localStorage.getItem('classroomQueue') || '[]');
+        
         function robustFetch(url) {
             fetch(url, { mode: 'no-cors' }).catch(err => {
-                offlineQueue.push(url); localStorage.setItem('classroomQueue', JSON.stringify(offlineQueue));
+                offlineQueue.push(url); 
+                localStorage.setItem('classroomQueue', JSON.stringify(offlineQueue));
             });
         }
+        
         setInterval(() => {
             if (navigator.onLine && offlineQueue.length > 0) {
                 const url = offlineQueue.shift();
-                fetch(url, { mode: 'no-cors' }).then(() => localStorage.setItem('classroomQueue', JSON.stringify(offlineQueue))).catch(e => offlineQueue.unshift(url));
+                fetch(url, { mode: 'no-cors' })
+                    .then(() => localStorage.setItem('classroomQueue', JSON.stringify(offlineQueue)))
+                    .catch(e => offlineQueue.unshift(url));
             }
         }, 5000);
 
@@ -193,52 +220,141 @@
                     const student = students.find(s => s.Name.toLowerCase() === activeStudentName.toLowerCase());
                     if (student) showActionPanel(student, true); 
                 }
-                else if (event.message.action === "showVault" || event.message.action === "triggerVault") openPrizeVaultLocal();
-                else if (event.message.action === "revealVault") revealPrizeVaultLocal();
-                else if (event.message.action === "closeVault") closePrizeVaultLocal();
+                else if (event.message.action === "showVault" || event.message.action === "triggerVault") {
+                    openPrizeVaultLocal();
+                }
+                else if (event.message.action === "revealVault") {
+                    revealPrizeVaultLocal();
+                }
+                else if (event.message.action === "closeVault") {
+                    closePrizeVaultLocal();
+                }
                 else if (event.message.action === "addPoints") {
                     const student = students.find(s => s.Name.toLowerCase() === event.message.name.toLowerCase());
                     if (student) student.Points = parseInt(student.Points) + event.message.points;
                 }
+                else if (event.message.action === "toggleScroll") {
+                    // Sync pause state if toggled from laptop
+                    isScrollPaused = event.message.paused;
+                    document.getElementById('btnPauseScrollRemote').innerHTML = isScrollPaused ? '▶️ Play' : '⏸️ Pause';
+                }
             }
         });
 
-        function syncVaultScroll(e) { if (scrollTimeout) return; scrollTimeout = setTimeout(() => { const maxScroll = e.target.scrollHeight - e.target.clientHeight || 1; pubnub.publish({ channel: "classroom_channel", message: { action: "scrollVault", percent: e.target.scrollTop / maxScroll } }); scrollTimeout = null; }, 100); }
+        // --- NEW: TOGGLE SCROLL FROM PHONE ---
+        function toggleScrollRemote() {
+            isScrollPaused = !isScrollPaused;
+            document.getElementById('btnPauseScrollRemote').innerHTML = isScrollPaused ? '▶️ Play' : '⏸️ Pause';
+            pubnub.publish({ channel: "classroom_channel", message: { action: "toggleScroll", paused: isScrollPaused } });
+        }
 
-        function openPrizeVaultLocal() { document.getElementById('mainAppView').style.display = 'none'; document.getElementById('mobileVaultView').style.display = 'flex'; document.getElementById('vaultLockedState').style.display = 'flex'; document.getElementById('vaultRevealedState').style.display = 'none'; stopCamera(); }
-        function closePrizeVaultLocal() { document.getElementById('mobileVaultView').style.display = 'none'; document.getElementById('mainAppView').style.display = 'block'; startCamera(); }
-        function revealPrizeVaultLocal() {
-            document.getElementById('mainAppView').style.display = 'none'; document.getElementById('mobileVaultView').style.display = 'flex'; document.getElementById('vaultLockedState').style.display = 'none'; document.getElementById('vaultRevealedState').style.display = 'flex';
-            const list = document.getElementById('mobileWinnerList'); list.innerHTML = '';
-            const winners = students.filter(s => parseInt(s.Points) >= 15);
-            if(winners.length === 0) list.innerHTML = '<p style="color: #aaa;">No winners yet.</p>';
-            winners.forEach(w => { 
-                const avatar = getSafeAvatar(w.Name, w.AvatarURL);
-                list.innerHTML += `<div class="vault-winner-card"><img src="${avatar}"> <div style="text-align: left;">${w.Name}<br><span style="color: #FF4B72;">⭐ ${w.Points}</span></div></div>`; 
+        // --- NEW: HANDLE REMOTE SEARCH ---
+        function populateDatalist() {
+            const datalist = document.getElementById('studentDatalist');
+            datalist.innerHTML = '';
+            students.forEach(s => {
+                const option = document.createElement('option');
+                option.value = s.Name;
+                datalist.appendChild(option);
             });
         }
 
-        // ADMIN PIN & GOALS
+        function handleRemoteSearch(val) {
+            if (!val) return;
+            const student = students.find(s => s.Name.toLowerCase() === val.trim().toLowerCase());
+            
+            if (student) {
+                // Clear the search bar
+                document.getElementById('remoteSearchInput').value = '';
+                
+                // Mimic a perfect physical scan
+                activeStudentName = student.Name; 
+                sendRealtimeCommand('setActive', { name: student.Name }); 
+                
+                // Show action panel (false = no physical ding/vibrate since we did it manually)
+                showActionPanel(student, false); 
+            }
+        }
+
+        function syncVaultScroll(e) { 
+            if (scrollTimeout) return; 
+            scrollTimeout = setTimeout(() => { 
+                const maxScroll = e.target.scrollHeight - e.target.clientHeight || 1; 
+                pubnub.publish({ channel: "classroom_channel", message: { action: "scrollVault", percent: e.target.scrollTop / maxScroll } }); 
+                scrollTimeout = null; 
+            }, 100); 
+        }
+
+        function openPrizeVaultLocal() { 
+            document.getElementById('mainAppView').style.display = 'none'; 
+            document.getElementById('mobileVaultView').style.display = 'flex'; 
+            document.getElementById('vaultLockedState').style.display = 'flex'; 
+            document.getElementById('vaultRevealedState').style.display = 'none'; 
+            stopCamera(); 
+        }
+        
+        function closePrizeVaultLocal() { 
+            document.getElementById('mobileVaultView').style.display = 'none'; 
+            document.getElementById('mainAppView').style.display = 'block'; 
+            startCamera(); 
+        }
+        
+        function revealPrizeVaultLocal() {
+            document.getElementById('mainAppView').style.display = 'none'; 
+            document.getElementById('mobileVaultView').style.display = 'flex'; 
+            document.getElementById('vaultLockedState').style.display = 'none'; 
+            document.getElementById('vaultRevealedState').style.display = 'flex';
+            
+            const list = document.getElementById('mobileWinnerList'); 
+            list.innerHTML = '';
+            
+            const winners = students.filter(s => parseInt(s.Points) >= 15);
+            if (winners.length === 0) {
+                list.innerHTML = '<p style="color: #888;">No winners yet.</p>';
+            }
+            
+            winners.forEach(w => { 
+                const avatar = getSafeAvatar(w.Name, w.AvatarURL);
+                list.innerHTML += `
+                    <div class="vault-winner-card">
+                        <img src="${avatar}" alt="Winner Avatar"> 
+                        <div style="text-align: left;" class="fredoka">
+                            ${w.Name}<br>
+                            <span style="color: #FF4B72;">⭐ ${w.Points}</span>
+                        </div>
+                    </div>`; 
+            });
+        }
+
         let pinTarget = '';
         function openPinModal(target) {
-            pinTarget = target; document.getElementById('pinInput').value = ''; 
-            document.getElementById('pinModal').classList.add('active'); document.getElementById('pinInput').focus(); 
+            pinTarget = target; 
+            document.getElementById('pinInput').value = ''; 
+            document.getElementById('pinModal').classList.add('active'); 
+            document.getElementById('pinInput').focus(); 
         }
-        function closePinModal() { document.getElementById('pinModal').classList.remove('active'); }
+        function closePinModal() { 
+            document.getElementById('pinModal').classList.remove('active'); 
+        }
         function verifyPin() { 
             if (document.getElementById('pinInput').value === ADMIN_PIN) { 
                 closePinModal(); 
-                if(pinTarget === 'database') window.open(ADMIN_SHEET_URL, '_blank'); 
-                else if(pinTarget === 'goal') {
-                    // Pre-fill with reasonable defaults just to seed the UI
-                    document.getElementById('goalEmojiInput').value = '🍕';
-                    document.getElementById('goalNameInput').value = 'Pizza Party';
-                    document.getElementById('goalAmountInput').value = 500;
+                if (pinTarget === 'database') {
+                    window.open(ADMIN_SHEET_URL, '_blank'); 
+                } else if (pinTarget === 'goal') {
+                    document.getElementById('goalEmojiInput').value = localStorage.getItem('customGoalEmoji') || '🍕';
+                    document.getElementById('goalNameInput').value = localStorage.getItem('customGoalName') || 'Pizza Party';
+                    document.getElementById('goalAmountInput').value = localStorage.getItem('customGoalAmount') || 500;
                     document.getElementById('goalModal').classList.add('active');
                 }
-            } else { alert("❌ Incorrect PIN!"); document.getElementById('pinInput').value = ''; } 
+            } else { 
+                alert("❌ Incorrect PIN!"); 
+                document.getElementById('pinInput').value = ''; 
+            } 
         }
-        document.getElementById('pinInput').addEventListener('keyup', (e) => { if (e.key === 'Enter') verifyPin(); });
+        document.getElementById('pinInput').addEventListener('keyup', (e) => { 
+            if (e.key === 'Enter') verifyPin(); 
+        });
 
         function saveGoalSettings() {
             const emoji = document.getElementById('goalEmojiInput').value || '🍕';
@@ -251,14 +367,26 @@
         }
 
         function startCamera() {
-            if (html5QrcodeScanner) return; document.getElementById('scannerView').style.display = 'block';
+            if (html5QrcodeScanner) return; 
+            document.getElementById('scannerView').style.display = 'block';
+            
             html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: {width: 250, height: 250} }, false);
             html5QrcodeScanner.render((decodedText) => {
                 const student = students.find(s => s.Name.toLowerCase() === decodedText.trim().toLowerCase());
-                if (student) { activeStudentName = student.Name; sendRealtimeCommand('setActive', { name: student.Name }); showActionPanel(student, false); }
+                if (student) { 
+                    activeStudentName = student.Name; 
+                    sendRealtimeCommand('setActive', { name: student.Name }); 
+                    showActionPanel(student, false); 
+                }
             }, () => {});
         }
-        function stopCamera() { if (html5QrcodeScanner) { html5QrcodeScanner.clear(); html5QrcodeScanner = null; } document.getElementById('scannerView').style.display = 'none'; }
+        function stopCamera() { 
+            if (html5QrcodeScanner) { 
+                html5QrcodeScanner.clear(); 
+                html5QrcodeScanner = null; 
+            } 
+            document.getElementById('scannerView').style.display = 'none'; 
+        }
 
         function showActionPanel(student, isKioskScan) {
             stopCamera(); 
@@ -281,15 +409,19 @@
             isDouble = !isDouble;
             const btn = document.getElementById('doubleBtn');
             btn.className = isDouble ? 'btn-remote double-on' : 'btn-remote';
-            btn.style.background = isDouble ? '#FF4B72' : '#555';
+            btn.style.background = isDouble ? 'var(--primary)' : 'var(--dark)';
             btn.innerHTML = isDouble ? '🔥 Disable x2 Points' : '🔥 Enable x2 Points';
             sendRealtimeCommand('toggleDouble', { state: isDouble });
         }
 
         function toggleTag(btn, tag) {
             document.querySelectorAll('.tag-btn').forEach(b => b.classList.remove('active'));
-            if (selectedTag === tag) { selectedTag = "None"; } 
-            else { btn.classList.add('active'); selectedTag = tag; }
+            if (selectedTag === tag) { 
+                selectedTag = "None"; 
+            } else { 
+                btn.classList.add('active'); 
+                selectedTag = tag; 
+            }
         }
 
         function updateAvatarColor(hexColor) {
@@ -307,7 +439,12 @@
             
             undoData = { name: activeStudentName, points: finalAmount, tag: selectedTag };
             document.getElementById('undoToast').style.display = 'block';
-            clearTimeout(undoTimer); undoTimer = setTimeout(() => { document.getElementById('undoToast').style.display = 'none'; undoData = null; }, 5000);
+            
+            clearTimeout(undoTimer); 
+            undoTimer = setTimeout(() => { 
+                document.getElementById('undoToast').style.display = 'none'; 
+                undoData = null; 
+            }, 5000);
             
             pubnub.publish({ channel: "classroom_channel", message: { action: "addPoints", name: activeStudentName, points: finalAmount, isDouble: isDouble } });
             robustFetch(`${GOOGLE_WEB_APP_URL}?action=addPoints&name=${encodeURIComponent(activeStudentName)}&points=${finalAmount}&tag=${encodeURIComponent(selectedTag)}&t=${new Date().getTime()}`);
@@ -320,13 +457,16 @@
             pubnub.publish({ channel: "classroom_channel", message: { action: "addPoints", name: undoData.name, points: -undoData.points, isDouble: false } });
             robustFetch(`${GOOGLE_WEB_APP_URL}?action=addPoints&name=${encodeURIComponent(undoData.name)}&points=${-undoData.points}&tag=UNDO&t=${new Date().getTime()}`);
             
-            document.getElementById('undoToast').style.display = 'none'; undoData = null;
+            document.getElementById('undoToast').style.display = 'none'; 
+            undoData = null;
             if (navigator.vibrate) navigator.vibrate([50, 50, 50]); 
         }
 
         function resetRemote() {
             document.getElementById('actionPanel').style.display = 'none';
-            activeStudentName = 'none'; sendRealtimeCommand('setActive', { name: 'none' }); startCamera(); 
+            activeStudentName = 'none'; 
+            sendRealtimeCommand('setActive', { name: 'none' }); 
+            startCamera(); 
         }
 
         function toggleAutoMode() {
@@ -334,18 +474,32 @@
             sendRealtimeCommand('toggleAuto', { state: isAutoMode });
             robustFetch(`${GOOGLE_WEB_APP_URL}?action=toggleAuto&state=${isAutoMode}&t=${new Date().getTime()}`); 
             
-            const btn = document.getElementById('autoToggleBtn'); const txt = document.getElementById('autoToggleText');
-            if (isAutoMode === 'on') { btn.className = 'auto-toggle auto-on'; txt.innerHTML = '⏹️ TURN OFF Auto-Check-In'; document.getElementById('kioskStatusMsg').innerHTML = '<span style="color: #06D6A0;">🟢 Kiosk handling scans automatically.</span>'; } 
-            else { btn.className = 'auto-toggle'; txt.innerHTML = '▶️ Turn ON Auto-Check-In'; document.getElementById('kioskStatusMsg').innerHTML = '...or waiting for laptop kiosk scan...'; }
+            const btn = document.getElementById('autoToggleBtn'); 
+            const txt = document.getElementById('autoToggleText');
+            if (isAutoMode === 'on') { 
+                btn.className = 'auto-toggle auto-on'; 
+                txt.innerHTML = '⏹️ TURN OFF Auto-Check-In'; 
+            } else { 
+                btn.className = 'auto-toggle'; 
+                txt.innerHTML = '▶️ Turn ON Auto-Check-In'; 
+            }
         }
 
-        function sendRealtimeCommand(action, extras = {}) { pubnub.publish({ channel: "classroom_channel", message: { action: action, ...extras } }); }
+        function sendRealtimeCommand(action, extras = {}) { 
+            pubnub.publish({ channel: "classroom_channel", message: { action: action, ...extras } }); 
+        }
 
         async function loadData() {
             const res = await fetch(GOOGLE_WEB_APP_URL + '?action=get&t=' + new Date().getTime());
-            const data = await res.json(); students = data.students;
+            const data = await res.json(); 
+            students = data.students;
+            
+            // Populate the Search Datalist
+            populateDatalist();
         }
-        loadData(); startCamera();
+        
+        loadData(); 
+        startCamera();
     </script>
 </body>
 </html>
