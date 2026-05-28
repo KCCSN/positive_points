@@ -29,6 +29,7 @@
             background-image: radial-gradient(#d1d1d1 2.5px, transparent 2.5px); 
             background-size: 25px 25px;
         }
+        
         .fredoka { font-family: 'Fredoka', sans-serif; }
         
         header { 
@@ -94,42 +95,223 @@
             text-align: center;
         }
 
-        .auto-toggle { margin: 0 15px 15px 15px; padding: 15px; background: white; border-radius: 10px; border: 3px solid var(--dark); box-shadow: 4px 4px 0 var(--dark); cursor: pointer; }
+        .auto-toggle { 
+            margin: 0 15px 15px 15px; 
+            padding: 15px; 
+            background: white; 
+            border-radius: 10px; 
+            border: 3px solid var(--dark); 
+            box-shadow: 4px 4px 0 var(--dark); 
+            cursor: pointer; 
+        }
         .auto-toggle h2 { margin: 0; font-size: 1.5rem; }
         .auto-on { background: var(--green); color: white; }
         .double-on { background: var(--primary); color: white; }
 
         #scannerView { padding: 0 15px 15px 15px; }
-        #reader { border-radius: 10px; overflow: hidden; background: white; min-height: 250px; border: 3px solid var(--dark); box-shadow: 4px 4px 0 var(--dark);}
-        .kiosk-status-text { font-size: 1.2rem; margin-top: 15px; font-weight: 800; background: white; padding: 10px; border-radius: 10px; border: 3px solid var(--dark); display: inline-block;}
+        #reader { 
+            border-radius: 10px; 
+            overflow: hidden; 
+            background: white; 
+            min-height: 250px; 
+            border: 3px solid var(--dark); 
+            box-shadow: 4px 4px 0 var(--dark);
+        }
+        .kiosk-status-text { 
+            font-size: 1.2rem; 
+            margin-top: 15px; 
+            font-weight: 800; 
+            background: white; 
+            padding: 10px; 
+            border-radius: 10px; 
+            border: 3px solid var(--dark); 
+            display: inline-block;
+            color: var(--dark);
+        }
 
-        #actionPanel { display: none; background: white; margin: 15px; padding: 25px 20px; border-radius: 10px; position: relative; border: 4px solid var(--dark); box-shadow: 8px 8px 0 var(--dark);}
-        #scanAvatar { width: 100px; height: 100px; border-radius: 10px; border: 4px solid var(--dark); background: white; box-shadow: 4px 4px 0 var(--dark);}
+        #actionPanel { 
+            display: none; 
+            background: white; 
+            margin: 15px; 
+            padding: 25px 20px; 
+            border-radius: 10px; 
+            position: relative; 
+            border: 4px solid var(--dark); 
+            box-shadow: 8px 8px 0 var(--dark);
+        }
+        #scanAvatar { 
+            width: 100px; 
+            height: 100px; 
+            border-radius: 10px; 
+            border: 4px solid var(--dark); 
+            background: white; 
+            box-shadow: 4px 4px 0 var(--dark);
+        }
         
-        .color-picker { position: absolute; top: 20px; right: 20px; width: 40px; height: 40px; padding: 0; border: 3px solid var(--dark); border-radius: 8px; cursor: pointer; box-shadow: 2px 2px 0 var(--dark);}
+        .color-picker { 
+            position: absolute; 
+            top: 20px; 
+            right: 20px; 
+            width: 40px; 
+            height: 40px; 
+            padding: 0; 
+            border: 3px solid var(--dark); 
+            border-radius: 8px; 
+            cursor: pointer; 
+            box-shadow: 2px 2px 0 var(--dark);
+        }
+        
         .tag-row { display: flex; gap: 8px; justify-content: center; margin-top: 15px; flex-wrap: wrap;}
-        .tag-btn { background: white; border: 2px solid var(--dark); padding: 8px 12px; border-radius: 8px; font-family: 'Nunito', sans-serif; font-weight: 800; cursor: pointer; color: var(--dark); box-shadow: 2px 2px 0 var(--dark);}
+        .tag-btn { 
+            background: white; 
+            border: 2px solid var(--dark); 
+            padding: 8px 12px; 
+            border-radius: 8px; 
+            font-family: 'Nunito', sans-serif; 
+            font-weight: 800; 
+            cursor: pointer; 
+            color: var(--dark); 
+            box-shadow: 2px 2px 0 var(--dark);
+        }
         .tag-btn.active { background: var(--green); color: white; }
         
         .btn-group { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
-        .btn { border: 3px solid var(--dark); padding: 15px 20px; font-size: 1.8rem; font-family: 'Fredoka', sans-serif; font-weight: 800; border-radius: 10px; cursor: pointer; color: white; flex: 1; box-shadow: 4px 4px 0 var(--dark);}
-        .btn-1 { background: #4CAF50; } .btn-2 { background: #2196F3; }
+        .btn { 
+            border: 3px solid var(--dark); 
+            padding: 15px 20px; 
+            font-size: 1.8rem; 
+            font-family: 'Fredoka', sans-serif; 
+            font-weight: 800; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            color: white; 
+            flex: 1; 
+            box-shadow: 4px 4px 0 var(--dark);
+        }
+        .btn-1 { background: #4CAF50; } 
+        .btn-2 { background: #2196F3; }
 
-        #undoToast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--dark); color: white; padding: 15px 30px; border-radius: 10px; font-size: 1.2rem; font-weight: 800; box-shadow: 8px 8px 0 rgba(0,0,0,0.3); display: none; z-index: 9000; cursor: pointer; border: 3px solid var(--primary);}
+        #undoToast { 
+            position: fixed; 
+            bottom: 20px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            background: var(--dark); 
+            color: white; 
+            padding: 15px 30px; 
+            border-radius: 10px; 
+            font-size: 1.2rem; 
+            font-weight: 800; 
+            box-shadow: 8px 8px 0 rgba(0,0,0,0.3); 
+            display: none; 
+            z-index: 9000; 
+            cursor: pointer; 
+            border: 3px solid var(--primary);
+        }
         
-        .btn-cancel { background: transparent; color: #555; border: 3px solid #555; padding: 10px 20px; border-radius: 8px; font-size: 1.2rem; margin-top: 20px; width: 100%; cursor: pointer; font-family: 'Nunito', sans-serif; font-weight: 800; box-shadow: 4px 4px 0 #555;}
+        .btn-cancel { 
+            background: transparent; 
+            color: var(--dark); 
+            border: 3px solid var(--dark); 
+            padding: 10px 20px; 
+            border-radius: 8px; 
+            font-size: 1.2rem; 
+            margin-top: 20px; 
+            width: 100%; 
+            cursor: pointer; 
+            font-family: 'Nunito', sans-serif; 
+            font-weight: 800; 
+            box-shadow: 4px 4px 0 var(--dark);
+        }
         
-        .vault-list-container { flex: 1; overflow-y: auto; background: white; border-radius: 10px; border: 4px solid var(--dark); padding: 15px; display: flex; flex-direction: column; gap: 10px; margin: 15px; box-shadow: inset 2px 2px 0 rgba(0,0,0,0.1); }
-        .vault-winner-card { background: var(--bg); color: var(--dark); border-radius: 8px; padding: 10px 15px; display: flex; align-items: center; gap: 15px; font-weight: 800; font-size: 1.3rem; border: 3px solid var(--dark); box-shadow: 2px 2px 0 var(--dark);}
-        .vault-winner-card img { width: 50px; height: 50px; border-radius: 5px; border: 2px solid var(--dark); background: white;}
+        .vault-list-container { 
+            flex: 1; 
+            overflow-y: auto; 
+            background: white; 
+            border-radius: 10px; 
+            border: 4px solid var(--dark); 
+            padding: 15px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 10px; 
+            margin: 15px; 
+            box-shadow: inset 2px 2px 0 rgba(0,0,0,0.1); 
+        }
+        .vault-winner-card { 
+            background: var(--bg); 
+            color: var(--dark); 
+            border-radius: 8px; 
+            padding: 10px 15px; 
+            display: flex; 
+            align-items: center; 
+            gap: 15px; 
+            font-weight: 800; 
+            font-size: 1.3rem; 
+            border: 3px solid var(--dark); 
+            box-shadow: 2px 2px 0 var(--dark);
+        }
+        .vault-winner-card img { 
+            width: 50px; 
+            height: 50px; 
+            border-radius: 5px; 
+            border: 2px solid var(--dark); 
+            background: white;
+        }
 
-        /* MODALS */
-        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(26, 26, 36, 0.9); display: none; align-items: center; justify-content: center; z-index: 10000; backdrop-filter: blur(4px); }
+        .modal-overlay { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            right: 0; 
+            bottom: 0; 
+            background: rgba(26, 26, 36, 0.9); 
+            display: none; 
+            align-items: center; 
+            justify-content: center; 
+            z-index: 10000; 
+            backdrop-filter: blur(4px); 
+        }
         .modal-overlay.active { display: flex; }
-        .modal-content { background: var(--surface); padding: 30px; border-radius: 10px; max-width: 350px; width: 90%; text-align: center; position: relative; border: 5px solid var(--dark); box-shadow: 8px 8px 0 var(--dark); }
-        .close-btn { position: absolute; top: 10px; right: 20px; font-size: 2rem; font-weight: 800; cursor: pointer; color: var(--dark); }
-        .settings-input { width: 100%; padding: 10px; font-size: 1.2rem; border-radius: 8px; border: 3px solid var(--dark); margin-bottom: 15px; box-sizing: border-box; font-family: 'Nunito', sans-serif; font-weight: 800; box-shadow: inset 2px 2px 0 rgba(0,0,0,0.1);}
-        .settings-label { text-align: left; display: block; font-weight: 800; margin-bottom: 5px; }
+        .modal-content { 
+            background: var(--surface); 
+            padding: 30px; 
+            border-radius: 10px; 
+            max-width: 350px; 
+            width: 90%; 
+            text-align: center; 
+            position: relative; 
+            border: 5px solid var(--dark); 
+            box-shadow: 8px 8px 0 var(--dark); 
+        }
+        
+        .close-btn { 
+            position: absolute; 
+            top: 10px; 
+            right: 20px; 
+            font-size: 2rem; 
+            font-weight: 800; 
+            cursor: pointer; 
+            color: var(--dark); 
+        }
+        .settings-input { 
+            width: 100%; 
+            padding: 10px; 
+            font-size: 1.2rem; 
+            border-radius: 8px; 
+            border: 3px solid var(--dark); 
+            margin-bottom: 15px; 
+            box-sizing: border-box; 
+            font-family: 'Nunito', sans-serif; 
+            font-weight: 800; 
+            box-shadow: inset 2px 2px 0 rgba(0,0,0,0.1);
+        }
+        .settings-label { 
+            text-align: left; 
+            display: block; 
+            font-weight: 800; 
+            color: var(--dark); 
+            margin-bottom: 5px; 
+        }
     </style>
 </head>
 <body>
@@ -143,7 +325,7 @@
         </header>
         
         <div class="remote-bar">
-            <button id="btnPauseScrollRemote" class="btn-remote" style="background:#ddd; color:#333;" onclick="toggleScrollRemote()">⏸️ Pause</button>
+            <button id="btnPauseScrollRemote" class="btn-remote" style="background:#ddd; color:var(--dark);" onclick="toggleScrollRemote()">⏸️ Pause</button>
             <button class="btn-remote btn-vault" onclick="sendRealtimeCommand('showVault'); openPrizeVaultLocal();">🎁 Vault</button>
             <button class="btn-remote btn-reveal" onclick="sendRealtimeCommand('revealVault'); revealPrizeVaultLocal();">🏆 Reveal</button>
             <button class="btn-remote btn-goal" onclick="openPinModal('goal')">🎯 Goal</button>
@@ -168,8 +350,8 @@
         <div id="actionPanel">
             <input type="color" id="avatarColor" class="color-picker" title="Change Avatar Color" onchange="updateAvatarColor(this.value)">
             <img id="scanAvatar" src="" alt="Student Avatar">
-            <h2 id="scanName" class="fredoka" style="font-size: 2.2rem; margin: 10px 0 0 0;">Name</h2>
-            <div style="font-size: 1.5rem; font-weight: 800;">⭐ <span id="scanPoints" class="fredoka">0</span></div>
+            <h2 id="scanName" class="fredoka" style="font-size: 2.2rem; margin: 10px 0 0 0; color: var(--dark);">Name</h2>
+            <div style="font-size: 1.5rem; font-weight: 800; color: var(--dark);">⭐ <span id="scanPoints" class="fredoka">0</span></div>
             
             <div class="tag-row">
                 <button class="tag-btn" onclick="toggleTag(this, 'Helping')">Helping</button>
@@ -178,8 +360,8 @@
             </div>
 
             <div style="display: flex; gap: 10px; justify-content: center; margin-top: 15px;">
-                <button class="btn-cancel" style="margin-top: 0; background: #eee; color: #333;" onclick="document.getElementById('artUpload').click()">📸 Add Art</button>
-                <button class="btn-cancel" style="margin-top: 0; background: #eee; color: #333;" onclick="document.getElementById('avatarUpload').click()">📸 Avatar</button>
+                <button class="btn-cancel" style="margin-top: 0; background: #eee; color: var(--dark);" onclick="document.getElementById('artUpload').click()">📸 Add Art</button>
+                <button class="btn-cancel" style="margin-top: 0; background: #eee; color: var(--dark);" onclick="document.getElementById('avatarUpload').click()">📸 Avatar</button>
             </div>
             <input type="file" id="artUpload" accept="image/*" style="display:none" onchange="handleImageUpload(this, 'artwork')">
             <input type="file" id="avatarUpload" accept="image/*" capture="user" style="display:none" onchange="handleImageUpload(this, 'avatar')">
@@ -211,7 +393,7 @@
     <div id="pinModal" class="modal-overlay">
         <div class="modal-content">
             <span class="close-btn" onclick="closePinModal()">&times;</span>
-            <h2 style="margin-top: 0;" class="fredoka">Admin Access</h2>
+            <h2 style="margin-top: 0; color: var(--dark);" class="fredoka">Admin Access</h2>
             <input type="password" id="pinInput" class="settings-input" style="text-align: center; letter-spacing: 10px; font-size: 2rem;" placeholder="****" maxlength="4">
             <button type="button" onclick="verifyPin()" class="btn-remote" style="background: var(--green); color: white; width: 100%; font-size: 1.5rem; padding: 15px;">Unlock</button>
         </div>
@@ -220,7 +402,7 @@
     <div id="goalModal" class="modal-overlay">
         <div class="modal-content">
             <span class="close-btn" onclick="document.getElementById('goalModal').classList.remove('active')">&times;</span>
-            <h2 style="margin-top: 0;" class="fredoka">🎯 Edit Class Goal</h2>
+            <h2 style="margin-top: 0; color: var(--dark);" class="fredoka">🎯 Edit Class Goal</h2>
             <label class="settings-label">Goal Emoji:</label>
             <input type="text" id="goalEmojiInput" class="settings-input" value="🍕">
             <label class="settings-label">Goal Name:</label>
@@ -232,7 +414,6 @@
     </div>
 
     <script>
-        // ⚠️ PRE-FILLED KEYS ⚠️
         const GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxlTv6HfOVB_AFua7XKePmCySDo5VsJeRpdF4jTgjt3nSm9v3Iz1pTdhO1GwkELAKNdhQ/exec";
         const PUBNUB_PUBLISH_KEY = "pub-c-88fdc434-b3b5-4eae-963f-2ad1eac8d271";
         const PUBNUB_SUBSCRIBE_KEY = "sub-c-dfcda561-cd3f-48c6-8fba-e3ff29235b19";
@@ -258,13 +439,15 @@
         let selectedTag = "None"; 
         let undoData = null; 
         let undoTimer = null;
-        let isScrollPaused = false; 
+        let isScrollPaused = false;
 
+        // FIXED AVATAR FILTER (Forces version 9.x)
         function getSafeAvatar(studentName, url) {
             const safeName = studentName ? encodeURIComponent(studentName.trim()) : 'Student';
             const strUrl = url ? url.toString().trim() : "";
+            
             if (!strUrl || !strUrl.startsWith("http") || strUrl.includes("github.io")) {
-                return `https://api.dicebear.com/7.x/bottts/svg?seed=${safeName}`;
+                return `https://api.dicebear.com/9.x/bottts/svg?seed=${safeName}`;
             }
             return strUrl;
         }
@@ -333,6 +516,7 @@
         function handleRemoteSearch(val) {
             if (!val) return;
             const student = students.find(s => s.Name.toLowerCase() === val.trim().toLowerCase());
+            
             if (student) {
                 document.getElementById('remoteSearchInput').value = '';
                 activeStudentName = student.Name; 
@@ -375,7 +559,7 @@
             
             const winners = students.filter(s => parseInt(s.Points) >= 15);
             if (winners.length === 0) {
-                list.innerHTML = '<p style="color: #888;">No winners yet.</p>';
+                list.innerHTML = '<p style="color: var(--dark);">No winners yet.</p>';
             }
             
             winners.forEach(w => { 
@@ -492,7 +676,7 @@
         function updateAvatarColor(hexColor) {
             const hex = hexColor.replace('#', '');
             const safeName = activeStudentName ? encodeURIComponent(activeStudentName.trim()) : 'Student';
-            const newUrl = `https://api.dicebear.com/7.x/bottts/svg?seed=${safeName}&backgroundColor=${hex}`;
+            const newUrl = `https://api.dicebear.com/9.x/bottts/svg?seed=${safeName}&backgroundColor=${hex}`;
             document.getElementById('scanAvatar').src = newUrl;
             
             robustFetch(`${GOOGLE_WEB_APP_URL}?action=updateAvatar&name=${encodeURIComponent(activeStudentName)}&url=${encodeURIComponent(newUrl)}&t=${new Date().getTime()}`);
@@ -564,7 +748,6 @@
         loadData(); 
         startCamera();
 
-        // --- IMGBB UPLOAD ENGINE ---
         async function handleImageUpload(input, type) {
             const file = input.files[0];
             if (!file) return;

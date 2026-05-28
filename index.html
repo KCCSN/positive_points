@@ -31,7 +31,9 @@
             background-size: 25px 25px;
         }
         
-        h1, h2, h3, .fredoka, .pts-badge { font-family: 'Fredoka', sans-serif; }
+        h1, h2, h3, .fredoka, .pts-badge { 
+            font-family: 'Fredoka', sans-serif; 
+        }
 
         body.neon-mode .lb-card { box-shadow: 4px 4px 0 var(--primary); border-color: var(--primary); }
         body.neon-mode .polaroid { box-shadow: 8px 8px 0 var(--green); border-color: var(--green); }
@@ -102,7 +104,9 @@
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(26, 26, 36, 0.9); display: none; align-items: center; justify-content: center; z-index: 10000; backdrop-filter: blur(4px); }
         .modal-overlay.active { display: flex; }
         .modal-content { background: var(--surface); padding: 30px; border-radius: 10px; max-width: 400px; width: 90%; text-align: center; position: relative; border: 5px solid var(--dark); box-shadow: 8px 8px 0 var(--dark); }
-        .close-btn { position: absolute; top: 10px; right: 20px; font-size: 2rem; font-weight: 800; cursor: pointer; color: var(--dark); }
+        
+        /* FIXED EXIT BUTTON OPACITY AND COLOR */
+        .close-btn { position: absolute; top: 10px; right: 20px; font-size: 2.5rem; font-weight: 800; cursor: pointer; color: var(--dark); z-index: 100000; }
         
         .mystery-box { font-size: 8rem; cursor: pointer; animation: shake 2s infinite ease-in-out; }
         @keyframes shake { 0%, 100% { transform: rotate(0deg); } 20%, 60% { transform: rotate(-10deg); } 40%, 80% { transform: rotate(10deg); } }
@@ -119,7 +123,7 @@
         .prize-card p { margin: 0; font-size: 1.4rem; font-weight: 800; background: var(--yellow); padding: 5px 15px; border-radius: 5px; border: 3px solid var(--dark); display: inline-block; }
 
         .settings-input { width: 100%; padding: 10px; font-size: 1.2rem; border-radius: 8px; border: 3px solid var(--dark); margin-bottom: 15px; box-sizing: border-box; font-family: 'Nunito', sans-serif; font-weight: 800; box-shadow: inset 2px 2px 0 rgba(0,0,0,0.1);}
-        .settings-label { text-align: left; display: block; font-weight: 800; margin-bottom: 5px; }
+        .settings-label { text-align: left; display: block; font-weight: 800; color: var(--dark); margin-bottom: 5px; }
     </style>
 </head>
 <body>
@@ -147,6 +151,7 @@
                 <div class="polaroid">
                     <div class="art-frame" id="artFrame"></div>
                     <div class="polaroid-text fredoka">🖼️ Student Gallery</div>
+                    <div class="no-art-text" id="noArtText" style="position: absolute; top: 40%; width: 100%; text-align: center; color: var(--dark);">Gathering Masterpieces...</div>
                 </div>
             </div>
 
@@ -159,8 +164,8 @@
             </div>
 
             <div id="kioskPopup">
-                <h2 style="font-size: 2.5rem; margin:0;" class="fredoka" id="kioskPopupName">Name</h2>
-                <p style="font-size: 1.3rem; margin: 10px 0 0 0;" id="kioskPopupStatus">Waiting for teacher...</p>
+                <h2 style="font-size: 2.5rem; margin:0; color: var(--dark);" class="fredoka" id="kioskPopupName">Name</h2>
+                <p style="font-size: 1.3rem; margin: 10px 0 0 0; color: var(--dark);" id="kioskPopupStatus">Waiting for teacher...</p>
             </div>
         </div>
 
@@ -196,21 +201,21 @@
     <div id="prizeVaultOverlay" class="celebration-overlay">
         <span class="close-btn" onclick="closePrizeVault(false)">&times;</span>
         <div id="mysteryState" style="text-align: center; z-index: 10;">
-            <h1 style="font-size: 5rem; color: white;" class="fredoka">Who Unlocked a Prize?</h1>
+            <h1 style="font-size: 5rem; color: var(--dark);" class="fredoka">Who Unlocked a Prize?</h1>
             <div class="mystery-box" onclick="revealPrizes(false)">🎁</div>
         </div>
         <div id="revealedState">
             <div class="sunburst"></div>
             <h1 style="color: var(--dark); font-size: 5rem; margin: 0; background: white; padding: 10px 40px; border: 5px solid var(--dark); box-shadow: 8px 8px 0 var(--dark); border-radius: 15px;" class="fredoka">🏆 15-Point Club 🏆</h1>
             <div id="prizeGrid" class="prize-grid"></div>
-            <h2 id="noPrizeMsg" style="font-size: 3rem; color: white; display: none; margin-top: 50px;">Keep working hard! 🌟</h2>
+            <h2 id="noPrizeMsg" style="font-size: 3rem; color: var(--dark); display: none; margin-top: 50px;">Keep working hard! 🌟</h2>
         </div>
     </div>
 
     <div id="pinModal" class="modal-overlay">
         <div class="modal-content">
             <span class="close-btn" onclick="closePinModal()">&times;</span>
-            <h2 style="margin-top: 0;" class="fredoka">Admin Access</h2>
+            <h2 style="margin-top: 0; color: var(--dark);" class="fredoka">Admin Access</h2>
             <input type="password" id="pinInput" class="settings-input" style="text-align: center; letter-spacing: 10px; font-size: 2rem;" placeholder="****" maxlength="4">
             <button type="button" onclick="verifyPin()" class="btn-admin" style="background: var(--green); color: white; width: 100%; font-size: 1.5rem;">Unlock</button>
         </div>
@@ -219,7 +224,7 @@
     <div id="goalModal" class="modal-overlay">
         <div class="modal-content">
             <span class="close-btn" onclick="document.getElementById('goalModal').classList.remove('active')">&times;</span>
-            <h2 style="margin-top: 0;" class="fredoka">🎯 Edit Class Goal</h2>
+            <h2 style="margin-top: 0; color: var(--dark);" class="fredoka">🎯 Edit Class Goal</h2>
             
             <label class="settings-label">Goal Emoji:</label>
             <input type="text" id="goalEmojiInput" class="settings-input" value="🍕">
@@ -235,7 +240,6 @@
     </div>
 
     <script>
-        // ⚠️ PRE-FILLED WITH YOUR KEYS! ⚠️
         const GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxlTv6HfOVB_AFua7XKePmCySDo5VsJeRpdF4jTgjt3nSm9v3Iz1pTdhO1GwkELAKNdhQ/exec";
         const PUBNUB_PUBLISH_KEY = "pub-c-88fdc434-b3b5-4eae-963f-2ad1eac8d271";
         const PUBNUB_SUBSCRIBE_KEY = "sub-c-dfcda561-cd3f-48c6-8fba-e3ff29235b19";
@@ -266,12 +270,13 @@
         let artInterval = null;
         let isScrollPaused = false; 
 
+        // FIXED AVATAR API (Now using robust 9.x Dicebear endpoint)
         function getSafeAvatar(studentName, url) {
             const safeName = studentName ? encodeURIComponent(studentName.trim()) : 'Student';
             const strUrl = url ? url.toString().trim() : "";
             
             if (!strUrl || !strUrl.startsWith("http") || strUrl.includes("github.io")) {
-                return `https://api.dicebear.com/7.x/bottts/svg?seed=${safeName}`;
+                return `https://api.dicebear.com/9.x/bottts/svg?seed=${safeName}`;
             }
             return strUrl;
         }
@@ -288,8 +293,11 @@
                 } else if ([71,73,75,77,85,86].includes(code)) {
                     layer.className = 'weather-layer weather-snow';
                 }
-            } catch(e) {}
+            } catch(e) {
+                console.error("Weather data failed to load.");
+            }
         }
+        
         fetchWeather();
 
         pubnub.addListener({
@@ -303,14 +311,22 @@
                     if (student) {
                         const oldPoints = parseInt(student.Points); 
                         student.Points = oldPoints + msg.points;
-                        if (orderedStudent) orderedStudent.Points = student.Points;
+                        
+                        if (orderedStudent) {
+                            orderedStudent.Points = student.Points;
+                        }
                         
                         updateLeaderboardPoints(); 
                         updateClassGoal();
                         
                         if (msg.points > 0) {
                             const isMilestone = (oldPoints < 15 && student.Points >= 15);
-                            celebrationQueue.push({ student: student, pointsGained: msg.points, isMilestone: isMilestone, isDouble: msg.isDouble });
+                            celebrationQueue.push({ 
+                                student: student, 
+                                pointsGained: msg.points, 
+                                isMilestone: isMilestone, 
+                                isDouble: msg.isDouble 
+                            });
                             processCelebrations(); 
                         }
                     }
@@ -324,19 +340,33 @@
                         if (student) triggerKioskPopup(student); 
                     }
                 }
-                else if (msg.action === "toggleDouble") { document.body.classList.toggle('neon-mode', msg.state); }
-                else if (msg.action === "partyConfetti") { fireConfetti(); }
-                else if (msg.action === "showVault" || msg.action === "triggerVault") { openPrizeVault(true); }
-                else if (msg.action === "revealVault") { revealPrizes(true); }
-                else if (msg.action === "closeVault") { closePrizeVault(true); }
-                else if (msg.action === "toggleAuto") { setAutoMode(msg.state); }
+                else if (msg.action === "toggleDouble") {
+                    document.body.classList.toggle('neon-mode', msg.state);
+                }
+                else if (msg.action === "partyConfetti") {
+                    fireConfetti();
+                }
+                else if (msg.action === "showVault" || msg.action === "triggerVault") {
+                    openPrizeVault(true);
+                }
+                else if (msg.action === "revealVault") {
+                    revealPrizes(true);
+                }
+                else if (msg.action === "closeVault") {
+                    closePrizeVault(true);
+                }
+                else if (msg.action === "toggleAuto") {
+                    setAutoMode(msg.state);
+                }
                 else if (msg.action === "toggleScroll") {
                     isScrollPaused = msg.paused;
                     applyScrollState();
                 }
                 else if (msg.action === "scrollVault") { 
                     const grid = document.getElementById('prizeGrid'); 
-                    if (grid) grid.scrollTop = msg.percent * (grid.scrollHeight - grid.clientHeight); 
+                    if (grid) {
+                        grid.scrollTop = msg.percent * (grid.scrollHeight - grid.clientHeight); 
+                    }
                 }
                 else if (msg.action === "updateGoal") {
                     localStorage.setItem('customGoalEmoji', msg.emoji); 
@@ -344,7 +374,9 @@
                     localStorage.setItem('customGoalAmount', msg.amount); 
                     updateClassGoal();
                 }
-                else if (msg.action === "refreshData") { fetchStudentData(); }
+                else if (msg.action === "refreshData") {
+                    fetchStudentData(); 
+                }
             }
         });
 
@@ -357,23 +389,33 @@
         function applyScrollState() {
             const track = document.getElementById('scrollTrack');
             const btn = document.getElementById('btnPauseScroll');
-            if (track) track.style.animationPlayState = isScrollPaused ? 'paused' : 'running';
-            if (btn) btn.innerHTML = isScrollPaused ? '▶️ Play' : '⏸️ Pause';
+            if (track) {
+                track.style.animationPlayState = isScrollPaused ? 'paused' : 'running';
+            }
+            if (btn) {
+                btn.innerHTML = isScrollPaused ? '▶️ Play' : '⏸️ Pause';
+            }
         }
 
         let pinTarget = '';
+        
         function openPinModal(target) {
             pinTarget = target; 
             document.getElementById('pinInput').value = ''; 
             document.getElementById('pinModal').classList.add('active'); 
             document.getElementById('pinInput').focus(); 
         }
-        function closePinModal() { document.getElementById('pinModal').classList.remove('active'); }
+        
+        function closePinModal() { 
+            document.getElementById('pinModal').classList.remove('active'); 
+        }
+        
         function verifyPin() { 
             if (document.getElementById('pinInput').value === ADMIN_PIN) { 
                 closePinModal(); 
-                if (pinTarget === 'database') window.open(ADMIN_SHEET_URL, '_blank'); 
-                else if (pinTarget === 'goal') {
+                if (pinTarget === 'database') {
+                    window.open(ADMIN_SHEET_URL, '_blank'); 
+                } else if (pinTarget === 'goal') {
                     document.getElementById('goalEmojiInput').value = localStorage.getItem('customGoalEmoji') || '🍕';
                     document.getElementById('goalNameInput').value = localStorage.getItem('customGoalName') || 'Pizza Party';
                     document.getElementById('goalAmountInput').value = localStorage.getItem('customGoalAmount') || 500;
@@ -384,7 +426,10 @@
                 document.getElementById('pinInput').value = ''; 
             } 
         }
-        document.getElementById('pinInput').addEventListener('keyup', (e) => { if (e.key === 'Enter') verifyPin(); });
+        
+        document.getElementById('pinInput').addEventListener('keyup', (e) => { 
+            if (e.key === 'Enter') verifyPin(); 
+        });
 
         function saveGoalSettings() {
             const emoji = document.getElementById('goalEmojiInput').value || '🍕';
@@ -400,7 +445,9 @@
         }
 
         function updateClassGoal() {
-            let total = 0; students.forEach(s => total += parseInt(s.Points) || 0);
+            let total = 0; 
+            students.forEach(s => total += parseInt(s.Points) || 0);
+            
             let goalAmount = parseInt(localStorage.getItem('customGoalAmount')) || 500;
             let goalEmoji = localStorage.getItem('customGoalEmoji') || '🍕';
             let goalName = localStorage.getItem('customGoalName') || 'Pizza Party';
@@ -411,7 +458,9 @@
         }
 
         function fireConfetti() {
-            var duration = 3000; var end = Date.now() + duration;
+            var duration = 3000; 
+            var end = Date.now() + duration;
+            
             (function frame() {
                 confetti({ particleCount: 10, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#FFD166', '#FF4B72', '#06D6A0'] });
                 confetti({ particleCount: 10, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#FFD166', '#FF4B72', '#06D6A0'] });
@@ -419,20 +468,38 @@
             }());
         }
 
-        function getShuffleSeed(name) { if (!window[name]) window[name] = Math.random(); return window[name]; }
-        function shuffleArray(array) { return array.sort((a, b) => getShuffleSeed(a.Name) - getShuffleSeed(b.Name)); }
+        function getShuffleSeed(name) { 
+            if (!window[name]) window[name] = Math.random(); 
+            return window[name]; 
+        }
+        
+        function shuffleArray(array) { 
+            return array.sort((a, b) => getShuffleSeed(a.Name) - getShuffleSeed(b.Name)); 
+        }
 
         function openPrizeVault(fromRemote = false) { 
             document.getElementById('prizeVaultOverlay').style.display = 'flex'; 
             document.getElementById('mysteryState').style.display = 'block'; 
             document.getElementById('revealedState').style.display = 'none'; 
-            if (!fromRemote) pubnub.publish({ channel: "classroom_channel", message: { action: "showVault" } });
+            
+            if (!fromRemote) {
+                pubnub.publish({ channel: "classroom_channel", message: { action: "showVault" } });
+            }
         }
+        
         function closePrizeVault(fromRemote = false) { 
             document.getElementById('prizeVaultOverlay').style.display = 'none'; 
-            if (!fromRemote) pubnub.publish({ channel: "classroom_channel", message: { action: "closeVault" } });
+            if (!fromRemote) {
+                pubnub.publish({ channel: "classroom_channel", message: { action: "closeVault" } });
+            }
         }
-        function handleVaultClick(e) { if (e.target.id === 'prizeVaultOverlay' || e.target.id === 'revealedState') closePrizeVault(false); }
+        
+        function handleVaultClick(e) { 
+            if (e.target.id === 'prizeVaultOverlay' || e.target.id === 'revealedState') {
+                closePrizeVault(false);
+            }
+        }
+        
         function revealPrizes(fromRemote = false) {
             document.getElementById('mysteryState').style.display = 'none'; 
             document.getElementById('revealedState').style.display = 'flex'; 
@@ -442,18 +509,27 @@
             prizeGrid.innerHTML = ''; 
             
             const winners = students.filter(s => parseInt(s.Points) >= 15);
-            if (winners.length === 0) { noPrizeMsg.style.display = 'block'; } 
-            else { 
+            
+            if (winners.length === 0) {
+                noPrizeMsg.style.display = 'block';
+            } else { 
                 noPrizeMsg.style.display = 'none'; 
                 winners.forEach((w, i) => { 
                     const c = document.createElement('div'); 
                     c.className = 'prize-card'; 
                     c.style.animationDelay = `${i * 0.15}s`; 
-                    c.innerHTML = `<img src="${w.AvatarURL}" alt="Winner Avatar"><h3 class="fredoka">${w.Name}</h3><p class="pts-badge">⭐ ${w.Points}</p>`; 
+                    c.innerHTML = `
+                        <img src="${w.AvatarURL}" alt="Winner Avatar">
+                        <h3 class="fredoka">${w.Name}</h3>
+                        <p class="pts-badge">⭐ ${w.Points}</p>
+                    `; 
                     prizeGrid.appendChild(c); 
                 }); 
             }
-            if (!fromRemote) pubnub.publish({ channel: "classroom_channel", message: { action: "revealVault" } });
+            
+            if (!fromRemote) {
+                pubnub.publish({ channel: "classroom_channel", message: { action: "revealVault" } });
+            }
         }
 
         const html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: {width: 100, height: 100} }, false);
@@ -468,8 +544,10 @@
                     setTimeout(() => warning.style.display = 'none', 3000); 
                     return; 
                 }
+                
                 scannedThisSession.add(student.Name);
                 let pts = document.body.classList.contains('neon-mode') ? 2 : 1;
+                
                 pubnub.publish({ channel: "classroom_channel", message: { action: "addPoints", name: student.Name, points: pts, isDouble: pts===2 } });
                 fetch(`${GOOGLE_WEB_APP_URL}?action=addPoints&name=${encodeURIComponent(student.Name)}&points=${pts}`, { mode: 'no-cors' });
             } else {
@@ -483,21 +561,38 @@
         function triggerKioskPopup(student) {
             activeKioskStudent = student.Name;
             const popup = document.getElementById('kioskPopup');
-            document.getElementById('kioskPopupName').innerHTML = `${student.Name}<br><span class="pts-badge" style="display: inline-block; margin-top: 10px; font-size: 1.8rem; background: var(--yellow); padding: 5px 25px; border-radius: 8px; border: 3px solid var(--dark); box-shadow: 2px 2px 0 var(--dark);">⭐ ${student.Points}</span>`;
+            
+            document.getElementById('kioskPopupName').innerHTML = `
+                ${student.Name}<br>
+                <span class="pts-badge" style="display: inline-block; margin-top: 10px; font-size: 1.8rem; background: var(--yellow); padding: 5px 25px; border-radius: 8px; border: 3px solid var(--dark); box-shadow: 2px 2px 0 var(--dark);">
+                    ⭐ ${student.Points}
+                </span>
+            `;
+            
             document.getElementById('kioskPopupStatus').textContent = "Waiting for teacher...";
             popup.style.display = 'block';
+            
             clearTimeout(kioskTimer); 
-            kioskTimer = setTimeout(() => { activeKioskStudent = null; popup.style.display = 'none'; }, 10000);
+            kioskTimer = setTimeout(() => { 
+                activeKioskStudent = null; 
+                popup.style.display = 'none'; 
+            }, 10000);
         }
 
         function setAutoMode(state) {
             isAutoMode = state === 'on';
             const badge = document.getElementById('autoModeBadge');
             const label = document.querySelector('.kiosk-label');
+            
             if (isAutoMode) { 
-                badge.style.display = 'block'; label.textContent = "AUTO-SCAN: +1 POINT"; label.style.color = "var(--green)"; 
+                badge.style.display = 'block'; 
+                label.textContent = "AUTO-SCAN: +1 POINT"; 
+                label.style.color = "var(--green)"; 
             } else { 
-                scannedThisSession.clear(); badge.style.display = 'none'; label.textContent = "SCAN CARD HERE"; label.style.color = "var(--primary)"; 
+                scannedThisSession.clear(); 
+                badge.style.display = 'none'; 
+                label.textContent = "SCAN CARD HERE"; 
+                label.style.color = "var(--primary)"; 
             }
         }
 
@@ -505,10 +600,16 @@
             try {
                 const response = await fetch(GOOGLE_WEB_APP_URL + '?action=get&t=' + new Date().getTime());
                 const rawResponse = await response.json();
+                
                 setAutoMode(rawResponse.autoMode);
 
                 const newStudents = rawResponse.students.map(s => {
-                    return { Name: s.Name, Points: s.Points, Artwork: s.Artwork, AvatarURL: getSafeAvatar(s.Name, s.AvatarURL) };
+                    return { 
+                        Name: s.Name, 
+                        Points: s.Points, 
+                        Artwork: s.Artwork, 
+                        AvatarURL: getSafeAvatar(s.Name, s.AvatarURL) 
+                    };
                 });
                 
                 if (students.length > 0) { 
@@ -518,21 +619,38 @@
                             const diff = parseInt(newStudent.Points) - parseInt(oldStudent.Points);
                             if (diff > 0 && !scannedThisSession.has(newStudent.Name)) {
                                 const isMilestone = (parseInt(oldStudent.Points) < 15 && parseInt(newStudent.Points) >= 15);
-                                celebrationQueue.push({ student: newStudent, pointsGained: diff, isMilestone: isMilestone });
+                                celebrationQueue.push({ 
+                                    student: newStudent, 
+                                    pointsGained: diff, 
+                                    isMilestone: isMilestone 
+                                });
                             }
                         }
                     });
                 }
                 
                 students = newStudents;
-                if (orderedStudents.length > 0) { orderedStudents.forEach(os => { const freshData = students.find(s => s.Name === os.Name); if (freshData) os.Points = freshData.Points; }); }
+                
+                if (orderedStudents.length > 0) { 
+                    orderedStudents.forEach(os => { 
+                        const freshData = students.find(s => s.Name === os.Name); 
+                        if (freshData) os.Points = freshData.Points; 
+                    }); 
+                }
 
-                updateClassGoal(); updateArtworkLoop(); renderLeaderboard(); processCelebrations();
-            } catch (error) {}
+                updateClassGoal(); 
+                updateArtworkLoop(); 
+                renderLeaderboard(); 
+                processCelebrations();
+                
+            } catch (error) {
+                console.error("Data fetch failed.");
+            }
         }
 
         function processCelebrations() {
             if (isCelebrating || celebrationQueue.length === 0 || document.getElementById('prizeVaultOverlay').style.display === 'flex') return;
+            
             isCelebrating = true;
             const event = celebrationQueue.shift();
             
@@ -541,7 +659,12 @@
                 document.getElementById('milestoneName').textContent = event.student.Name;
                 document.getElementById('milestoneBox').className = 'celebration-box anim-pop';
                 document.getElementById('milestoneOverlay').style.display = 'flex';
-                setTimeout(() => { document.getElementById('milestoneOverlay').style.display = 'none'; isCelebrating = false; setTimeout(processCelebrations, 1000); }, 6000); 
+                
+                setTimeout(() => { 
+                    document.getElementById('milestoneOverlay').style.display = 'none'; 
+                    isCelebrating = false; 
+                    setTimeout(processCelebrations, 1000); 
+                }, 6000); 
             } else {
                 let ptsText = event.isDouble ? `DOUBLE! +${event.pointsGained}` : `+${event.pointsGained}`;
                 document.getElementById('celebrationAvatar').src = event.student.AvatarURL;
@@ -549,21 +672,34 @@
                 document.getElementById('celebrationPoints').textContent = ptsText;
                 document.getElementById('celebrationBox').className = 'celebration-box anim-pop';
                 document.getElementById('celebrationOverlay').style.display = 'flex';
-                setTimeout(() => { document.getElementById('celebrationOverlay').style.display = 'none'; isCelebrating = false; setTimeout(processCelebrations, 1000); }, 4000); 
+                
+                setTimeout(() => { 
+                    document.getElementById('celebrationOverlay').style.display = 'none'; 
+                    isCelebrating = false; 
+                    setTimeout(processCelebrations, 1000); 
+                }, 4000); 
             }
         }
 
+        // FIXED ARTWORK FILTER: Exclude bad strings
         function updateArtworkLoop() {
-            const newArtList = students.filter(s => s.Artwork && s.Artwork.trim() !== "").map(s => s.Artwork);
+            const newArtList = students.filter(s => {
+                return s.Artwork && s.Artwork.trim() !== "" && s.Artwork.trim().startsWith("http");
+            }).map(s => s.Artwork.trim());
+            
             if (JSON.stringify(newArtList) !== JSON.stringify(artworkList)) {
                 artworkList = newArtList;
                 if (artworkList.length > 0) {
                     document.getElementById('noArtText').style.display = 'none';
-                    if (!artInterval) { cycleArt(); artInterval = setInterval(cycleArt, 6000); }
+                    if (!artInterval) { 
+                        cycleArt(); 
+                        artInterval = setInterval(cycleArt, 6000); 
+                    }
                 } else { 
                     document.getElementById('noArtText').style.display = 'block'; 
                     document.getElementById('artFrame').style.backgroundImage = 'none'; 
-                    clearInterval(artInterval); artInterval = null; 
+                    clearInterval(artInterval); 
+                    artInterval = null; 
                 }
             }
         }
@@ -616,8 +752,12 @@
         function updateLeaderboardPoints() { 
             students.forEach(s => { 
                 const safeName = s.Name.replace(/[^a-zA-Z0-9]/g, '-'); 
-                document.querySelectorAll(`[data-student="${safeName}"] .pts-badge`).forEach(b => { b.innerHTML = `⭐ ${s.Points}`; }); 
-                document.querySelectorAll(`[data-student="${safeName}"] .mini-progress-fill`).forEach(b => { b.style.width = `${Math.min((s.Points/15)*100, 100)}%`; }); 
+                document.querySelectorAll(`[data-student="${safeName}"] .pts-badge`).forEach(b => {
+                    b.innerHTML = `⭐ ${s.Points}`;
+                }); 
+                document.querySelectorAll(`[data-student="${safeName}"] .mini-progress-fill`).forEach(b => {
+                    b.style.width = `${Math.min((s.Points/15)*100, 100)}%`;
+                }); 
             }); 
         }
         
