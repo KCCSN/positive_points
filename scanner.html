@@ -337,6 +337,7 @@
             <h2 id="autoToggleText" class="fredoka">▶️ Turn ON Auto-Check-In</h2>
         </div>
 
+        <!-- SEARCH BAR -->
         <div class="search-container">
             <input type="text" id="remoteSearchInput" class="remote-search" list="studentDatalist" placeholder="🔍 Search & Select Student..." onchange="handleRemoteSearch(this.value)">
             <datalist id="studentDatalist"></datalist>
@@ -359,6 +360,7 @@
                 <button class="tag-btn" onclick="toggleTag(this, 'Quiet')">Quiet</button>
             </div>
 
+            <!-- IMGBB UPLOAD BUTTONS -->
             <div style="display: flex; gap: 10px; justify-content: center; margin-top: 15px;">
                 <button class="btn-cancel" style="margin-top: 0; background: #eee; color: var(--dark);" onclick="document.getElementById('artUpload').click()">📸 Add Art</button>
                 <button class="btn-cancel" style="margin-top: 0; background: #eee; color: var(--dark);" onclick="document.getElementById('avatarUpload').click()">📸 Avatar</button>
@@ -441,11 +443,9 @@
         let undoTimer = null;
         let isScrollPaused = false;
 
-        // FIXED AVATAR FILTER (Forces version 9.x)
         function getSafeAvatar(studentName, url) {
             const safeName = studentName ? encodeURIComponent(studentName.trim()) : 'Student';
             const strUrl = url ? url.toString().trim() : "";
-            
             if (!strUrl || !strUrl.startsWith("http") || strUrl.includes("github.io")) {
                 return `https://api.dicebear.com/9.x/bottts/svg?seed=${safeName}`;
             }
@@ -472,27 +472,33 @@
 
         pubnub.addListener({
             message: function(event) {
-                if (event.message.action === "setActive" && isAutoMode === 'off') {
-                    activeStudentName = event.message.name;
-                    const student = students.find(s => s.Name.toLowerCase() === activeStudentName.toLowerCase());
-                    if (student) showActionPanel(student, true); 
-                }
-                else if (event.message.action === "showVault" || event.message.action === "triggerVault") {
-                    openPrizeVaultLocal();
-                }
-                else if (event.message.action === "revealVault") {
-                    revealPrizeVaultLocal();
-                }
-                else if (event.message.action === "closeVault") {
-                    closePrizeVaultLocal();
-                }
-                else if (event.message.action === "addPoints") {
-                    const student = students.find(s => s.Name.toLowerCase() === event.message.name.toLowerCase());
-                    if (student) student.Points = parseInt(student.Points) + event.message.points;
-                }
-                else if (event.message.action === "toggleScroll") {
-                    isScrollPaused = event.message.paused;
-                    document.getElementById('btnPauseScrollRemote').innerHTML = isScrollPaused ? '▶️ Play' : '⏸️ Pause';
+                try {
+                    if (!event.message || !event.message.action) return;
+
+                    if (event.message.action === "setActive" && isAutoMode === 'off') {
+                        activeStudentName = event.message.name;
+                        const student = students.find(s => s.Name.toLowerCase() === activeStudentName.toLowerCase());
+                        if (student) showActionPanel(student, true); 
+                    }
+                    else if (event.message.action === "showVault" || event.message.action === "triggerVault") {
+                        openPrizeVaultLocal();
+                    }
+                    else if (event.message.action === "revealVault") {
+                        revealPrizeVaultLocal();
+                    }
+                    else if (event.message.action === "closeVault") {
+                        closePrizeVaultLocal();
+                    }
+                    else if (event.message.action === "addPoints") {
+                        const student = students.find(s => s.Name.toLowerCase() === event.message.name.toLowerCase());
+                        if (student) student.Points = parseInt(student.Points) + event.message.points;
+                    }
+                    else if (event.message.action === "toggleScroll") {
+                        isScrollPaused = event.message.paused;
+                        document.getElementById('btnPauseScrollRemote').innerHTML = isScrollPaused ? '▶️ Play' : '⏸️ Pause';
+                    }
+                } catch(err) {
+                    console.error("Error in remote message listener:", err);
                 }
             }
         });
@@ -514,8 +520,9 @@
         }
 
         function handleRemoteSearch(val) {
-            if (!val) return;
-            const student = students.find(s => s.Name.toLowerCase() === val.trim().toLowerCase());
+            if (!val || !val.trim()) return;
+            const searchVal = val.trim().toLowerCase();
+            const student = students.find(s => s.Name.trim().toLowerCase() === searchVal);
             
             if (student) {
                 document.getElementById('remoteSearchInput').value = '';
@@ -646,7 +653,6 @@
             document.getElementById('actionPanel').style.display = 'block';
             
             document.getElementById('scanAvatar').src = getSafeAvatar(student.Name, student.AvatarURL);
-            
             document.getElementById('scanName').textContent = student.Name;
             document.getElementById('scanPoints').textContent = student.Points;
             
@@ -739,10 +745,14 @@
         }
 
         async function loadData() {
-            const res = await fetch(GOOGLE_WEB_APP_URL + '?action=get&t=' + new Date().getTime());
-            const data = await res.json(); 
-            students = data.students;
-            populateDatalist();
+            try {
+                const res = await fetch(GOOGLE_WEB_APP_URL + '?action=get&t=' + new Date().getTime());
+                const data = await res.json(); 
+                students = data.students || [];
+                populateDatalist();
+            } catch(err) {
+                console.error("Remote failed to load student data:", err);
+            }
         }
         
         loadData(); 

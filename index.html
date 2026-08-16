@@ -5,10 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Classroom Digital Display</title>
     
+    <!-- FONT PAIRING: Fredoka for headings, Nunito for UI -->
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;800&family=Nunito:wght@700;800&display=swap" rel="stylesheet">
     
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <script src="https://cdn.pubnub.com/sdk/javascript/pubnub.7.2.2.min.js"></script>
+    <!-- Primary & Backup Confetti CDN -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
     <style>
@@ -67,14 +69,88 @@
         .polaroid-text { position: absolute; bottom: 10px; left: 0; width: 100%; text-align: center; font-size: 1.5rem; font-weight: 800; color: var(--dark); }
         .no-art-text { display: none; }
 
-        .kiosk-bar { display: flex; align-items: center; justify-content: space-between; background: var(--surface); padding: 10px 20px; border-radius: 8px; border: 3px solid var(--dark); box-shadow: 4px 4px 0 var(--dark); flex-shrink: 0; gap: 15px; }
-        #reader { width: 120px; border-radius: 5px; overflow: hidden; border: 3px solid var(--dark); }
-        .kiosk-info { display: flex; flex-direction: column; align-items: flex-end; justify-content: center; gap: 5px; }
-        #autoModeBadge { display: none; background: var(--green); color: white; padding: 5px 15px; border-radius: 5px; border: 3px solid var(--dark); font-weight: 800; }
-        .kiosk-label { font-size: 1.1rem; font-weight: 800; color: var(--primary); text-transform: uppercase; }
+        .clock-bar { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            background: var(--surface); 
+            padding: 15px 25px; 
+            border-radius: 8px; 
+            border: 3px solid var(--dark); 
+            box-shadow: 4px 4px 0 var(--dark); 
+            flex-shrink: 0; 
+            position: relative;
+        }
+        .clock-time { 
+            font-size: 4.5rem; 
+            font-weight: 800; 
+            color: var(--primary); 
+            margin: 0; 
+            line-height: 1; 
+            text-shadow: 3px 3px 0 var(--dark); 
+            letter-spacing: 2px;
+        }
+        .clock-time .am-pm { 
+            font-size: 1.5rem; 
+            color: var(--dark); 
+            text-shadow: none; 
+            vertical-align: top;
+            font-family: 'Nunito', sans-serif;
+            font-weight: 800;
+            margin-left: 5px;
+        }
+        .clock-date { 
+            font-size: 1.2rem; 
+            font-weight: 800; 
+            color: var(--dark); 
+            text-transform: uppercase; 
+            margin-top: 5px; 
+            letter-spacing: 1px;
+        }
 
-        #kioskPopup { position: absolute; bottom: 120px; left: 20px; right: 20px; background: white; border: 5px solid var(--dark); border-radius: 10px; padding: 20px; text-align: center; box-shadow: 8px 8px 0 var(--dark); display: none; z-index: 200; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; }
-        @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        #autoModeBadge { 
+            position: absolute;
+            top: -15px;
+            right: -15px;
+            display: none; 
+            background: var(--green); 
+            color: white; 
+            padding: 5px 15px; 
+            border-radius: 5px; 
+            border: 3px solid var(--dark); 
+            font-weight: 800; 
+            z-index: 10;
+            box-shadow: 2px 2px 0 var(--dark);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* HIGH Z-INDEX POPUP FIX */
+        #kioskPopup { 
+            position: absolute; 
+            bottom: 150px; 
+            left: 20px; 
+            right: 20px; 
+            background: white; 
+            border: 5px solid var(--dark); 
+            border-radius: 10px; 
+            padding: 20px; 
+            text-align: center; 
+            box-shadow: 8px 8px 0 var(--dark); 
+            display: none; 
+            z-index: 9999; 
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; 
+        }
+        @keyframes popIn { 
+            0% { transform: scale(0.8); opacity: 0; } 
+            100% { transform: scale(1); opacity: 1; } 
+        }
 
         .leaderboard-wrapper { flex: 1; overflow: hidden; position: relative; mask-image: linear-gradient(to bottom, transparent, black 2%, black 98%, transparent); -webkit-mask-image: linear-gradient(to bottom, transparent, black 2%, black 98%, transparent); }
         .scroll-track { display: flex; flex-direction: column; gap: 10px; animation: scrollUp 150s linear infinite; padding-right: 10px;}
@@ -104,8 +180,6 @@
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(26, 26, 36, 0.9); display: none; align-items: center; justify-content: center; z-index: 10000; backdrop-filter: blur(4px); }
         .modal-overlay.active { display: flex; }
         .modal-content { background: var(--surface); padding: 30px; border-radius: 10px; max-width: 400px; width: 90%; text-align: center; position: relative; border: 5px solid var(--dark); box-shadow: 8px 8px 0 var(--dark); }
-        
-        /* FIXED EXIT BUTTON OPACITY AND COLOR */
         .close-btn { position: absolute; top: 10px; right: 20px; font-size: 2.5rem; font-weight: 800; cursor: pointer; color: var(--dark); z-index: 100000; }
         
         .mystery-box { font-size: 8rem; cursor: pointer; animation: shake 2s infinite ease-in-out; }
@@ -155,12 +229,10 @@
                 </div>
             </div>
 
-            <div class="kiosk-bar">
-                <div id="reader"></div>
-                <div class="kiosk-info">
-                    <div id="autoModeBadge">🟢 AUTO-SCAN ACTIVE</div>
-                    <div class="kiosk-label">SCAN CARD HERE</div>
-                </div>
+            <div class="clock-bar" id="digitalClock">
+                <div id="autoModeBadge">🟢 AUTO-SCAN ACTIVE</div>
+                <div class="clock-time fredoka" id="clockTime">12:00 <span class="am-pm">PM</span></div>
+                <div class="clock-date" id="clockDate">Monday, January 1</div>
             </div>
 
             <div id="kioskPopup">
@@ -176,6 +248,7 @@
         </div>
     </div>
 
+    <!-- Overlays -->
     <div id="spamWarning" class="fredoka">Nice try!<br>Already checked in. 🛑</div>
     
     <div id="celebrationOverlay" class="celebration-overlay">
@@ -212,6 +285,7 @@
         </div>
     </div>
 
+    <!-- Modals -->
     <div id="pinModal" class="modal-overlay">
         <div class="modal-content">
             <span class="close-btn" onclick="closePinModal()">&times;</span>
@@ -270,7 +344,27 @@
         let artInterval = null;
         let isScrollPaused = false; 
 
-        // FIXED AVATAR API (Now using robust 9.x Dicebear endpoint)
+        function updateClock() {
+            const now = new Date();
+            let hours = now.getHours();
+            let minutes = now.getMinutes();
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12; 
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            
+            const timeElem = document.getElementById('clockTime');
+            const dateElem = document.getElementById('clockDate');
+            if (timeElem) timeElem.innerHTML = `${hours}:${minutes} <span class="am-pm">${ampm}</span>`;
+            
+            if (dateElem) {
+                const options = { weekday: 'long', month: 'long', day: 'numeric' };
+                dateElem.textContent = now.toLocaleDateString('en-US', options);
+            }
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
         function getSafeAvatar(studentName, url) {
             const safeName = studentName ? encodeURIComponent(studentName.trim()) : 'Student';
             const strUrl = url ? url.toString().trim() : "";
@@ -294,88 +388,92 @@
                     layer.className = 'weather-layer weather-snow';
                 }
             } catch(e) {
-                console.error("Weather data failed to load.");
+                console.error("Weather load failed.");
             }
         }
-        
         fetchWeather();
 
+        // PUBNUB REALTIME LISTENER WITH FULL TRY-CATCH PROTECTION
         pubnub.addListener({
             message: function(event) {
-                const msg = event.message;
-                
-                if (msg.action === "addPoints") {
-                    const student = students.find(s => s.Name.toLowerCase() === msg.name.toLowerCase());
-                    const orderedStudent = orderedStudents.find(s => s.Name.toLowerCase() === msg.name.toLowerCase());
-                    
-                    if (student) {
-                        const oldPoints = parseInt(student.Points); 
-                        student.Points = oldPoints + msg.points;
+                try {
+                    const msg = event.message;
+                    if (!msg || !msg.action) return;
+
+                    if (msg.action === "addPoints") {
+                        const student = students.find(s => s.Name.toLowerCase() === msg.name.toLowerCase());
+                        const orderedStudent = orderedStudents.find(s => s.Name.toLowerCase() === msg.name.toLowerCase());
                         
-                        if (orderedStudent) {
-                            orderedStudent.Points = student.Points;
+                        if (student) {
+                            const oldPoints = parseInt(student.Points) || 0; 
+                            student.Points = oldPoints + msg.points;
+                            
+                            if (orderedStudent) orderedStudent.Points = student.Points;
+                            
+                            updateLeaderboardPoints(); 
+                            updateClassGoal();
+                            
+                            if (msg.points > 0) {
+                                const isMilestone = (oldPoints < 15 && student.Points >= 15);
+                                celebrationQueue.push({ 
+                                    student: student, 
+                                    pointsGained: msg.points, 
+                                    isMilestone: isMilestone, 
+                                    isDouble: msg.isDouble 
+                                });
+                                processCelebrations(); 
+                            }
                         }
-                        
-                        updateLeaderboardPoints(); 
+                    } 
+                    // FIXED POP-UP ACTION: WORKS ALWAYS EVEN IF STUDENTS NOT LOADED YET
+                    else if (msg.action === "setActive") {
+                        if (!msg.name || msg.name === 'none') { 
+                            activeKioskStudent = null; 
+                            document.getElementById('kioskPopup').style.display = 'none'; 
+                        } else { 
+                            const trimmedName = msg.name.trim();
+                            const student = students.find(s => s.Name.trim().toLowerCase() === trimmedName.toLowerCase());
+                            const pts = student ? student.Points : '?';
+                            triggerKioskPopup({ Name: trimmedName, Points: pts }); 
+                        }
+                    }
+                    else if (msg.action === "toggleDouble") {
+                        document.body.classList.toggle('neon-mode', msg.state);
+                    }
+                    else if (msg.action === "partyConfetti") {
+                        fireConfetti();
+                    }
+                    else if (msg.action === "showVault" || msg.action === "triggerVault") {
+                        openPrizeVault(true);
+                    }
+                    else if (msg.action === "revealVault") {
+                        revealPrizes(true);
+                    }
+                    else if (msg.action === "closeVault") {
+                        closePrizeVault(true);
+                    }
+                    else if (msg.action === "toggleAuto") {
+                        setAutoMode(msg.state);
+                    }
+                    else if (msg.action === "toggleScroll") {
+                        isScrollPaused = msg.paused;
+                        applyScrollState();
+                    }
+                    else if (msg.action === "scrollVault") { 
+                        const grid = document.getElementById('prizeGrid'); 
+                        if (grid) grid.scrollTop = msg.percent * (grid.scrollHeight - grid.clientHeight); 
+                    }
+                    else if (msg.action === "updateGoal") {
+                        localStorage.setItem('customGoalEmoji', msg.emoji); 
+                        localStorage.setItem('customGoalName', msg.name); 
+                        localStorage.setItem('customGoalAmount', msg.amount); 
                         updateClassGoal();
-                        
-                        if (msg.points > 0) {
-                            const isMilestone = (oldPoints < 15 && student.Points >= 15);
-                            celebrationQueue.push({ 
-                                student: student, 
-                                pointsGained: msg.points, 
-                                isMilestone: isMilestone, 
-                                isDouble: msg.isDouble 
-                            });
-                            processCelebrations(); 
-                        }
                     }
-                } 
-                else if (msg.action === "setActive") {
-                    if (msg.name === 'none') { 
-                        activeKioskStudent = null; 
-                        document.getElementById('kioskPopup').style.display = 'none'; 
-                    } else { 
-                        const student = students.find(s => s.Name.toLowerCase() === msg.name.toLowerCase()); 
-                        if (student) triggerKioskPopup(student); 
+                    else if (msg.action === "refreshData") {
+                        fetchStudentData(); 
                     }
-                }
-                else if (msg.action === "toggleDouble") {
-                    document.body.classList.toggle('neon-mode', msg.state);
-                }
-                else if (msg.action === "partyConfetti") {
-                    fireConfetti();
-                }
-                else if (msg.action === "showVault" || msg.action === "triggerVault") {
-                    openPrizeVault(true);
-                }
-                else if (msg.action === "revealVault") {
-                    revealPrizes(true);
-                }
-                else if (msg.action === "closeVault") {
-                    closePrizeVault(true);
-                }
-                else if (msg.action === "toggleAuto") {
-                    setAutoMode(msg.state);
-                }
-                else if (msg.action === "toggleScroll") {
-                    isScrollPaused = msg.paused;
-                    applyScrollState();
-                }
-                else if (msg.action === "scrollVault") { 
-                    const grid = document.getElementById('prizeGrid'); 
-                    if (grid) {
-                        grid.scrollTop = msg.percent * (grid.scrollHeight - grid.clientHeight); 
-                    }
-                }
-                else if (msg.action === "updateGoal") {
-                    localStorage.setItem('customGoalEmoji', msg.emoji); 
-                    localStorage.setItem('customGoalName', msg.name); 
-                    localStorage.setItem('customGoalAmount', msg.amount); 
-                    updateClassGoal();
-                }
-                else if (msg.action === "refreshData") {
-                    fetchStudentData(); 
+                } catch(err) {
+                    console.error("Error processing realtime message:", err);
                 }
             }
         });
@@ -389,33 +487,24 @@
         function applyScrollState() {
             const track = document.getElementById('scrollTrack');
             const btn = document.getElementById('btnPauseScroll');
-            if (track) {
-                track.style.animationPlayState = isScrollPaused ? 'paused' : 'running';
-            }
-            if (btn) {
-                btn.innerHTML = isScrollPaused ? '▶️ Play' : '⏸️ Pause';
-            }
+            if (track) track.style.animationPlayState = isScrollPaused ? 'paused' : 'running';
+            if (btn) btn.innerHTML = isScrollPaused ? '▶️ Play' : '⏸️ Pause';
         }
 
         let pinTarget = '';
-        
         function openPinModal(target) {
             pinTarget = target; 
             document.getElementById('pinInput').value = ''; 
             document.getElementById('pinModal').classList.add('active'); 
             document.getElementById('pinInput').focus(); 
         }
-        
-        function closePinModal() { 
-            document.getElementById('pinModal').classList.remove('active'); 
-        }
+        function closePinModal() { document.getElementById('pinModal').classList.remove('active'); }
         
         function verifyPin() { 
             if (document.getElementById('pinInput').value === ADMIN_PIN) { 
                 closePinModal(); 
-                if (pinTarget === 'database') {
-                    window.open(ADMIN_SHEET_URL, '_blank'); 
-                } else if (pinTarget === 'goal') {
+                if (pinTarget === 'database') window.open(ADMIN_SHEET_URL, '_blank'); 
+                else if (pinTarget === 'goal') {
                     document.getElementById('goalEmojiInput').value = localStorage.getItem('customGoalEmoji') || '🍕';
                     document.getElementById('goalNameInput').value = localStorage.getItem('customGoalName') || 'Pizza Party';
                     document.getElementById('goalAmountInput').value = localStorage.getItem('customGoalAmount') || 500;
@@ -426,10 +515,7 @@
                 document.getElementById('pinInput').value = ''; 
             } 
         }
-        
-        document.getElementById('pinInput').addEventListener('keyup', (e) => { 
-            if (e.key === 'Enter') verifyPin(); 
-        });
+        document.getElementById('pinInput').addEventListener('keyup', (e) => { if (e.key === 'Enter') verifyPin(); });
 
         function saveGoalSettings() {
             const emoji = document.getElementById('goalEmojiInput').value || '🍕';
@@ -445,9 +531,7 @@
         }
 
         function updateClassGoal() {
-            let total = 0; 
-            students.forEach(s => total += parseInt(s.Points) || 0);
-            
+            let total = 0; students.forEach(s => total += parseInt(s.Points) || 0);
             let goalAmount = parseInt(localStorage.getItem('customGoalAmount')) || 500;
             let goalEmoji = localStorage.getItem('customGoalEmoji') || '🍕';
             let goalName = localStorage.getItem('customGoalName') || 'Pizza Party';
@@ -457,48 +541,37 @@
             document.getElementById('classProgressText').textContent = `${goalEmoji} ${goalName} Goal: ${total} / ${goalAmount} Points!`;
         }
 
+        // CONFETTI FUNCTION WITH TRY-CATCH PROTECTION
         function fireConfetti() {
-            var duration = 3000; 
-            var end = Date.now() + duration;
-            
-            (function frame() {
-                confetti({ particleCount: 10, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#FFD166', '#FF4B72', '#06D6A0'] });
-                confetti({ particleCount: 10, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#FFD166', '#FF4B72', '#06D6A0'] });
-                if (Date.now() < end) requestAnimationFrame(frame);
-            }());
+            try {
+                if (typeof confetti === 'function') {
+                    var duration = 3000; 
+                    var end = Date.now() + duration;
+                    (function frame() {
+                        confetti({ particleCount: 10, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#FFD166', '#FF4B72', '#06D6A0'] });
+                        confetti({ particleCount: 10, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#FFD166', '#FF4B72', '#06D6A0'] });
+                        if (Date.now() < end) requestAnimationFrame(frame);
+                    }());
+                }
+            } catch(e) {
+                console.error("Confetti trigger failed:", e);
+            }
         }
 
-        function getShuffleSeed(name) { 
-            if (!window[name]) window[name] = Math.random(); 
-            return window[name]; 
-        }
-        
-        function shuffleArray(array) { 
-            return array.sort((a, b) => getShuffleSeed(a.Name) - getShuffleSeed(b.Name)); 
-        }
+        function getShuffleSeed(name) { if (!window[name]) window[name] = Math.random(); return window[name]; }
+        function shuffleArray(array) { return array.sort((a, b) => getShuffleSeed(a.Name) - getShuffleSeed(b.Name)); }
 
         function openPrizeVault(fromRemote = false) { 
             document.getElementById('prizeVaultOverlay').style.display = 'flex'; 
             document.getElementById('mysteryState').style.display = 'block'; 
             document.getElementById('revealedState').style.display = 'none'; 
-            
-            if (!fromRemote) {
-                pubnub.publish({ channel: "classroom_channel", message: { action: "showVault" } });
-            }
+            if (!fromRemote) pubnub.publish({ channel: "classroom_channel", message: { action: "showVault" } });
         }
-        
         function closePrizeVault(fromRemote = false) { 
             document.getElementById('prizeVaultOverlay').style.display = 'none'; 
-            if (!fromRemote) {
-                pubnub.publish({ channel: "classroom_channel", message: { action: "closeVault" } });
-            }
+            if (!fromRemote) pubnub.publish({ channel: "classroom_channel", message: { action: "closeVault" } });
         }
-        
-        function handleVaultClick(e) { 
-            if (e.target.id === 'prizeVaultOverlay' || e.target.id === 'revealedState') {
-                closePrizeVault(false);
-            }
-        }
+        function handleVaultClick(e) { if (e.target.id === 'prizeVaultOverlay' || e.target.id === 'revealedState') closePrizeVault(false); }
         
         function revealPrizes(fromRemote = false) {
             document.getElementById('mysteryState').style.display = 'none'; 
@@ -509,62 +582,28 @@
             prizeGrid.innerHTML = ''; 
             
             const winners = students.filter(s => parseInt(s.Points) >= 15);
-            
-            if (winners.length === 0) {
-                noPrizeMsg.style.display = 'block';
-            } else { 
+            if (winners.length === 0) { noPrizeMsg.style.display = 'block'; } 
+            else { 
                 noPrizeMsg.style.display = 'none'; 
                 winners.forEach((w, i) => { 
                     const c = document.createElement('div'); 
                     c.className = 'prize-card'; 
                     c.style.animationDelay = `${i * 0.15}s`; 
-                    c.innerHTML = `
-                        <img src="${w.AvatarURL}" alt="Winner Avatar">
-                        <h3 class="fredoka">${w.Name}</h3>
-                        <p class="pts-badge">⭐ ${w.Points}</p>
-                    `; 
+                    c.innerHTML = `<img src="${w.AvatarURL}" alt="Winner Avatar"><h3 class="fredoka">${w.Name}</h3><p class="pts-badge">⭐ ${w.Points}</p>`; 
                     prizeGrid.appendChild(c); 
                 }); 
             }
-            
-            if (!fromRemote) {
-                pubnub.publish({ channel: "classroom_channel", message: { action: "revealVault" } });
-            }
+            if (!fromRemote) pubnub.publish({ channel: "classroom_channel", message: { action: "revealVault" } });
         }
 
-        const html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: {width: 100, height: 100} }, false);
-        html5QrcodeScanner.render((decodedText) => {
-            const student = students.find(s => s.Name.toLowerCase() === decodedText.trim().toLowerCase());
-            if (!student) return;
-
-            if (isAutoMode) {
-                if (scannedThisSession.has(student.Name)) { 
-                    const warning = document.getElementById('spamWarning'); 
-                    warning.style.display = 'block'; 
-                    setTimeout(() => warning.style.display = 'none', 3000); 
-                    return; 
-                }
-                
-                scannedThisSession.add(student.Name);
-                let pts = document.body.classList.contains('neon-mode') ? 2 : 1;
-                
-                pubnub.publish({ channel: "classroom_channel", message: { action: "addPoints", name: student.Name, points: pts, isDouble: pts===2 } });
-                fetch(`${GOOGLE_WEB_APP_URL}?action=addPoints&name=${encodeURIComponent(student.Name)}&points=${pts}`, { mode: 'no-cors' });
-            } else {
-                if (activeKioskStudent !== student.Name) {
-                    triggerKioskPopup(student);
-                    pubnub.publish({ channel: "classroom_channel", message: { action: "setActive", name: student.Name } });
-                }
-            }
-        }, () => {});
-
+        // TRIGGER KIOSK POPUP
         function triggerKioskPopup(student) {
             activeKioskStudent = student.Name;
             const popup = document.getElementById('kioskPopup');
             
             document.getElementById('kioskPopupName').innerHTML = `
                 ${student.Name}<br>
-                <span class="pts-badge" style="display: inline-block; margin-top: 10px; font-size: 1.8rem; background: var(--yellow); padding: 5px 25px; border-radius: 8px; border: 3px solid var(--dark); box-shadow: 2px 2px 0 var(--dark);">
+                <span class="pts-badge" style="display: inline-block; margin-top: 10px; font-size: 1.8rem; background: var(--yellow); color: var(--dark); padding: 5px 25px; border-radius: 8px; border: 3px solid var(--dark); box-shadow: 2px 2px 0 var(--dark);">
                     ⭐ ${student.Points}
                 </span>
             `;
@@ -582,17 +621,8 @@
         function setAutoMode(state) {
             isAutoMode = state === 'on';
             const badge = document.getElementById('autoModeBadge');
-            const label = document.querySelector('.kiosk-label');
-            
-            if (isAutoMode) { 
-                badge.style.display = 'block'; 
-                label.textContent = "AUTO-SCAN: +1 POINT"; 
-                label.style.color = "var(--green)"; 
-            } else { 
-                scannedThisSession.clear(); 
-                badge.style.display = 'none'; 
-                label.textContent = "SCAN CARD HERE"; 
-                label.style.color = "var(--primary)"; 
+            if (badge) {
+                badge.style.display = isAutoMode ? 'block' : 'none';
             }
         }
 
@@ -604,12 +634,7 @@
                 setAutoMode(rawResponse.autoMode);
 
                 const newStudents = rawResponse.students.map(s => {
-                    return { 
-                        Name: s.Name, 
-                        Points: s.Points, 
-                        Artwork: s.Artwork, 
-                        AvatarURL: getSafeAvatar(s.Name, s.AvatarURL) 
-                    };
+                    return { Name: s.Name, Points: s.Points, Artwork: s.Artwork, AvatarURL: getSafeAvatar(s.Name, s.AvatarURL) };
                 });
                 
                 if (students.length > 0) { 
@@ -619,30 +644,19 @@
                             const diff = parseInt(newStudent.Points) - parseInt(oldStudent.Points);
                             if (diff > 0 && !scannedThisSession.has(newStudent.Name)) {
                                 const isMilestone = (parseInt(oldStudent.Points) < 15 && parseInt(newStudent.Points) >= 15);
-                                celebrationQueue.push({ 
-                                    student: newStudent, 
-                                    pointsGained: diff, 
-                                    isMilestone: isMilestone 
-                                });
+                                celebrationQueue.push({ student: newStudent, pointsGained: diff, isMilestone: isMilestone });
                             }
                         }
                     });
                 }
                 
                 students = newStudents;
-                
-                if (orderedStudents.length > 0) { 
-                    orderedStudents.forEach(os => { 
-                        const freshData = students.find(s => s.Name === os.Name); 
-                        if (freshData) os.Points = freshData.Points; 
-                    }); 
-                }
+                if (orderedStudents.length > 0) { orderedStudents.forEach(os => { const freshData = students.find(s => s.Name === os.Name); if (freshData) os.Points = freshData.Points; }); }
 
                 updateClassGoal(); 
                 updateArtworkLoop(); 
                 renderLeaderboard(); 
                 processCelebrations();
-                
             } catch (error) {
                 console.error("Data fetch failed.");
             }
@@ -650,7 +664,6 @@
 
         function processCelebrations() {
             if (isCelebrating || celebrationQueue.length === 0 || document.getElementById('prizeVaultOverlay').style.display === 'flex') return;
-            
             isCelebrating = true;
             const event = celebrationQueue.shift();
             
@@ -659,12 +672,7 @@
                 document.getElementById('milestoneName').textContent = event.student.Name;
                 document.getElementById('milestoneBox').className = 'celebration-box anim-pop';
                 document.getElementById('milestoneOverlay').style.display = 'flex';
-                
-                setTimeout(() => { 
-                    document.getElementById('milestoneOverlay').style.display = 'none'; 
-                    isCelebrating = false; 
-                    setTimeout(processCelebrations, 1000); 
-                }, 6000); 
+                setTimeout(() => { document.getElementById('milestoneOverlay').style.display = 'none'; isCelebrating = false; setTimeout(processCelebrations, 1000); }, 6000); 
             } else {
                 let ptsText = event.isDouble ? `DOUBLE! +${event.pointsGained}` : `+${event.pointsGained}`;
                 document.getElementById('celebrationAvatar').src = event.student.AvatarURL;
@@ -672,16 +680,10 @@
                 document.getElementById('celebrationPoints').textContent = ptsText;
                 document.getElementById('celebrationBox').className = 'celebration-box anim-pop';
                 document.getElementById('celebrationOverlay').style.display = 'flex';
-                
-                setTimeout(() => { 
-                    document.getElementById('celebrationOverlay').style.display = 'none'; 
-                    isCelebrating = false; 
-                    setTimeout(processCelebrations, 1000); 
-                }, 4000); 
+                setTimeout(() => { document.getElementById('celebrationOverlay').style.display = 'none'; isCelebrating = false; setTimeout(processCelebrations, 1000); }, 4000); 
             }
         }
 
-        // FIXED ARTWORK FILTER: Exclude bad strings
         function updateArtworkLoop() {
             const newArtList = students.filter(s => {
                 return s.Artwork && s.Artwork.trim() !== "" && s.Artwork.trim().startsWith("http");
@@ -752,12 +754,8 @@
         function updateLeaderboardPoints() { 
             students.forEach(s => { 
                 const safeName = s.Name.replace(/[^a-zA-Z0-9]/g, '-'); 
-                document.querySelectorAll(`[data-student="${safeName}"] .pts-badge`).forEach(b => {
-                    b.innerHTML = `⭐ ${s.Points}`;
-                }); 
-                document.querySelectorAll(`[data-student="${safeName}"] .mini-progress-fill`).forEach(b => {
-                    b.style.width = `${Math.min((s.Points/15)*100, 100)}%`;
-                }); 
+                document.querySelectorAll(`[data-student="${safeName}"] .pts-badge`).forEach(b => { b.innerHTML = `⭐ ${s.Points}`; }); 
+                document.querySelectorAll(`[data-student="${safeName}"] .mini-progress-fill`).forEach(b => { b.style.width = `${Math.min((s.Points/15)*100, 100)}%`; }); 
             }); 
         }
         
