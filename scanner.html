@@ -249,6 +249,11 @@
             font-size: 1.3rem; 
             border: 3px solid var(--dark); 
             box-shadow: 2px 2px 0 var(--dark);
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        .vault-winner-card:active {
+            transform: scale(0.95);
         }
         .vault-winner-card img { 
             width: 50px; 
@@ -325,6 +330,7 @@
         </header>
         
         <div class="remote-bar">
+            <!-- PAUSE BUTTON -->
             <button id="btnPauseScrollRemote" class="btn-remote" style="background:#ddd; color:var(--dark);" onclick="toggleScrollRemote()">⏸️ Pause</button>
             <button class="btn-remote btn-vault" onclick="sendRealtimeCommand('showVault'); openPrizeVaultLocal();">🎁 Vault</button>
             <button class="btn-remote btn-reveal" onclick="sendRealtimeCommand('revealVault'); revealPrizeVaultLocal();">🏆 Reveal</button>
@@ -446,6 +452,7 @@
         function getSafeAvatar(studentName, url) {
             const safeName = studentName ? encodeURIComponent(studentName.trim()) : 'Student';
             const strUrl = url ? url.toString().trim() : "";
+            
             if (!strUrl || !strUrl.startsWith("http") || strUrl.includes("github.io")) {
                 return `https://api.dicebear.com/9.x/bottts/svg?seed=${safeName}`;
             }
@@ -491,7 +498,14 @@
                     }
                     else if (event.message.action === "addPoints") {
                         const student = students.find(s => s.Name.toLowerCase() === event.message.name.toLowerCase());
-                        if (student) student.Points = parseInt(student.Points) + event.message.points;
+                        if (student) {
+                            student.Points = parseInt(student.Points) + event.message.points;
+                            
+                            // If points went negative (prize redeemed), instantly re-render vault if open
+                            if (event.message.points < 0 && document.getElementById('vaultRevealedState').style.display === 'flex') {
+                                revealPrizeVaultLocal();
+                            }
+                        }
                     }
                     else if (event.message.action === "toggleScroll") {
                         isScrollPaused = event.message.paused;
@@ -502,6 +516,14 @@
                 }
             }
         });
+
+        // --- NEW: REDEEM PRIZE ENGINE ---
+        function redeemPrize(name) {
+            if(confirm(`Redeem prize for ${name}? This will deduct 15 points.`)) {
+                pubnub.publish({ channel: "classroom_channel", message: { action: "addPoints", name: name, points: -15, isDouble: false } });
+                robustFetch(`${GOOGLE_WEB_APP_URL}?action=addPoints&name=${encodeURIComponent(name)}&points=-15&tag=Prize+Redeemed&t=${new Date().getTime()}`);
+            }
+        }
 
         function toggleScrollRemote() {
             isScrollPaused = !isScrollPaused;
@@ -571,14 +593,19 @@
             
             winners.forEach(w => { 
                 const avatar = getSafeAvatar(w.Name, w.AvatarURL);
-                list.innerHTML += `
-                    <div class="vault-winner-card">
-                        <img src="${avatar}" alt="Winner Avatar"> 
-                        <div style="text-align: left;" class="fredoka">
-                            ${w.Name}<br>
-                            <span style="color: #FF4B72;">⭐ ${w.Points}</span>
-                        </div>
-                    </div>`; 
+                const card = document.createElement('div');
+                card.className = 'vault-winner-card';
+                // Add the redeem action
+                card.onclick = function() { redeemPrize(w.Name); };
+                
+                card.innerHTML = `
+                    <img src="${avatar}" alt="Winner Avatar"> 
+                    <div style="text-align: left;" class="fredoka">
+                        ${w.Name}<br>
+                        <span style="color: #FF4B72;">⭐ ${w.Points}</span>
+                    </div>
+                `; 
+                list.appendChild(card);
             });
         }
 
@@ -751,7 +778,7 @@
                 students = data.students || [];
                 populateDatalist();
             } catch(err) {
-                console.error("Remote failed to load student data:", err);
+                console.error("Remote failed to load student data.");
             }
         }
         
