@@ -3,11 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Teacher Remote & Scanner</title>
+    <title>Teacher Remote Control</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;800&family=Nunito:wght@700;800&display=swap" rel="stylesheet">
-    
-    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <script src="https://cdn.pubnub.com/sdk/javascript/pubnub.7.2.2.min.js"></script>
     
     <style>
@@ -28,6 +26,7 @@
             text-align: center; 
             background-image: radial-gradient(#d1d1d1 2.5px, transparent 2.5px); 
             background-size: 25px 25px;
+            padding-bottom: 40px;
         }
         
         .fredoka { font-family: 'Fredoka', sans-serif; }
@@ -43,32 +42,32 @@
             border-bottom: 4px solid var(--dark);
         }
         
-        #mainAppView { display: block; padding-bottom: 20px;}
+        #mainAppView { display: block; }
         #mobileVaultView { display: none; flex-direction: column; height: 100vh; overflow: hidden; }
 
         .remote-bar { 
-            padding: 15px; 
+            padding: 10px 15px; 
             display: flex; 
-            gap: 10px; 
+            gap: 8px; 
             justify-content: center; 
             flex-wrap: wrap; 
         }
         .btn-remote { 
             border: 3px solid var(--dark); 
-            padding: 12px 10px; 
-            font-size: 1rem; 
+            padding: 10px; 
+            font-size: 0.95rem; 
             font-family: 'Nunito', sans-serif; 
             font-weight: 800; 
             border-radius: 8px; 
             cursor: pointer; 
             flex: 1; 
-            min-width: 80px; 
-            box-shadow: 4px 4px 0 var(--dark); 
+            min-width: 75px; 
+            box-shadow: 3px 3px 0 var(--dark); 
             transition: transform 0.1s, box-shadow 0.1s;
         }
         .btn-remote:active { 
             transform: translate(2px, 2px); 
-            box-shadow: 2px 2px 0 var(--dark); 
+            box-shadow: 1px 1px 0 var(--dark); 
         }
         
         .btn-vault { background: var(--yellow); color: var(--dark); } 
@@ -77,14 +76,54 @@
         .btn-admin { background: var(--surface); color: var(--dark); } 
         .btn-goal { background: #2196F3; color: white; }
         
-        .search-container {
-            margin: 0 15px 15px 15px;
-            position: relative;
+        /* SECTION CARDS */
+        .section-card {
+            background: white;
+            margin: 10px 15px;
+            padding: 12px;
+            border-radius: 10px;
+            border: 3px solid var(--dark);
+            box-shadow: 4px 4px 0 var(--dark);
+            text-align: left;
         }
+        .section-title {
+            margin: 0 0 10px 0;
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--dark);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* SOUNDBOARD & TIMERS */
+        .grid-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .btn-mini {
+            background: var(--bg);
+            border: 2px solid var(--dark);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-family: 'Nunito', sans-serif;
+            font-weight: 800;
+            font-size: 0.95rem;
+            cursor: pointer;
+            box-shadow: 2px 2px 0 var(--dark);
+            flex: 1;
+            min-width: 65px;
+            text-align: center;
+        }
+        .btn-mini:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0 var(--dark); }
+
+        /* SEARCH BAR */
+        .search-container { margin: 10px 15px; }
         .remote-search {
             width: 100%;
-            padding: 15px;
-            font-size: 1.2rem;
+            padding: 12px;
+            font-size: 1.1rem;
             font-family: 'Fredoka', sans-serif;
             font-weight: 800;
             border: 3px solid var(--dark);
@@ -95,228 +134,107 @@
             text-align: center;
         }
 
-        .auto-toggle { 
-            margin: 0 15px 15px 15px; 
-            padding: 15px; 
-            background: white; 
-            border-radius: 10px; 
-            border: 3px solid var(--dark); 
-            box-shadow: 4px 4px 0 var(--dark); 
-            cursor: pointer; 
+        /* VISUAL ROSTER GRID */
+        .roster-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            max-height: 380px;
+            overflow-y: auto;
+            padding: 5px;
         }
-        .auto-toggle h2 { margin: 0; font-size: 1.5rem; }
+        .student-card {
+            background: white;
+            border: 3px solid var(--dark);
+            border-radius: 10px;
+            padding: 10px 5px;
+            text-align: center;
+            box-shadow: 3px 3px 0 var(--dark);
+            cursor: pointer;
+            position: relative;
+            user-select: none;
+        }
+        .student-card.selected {
+            background: var(--yellow);
+            border-color: var(--primary);
+            box-shadow: 3px 3px 0 var(--primary);
+        }
+        .student-card img {
+            width: 45px;
+            height: 45px;
+            border-radius: 5px;
+            border: 2px solid var(--dark);
+            background: white;
+        }
+        .student-card h4 {
+            margin: 5px 0 0 0;
+            font-size: 0.95rem;
+            font-weight: 800;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .student-card span {
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: #555;
+        }
+
+        /* MULTI-SELECT BAR */
+        #bulkActionBar {
+            display: none;
+            position: fixed;
+            bottom: 15px;
+            left: 15px;
+            right: 15px;
+            background: var(--dark);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            border: 3px solid white;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+            z-index: 9500;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .auto-toggle { 
+            margin: 0 15px 10px 15px; padding: 12px; background: white; border-radius: 10px; border: 3px solid var(--dark); box-shadow: 3px 3px 0 var(--dark); cursor: pointer; 
+        }
+        .auto-toggle h2 { margin: 0; font-size: 1.3rem; }
         .auto-on { background: var(--green); color: white; }
         .double-on { background: var(--primary); color: white; }
 
-        #scannerView { padding: 0 15px 15px 15px; }
-        #reader { 
-            border-radius: 10px; 
-            overflow: hidden; 
-            background: white; 
-            min-height: 250px; 
-            border: 3px solid var(--dark); 
-            box-shadow: 4px 4px 0 var(--dark);
-        }
-        .kiosk-status-text { 
-            font-size: 1.2rem; 
-            margin-top: 15px; 
-            font-weight: 800; 
-            background: white; 
-            padding: 10px; 
-            border-radius: 10px; 
-            border: 3px solid var(--dark); 
-            display: inline-block;
-            color: var(--dark);
-        }
-
         #actionPanel { 
-            display: none; 
-            background: white; 
-            margin: 15px; 
-            padding: 25px 20px; 
-            border-radius: 10px; 
-            position: relative; 
-            border: 4px solid var(--dark); 
-            box-shadow: 8px 8px 0 var(--dark);
+            display: none; background: white; margin: 15px; padding: 20px; border-radius: 10px; position: relative; border: 4px solid var(--dark); box-shadow: 8px 8px 0 var(--dark);
         }
-        #scanAvatar { 
-            width: 100px; 
-            height: 100px; 
-            border-radius: 10px; 
-            border: 4px solid var(--dark); 
-            background: white; 
-            box-shadow: 4px 4px 0 var(--dark);
-        }
+        #scanAvatar { width: 90px; height: 90px; border-radius: 10px; border: 4px solid var(--dark); background: white; box-shadow: 4px 4px 0 var(--dark); }
+        .color-picker { position: absolute; top: 15px; right: 15px; width: 35px; height: 35px; padding: 0; border: 3px solid var(--dark); border-radius: 8px; cursor: pointer; box-shadow: 2px 2px 0 var(--dark); }
         
-        .color-picker { 
-            position: absolute; 
-            top: 20px; 
-            right: 20px; 
-            width: 40px; 
-            height: 40px; 
-            padding: 0; 
-            border: 3px solid var(--dark); 
-            border-radius: 8px; 
-            cursor: pointer; 
-            box-shadow: 2px 2px 0 var(--dark);
-        }
-        
-        .tag-row { display: flex; gap: 8px; justify-content: center; margin-top: 15px; flex-wrap: wrap;}
-        .tag-btn { 
-            background: white; 
-            border: 2px solid var(--dark); 
-            padding: 8px 12px; 
-            border-radius: 8px; 
-            font-family: 'Nunito', sans-serif; 
-            font-weight: 800; 
-            cursor: pointer; 
-            color: var(--dark); 
-            box-shadow: 2px 2px 0 var(--dark);
-        }
+        .tag-row { display: flex; gap: 6px; justify-content: center; margin-top: 12px; flex-wrap: wrap;}
+        .tag-btn { background: white; border: 2px solid var(--dark); padding: 6px 10px; border-radius: 8px; font-family: 'Nunito', sans-serif; font-weight: 800; cursor: pointer; color: var(--dark); box-shadow: 2px 2px 0 var(--dark); }
         .tag-btn.active { background: var(--green); color: white; }
         
-        .btn-group { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
-        .btn { 
-            border: 3px solid var(--dark); 
-            padding: 15px 20px; 
-            font-size: 1.8rem; 
-            font-family: 'Fredoka', sans-serif; 
-            font-weight: 800; 
-            border-radius: 10px; 
-            cursor: pointer; 
-            color: white; 
-            flex: 1; 
-            box-shadow: 4px 4px 0 var(--dark);
-        }
-        .btn-1 { background: #4CAF50; } 
-        .btn-2 { background: #2196F3; }
+        .btn-group { display: flex; gap: 10px; justify-content: center; margin-top: 15px; }
+        .btn { border: 3px solid var(--dark); padding: 12px 18px; font-size: 1.6rem; font-family: 'Fredoka', sans-serif; font-weight: 800; border-radius: 10px; cursor: pointer; color: white; flex: 1; box-shadow: 4px 4px 0 var(--dark); }
+        .btn-1 { background: #4CAF50; } .btn-2 { background: #2196F3; }
 
         #undoToast { 
-            position: fixed; 
-            bottom: 20px; 
-            left: 50%; 
-            transform: translateX(-50%); 
-            background: var(--dark); 
-            color: white; 
-            padding: 15px 30px; 
-            border-radius: 10px; 
-            font-size: 1.2rem; 
-            font-weight: 800; 
-            box-shadow: 8px 8px 0 rgba(0,0,0,0.3); 
-            display: none; 
-            z-index: 9000; 
-            cursor: pointer; 
-            border: 3px solid var(--primary);
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--dark); color: white; padding: 12px 25px; border-radius: 10px; font-size: 1.1rem; font-weight: 800; box-shadow: 8px 8px 0 rgba(0,0,0,0.3); display: none; z-index: 9900; cursor: pointer; border: 3px solid var(--primary);
         }
         
-        .btn-cancel { 
-            background: transparent; 
-            color: var(--dark); 
-            border: 3px solid var(--dark); 
-            padding: 10px 20px; 
-            border-radius: 8px; 
-            font-size: 1.2rem; 
-            margin-top: 20px; 
-            width: 100%; 
-            cursor: pointer; 
-            font-family: 'Nunito', sans-serif; 
-            font-weight: 800; 
-            box-shadow: 4px 4px 0 var(--dark);
-        }
+        .btn-cancel { background: transparent; color: var(--dark); border: 3px solid var(--dark); padding: 10px; border-radius: 8px; font-size: 1.1rem; margin-top: 15px; width: 100%; cursor: pointer; font-family: 'Nunito', sans-serif; font-weight: 800; box-shadow: 3px 3px 0 var(--dark); }
         
-        .vault-list-container { 
-            flex: 1; 
-            overflow-y: auto; 
-            background: white; 
-            border-radius: 10px; 
-            border: 4px solid var(--dark); 
-            padding: 15px; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 10px; 
-            margin: 15px; 
-            box-shadow: inset 2px 2px 0 rgba(0,0,0,0.1); 
-        }
-        .vault-winner-card { 
-            background: var(--bg); 
-            color: var(--dark); 
-            border-radius: 8px; 
-            padding: 10px 15px; 
-            display: flex; 
-            align-items: center; 
-            gap: 15px; 
-            font-weight: 800; 
-            font-size: 1.3rem; 
-            border: 3px solid var(--dark); 
-            box-shadow: 2px 2px 0 var(--dark);
-            cursor: pointer;
-            transition: transform 0.1s;
-        }
-        .vault-winner-card:active {
-            transform: scale(0.95);
-        }
-        .vault-winner-card img { 
-            width: 50px; 
-            height: 50px; 
-            border-radius: 5px; 
-            border: 2px solid var(--dark); 
-            background: white;
-        }
+        .vault-list-container { flex: 1; overflow-y: auto; background: white; border-radius: 10px; border: 4px solid var(--dark); padding: 12px; display: flex; flex-direction: column; gap: 8px; margin: 15px; box-shadow: inset 2px 2px 0 rgba(0,0,0,0.1); }
+        .vault-winner-card { background: var(--bg); color: var(--dark); border-radius: 8px; padding: 8px 12px; display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 1.2rem; border: 3px solid var(--dark); box-shadow: 2px 2px 0 var(--dark); cursor: pointer; }
+        .vault-winner-card img { width: 45px; height: 45px; border-radius: 5px; border: 2px solid var(--dark); background: white; }
 
-        .modal-overlay { 
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            right: 0; 
-            bottom: 0; 
-            background: rgba(26, 26, 36, 0.9); 
-            display: none; 
-            align-items: center; 
-            justify-content: center; 
-            z-index: 10000; 
-            backdrop-filter: blur(4px); 
-        }
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(26, 26, 36, 0.9); display: none; align-items: center; justify-content: center; z-index: 10000; backdrop-filter: blur(4px); }
         .modal-overlay.active { display: flex; }
-        .modal-content { 
-            background: var(--surface); 
-            padding: 30px; 
-            border-radius: 10px; 
-            max-width: 350px; 
-            width: 90%; 
-            text-align: center; 
-            position: relative; 
-            border: 5px solid var(--dark); 
-            box-shadow: 8px 8px 0 var(--dark); 
-        }
-        
-        .close-btn { 
-            position: absolute; 
-            top: 10px; 
-            right: 20px; 
-            font-size: 2rem; 
-            font-weight: 800; 
-            cursor: pointer; 
-            color: var(--dark); 
-        }
-        .settings-input { 
-            width: 100%; 
-            padding: 10px; 
-            font-size: 1.2rem; 
-            border-radius: 8px; 
-            border: 3px solid var(--dark); 
-            margin-bottom: 15px; 
-            box-sizing: border-box; 
-            font-family: 'Nunito', sans-serif; 
-            font-weight: 800; 
-            box-shadow: inset 2px 2px 0 rgba(0,0,0,0.1);
-        }
-        .settings-label { 
-            text-align: left; 
-            display: block; 
-            font-weight: 800; 
-            color: var(--dark); 
-            margin-bottom: 5px; 
-        }
+        .modal-content { background: var(--surface); padding: 25px; border-radius: 10px; max-width: 350px; width: 90%; text-align: center; position: relative; border: 5px solid var(--dark); box-shadow: 8px 8px 0 var(--dark); }
+        .close-btn { position: absolute; top: 10px; right: 15px; font-size: 2rem; font-weight: 800; cursor: pointer; color: var(--dark); }
+        .settings-input { width: 100%; padding: 10px; font-size: 1.1rem; border-radius: 8px; border: 3px solid var(--dark); margin-bottom: 12px; box-sizing: border-box; font-family: 'Nunito', sans-serif; font-weight: 800; box-shadow: inset 2px 2px 0 rgba(0,0,0,0.1); }
+        .settings-label { text-align: left; display: block; font-weight: 800; color: var(--dark); margin-bottom: 4px; }
     </style>
 </head>
 <body>
@@ -325,8 +243,8 @@
 
     <div id="mainAppView">
         <header class="fredoka">
-            📱 Remote 
-            <button class="btn-remote btn-fun" style="max-width: 50px; border-color: white; box-shadow: none;" onclick="sendRealtimeCommand('partyConfetti')">🎉</button>
+            📱 Teacher Dashboard 
+            <button class="btn-remote btn-fun" style="max-width: 45px; border-color: white; box-shadow: none;" onclick="sendRealtimeCommand('partyConfetti')">🎉</button>
         </header>
         
         <div class="remote-bar">
@@ -335,24 +253,56 @@
             <button class="btn-remote btn-reveal" onclick="sendRealtimeCommand('revealVault'); revealPrizeVaultLocal();">🏆 Reveal</button>
             <button class="btn-remote btn-goal" onclick="openPinModal('goal')">🎯 Goal</button>
             <button class="btn-remote btn-admin" onclick="openPinModal('database')">⚙️ Admin</button>
-            <button id="doubleBtn" class="btn-remote" style="background:var(--dark); color:white; min-width: 100%; margin-top: 5px;" onclick="toggleDouble()">🔥 Enable x2 Points</button>
+            <button id="doubleBtn" class="btn-remote" style="background:var(--dark); color:white; min-width: 100%; margin-top: 3px;" onclick="toggleDouble()">🔥 Enable x2 Points</button>
+        </div>
+
+        <!-- WHOLE CLASS & MULTI-SELECT ACTIONS -->
+        <div class="remote-bar" style="padding-top: 0;">
+            <button class="btn-remote" style="background: var(--green); color: white;" onclick="awardClassPoint()">👥 Class +1</button>
+            <button id="btnMultiSelect" class="btn-remote" style="background: var(--surface);" onclick="toggleMultiSelectMode()">☑️ Multi-Select</button>
         </div>
 
         <div id="autoToggleBtn" class="auto-toggle" onclick="toggleAutoMode()">
             <h2 id="autoToggleText" class="fredoka">▶️ Turn ON Auto-Check-In</h2>
         </div>
 
+        <!-- SOUNDBOARD SFX -->
+        <div class="section-card">
+            <div class="section-title"><span>🔊 Soundboard SFX</span></div>
+            <div class="grid-buttons">
+                <button class="btn-mini" onclick="sendRealtimeCommand('playSFX', {sfx: 'airhorn'})">🎺 Airhorn</button>
+                <button class="btn-mini" onclick="sendRealtimeCommand('playSFX', {sfx: 'drumroll'})">🥁 Drumroll</button>
+                <button class="btn-mini" onclick="sendRealtimeCommand('playSFX', {sfx: 'crickets'})">🦗 Crickets</button>
+                <button class="btn-mini" onclick="sendRealtimeCommand('playSFX', {sfx: 'tada'})">🎉 Ta-da</button>
+                <button class="btn-mini" onclick="sendRealtimeCommand('playSFX', {sfx: 'chime'})">🔔 Chime</button>
+            </div>
+        </div>
+
+        <!-- TIMER CONTROLS -->
+        <div class="section-card">
+            <div class="section-title"><span>⏱️ Countdown Timer</span></div>
+            <div class="grid-buttons">
+                <button class="btn-mini" onclick="sendRealtimeCommand('startTimer', {duration: 60})">1 Min</button>
+                <button class="btn-mini" onclick="sendRealtimeCommand('startTimer', {duration: 120})">2 Min</button>
+                <button class="btn-mini" onclick="sendRealtimeCommand('startTimer', {duration: 300})">5 Min</button>
+                <button class="btn-mini" onclick="sendRealtimeCommand('startTimer', {duration: 600})">10 Min</button>
+                <button class="btn-mini" style="background: #ffcccc;" onclick="sendRealtimeCommand('stopTimer')">⏹️ Clear</button>
+            </div>
+        </div>
+
         <!-- SEARCH BAR -->
         <div class="search-container">
-            <input type="text" id="remoteSearchInput" class="remote-search" list="studentDatalist" placeholder="🔍 Search & Select Student..." onchange="handleRemoteSearch(this.value)">
+            <input type="text" id="remoteSearchInput" class="remote-search" list="studentDatalist" placeholder="🔍 Search or tap student below..." onchange="handleRemoteSearch(this.value)">
             <datalist id="studentDatalist"></datalist>
         </div>
 
-        <div id="scannerView">
-            <div id="reader"></div>
-            <div class="kiosk-status-text" id="kioskStatusText">Searching for camera...</div>
+        <!-- VISUAL ROSTER GRID -->
+        <div class="section-card" style="padding: 10px;">
+            <div class="section-title"><span id="rosterHeaderTitle">📋 Student Roster</span></div>
+            <div class="roster-grid" id="rosterGrid"></div>
         </div>
 
+        <!-- SINGLE STUDENT ACTION PANEL -->
         <div id="actionPanel">
             <input type="color" id="avatarColor" class="color-picker" title="Change Avatar Color" onchange="updateAvatarColor(this.value)">
             <img id="scanAvatar" src="" alt="Student Avatar">
@@ -377,12 +327,23 @@
                 <button class="btn btn-2" onclick="submitPoints(2)">+2</button>
             </div>
 
-            <button class="btn-cancel" onclick="resetRemote()">Cancel / Back to Camera</button>
+            <button class="btn-cancel" onclick="resetRemote()">Cancel / Back to Roster</button>
+        </div>
+    </div>
+
+    <!-- BULK ACTION BAR -->
+    <div id="bulkActionBar">
+        <span id="bulkCountText" style="font-weight: 800;">0 Selected</span>
+        <div>
+            <button class="btn-mini" style="background: var(--green); color: white;" onclick="submitBulkPoints(1)">+1 All</button>
+            <button class="btn-mini" style="background: #2196F3; color: white;" onclick="submitBulkPoints(2)">+2 All</button>
+            <button class="btn-mini" style="background: #ffcccc;" onclick="clearMultiSelect()">Clear</button>
         </div>
     </div>
 
     <div id="undoToast" onclick="undoLastPoint()">↩️ Undo Last Point</div>
 
+    <!-- VAULT VIEW -->
     <div id="mobileVaultView">
         <header style="background: var(--yellow); color: var(--dark);" class="fredoka">🎁 Prize Vault Control</header>
         <div id="vaultLockedState" style="flex:1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;">
@@ -396,6 +357,7 @@
         <div style="padding: 20px;"><button class="btn-cancel" style="width: 100%; background: var(--dark); color: white; border-color: var(--dark); margin: 0;" onclick="sendRealtimeCommand('closeVault'); closePrizeVaultLocal();">✖ Close Vault Everywhere</button></div>
     </div>
 
+    <!-- MODALS -->
     <div id="pinModal" class="modal-overlay">
         <div class="modal-content">
             <span class="close-btn" onclick="closePinModal()">&times;</span>
@@ -440,7 +402,8 @@
         let activeStudentName = 'none'; 
         let isAutoMode = 'off'; 
         let isDouble = false; 
-        let html5QrcodeScanner = null; 
+        let isMultiSelectMode = false;
+        let selectedStudentsSet = new Set();
         let scrollTimeout = null;
         let selectedTag = "None"; 
         let undoData = null; 
@@ -507,6 +470,7 @@
                         const student = students.find(s => s.Name.toLowerCase() === event.message.name.toLowerCase());
                         if (student) {
                             student.Points = parseInt(student.Points) + event.message.points;
+                            renderRosterGrid();
                             if (event.message.points < 0 && document.getElementById('vaultRevealedState').style.display === 'flex') {
                                 revealPrizeVaultLocal();
                             }
@@ -527,11 +491,110 @@
                 { channel: "classroom_channel", message: { action: action, ...extras } },
                 function(status) {
                     if (status && status.error) {
-                        console.error("PubNub publish error:", status);
                         showToast("⚠️ Signal lost. Reconnecting...");
                     }
                 }
             ); 
+        }
+
+        // RENDER VISUAL STUDENT ROSTER
+        function renderRosterGrid() {
+            const grid = document.getElementById('rosterGrid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            students.forEach(s => {
+                const isSelected = selectedStudentsSet.has(s.Name);
+                const card = document.createElement('div');
+                card.className = `student-card ${isSelected ? 'selected' : ''}`;
+                card.onclick = () => handleStudentCardClick(s);
+
+                card.innerHTML = `
+                    <img src="${getSafeAvatar(s.Name, s.AvatarURL)}" alt="Avatar">
+                    <h4 class="fredoka">${s.Name}</h4>
+                    <span>⭐ ${s.Points}</span>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function handleStudentCardClick(student) {
+            if (isMultiSelectMode) {
+                if (selectedStudentsSet.has(student.Name)) {
+                    selectedStudentsSet.delete(student.Name);
+                } else {
+                    selectedStudentsSet.add(student.Name);
+                }
+                updateBulkBarUI();
+                renderRosterGrid();
+            } else {
+                activeStudentName = student.Name;
+                sendRealtimeCommand('setActive', { name: student.Name });
+                showActionPanel(student, false);
+            }
+        }
+
+        // MULTI-SELECT & WHOLE CLASS LOGIC
+        function toggleMultiSelectMode() {
+            isMultiSelectMode = !isMultiSelectMode;
+            const btn = document.getElementById('btnMultiSelect');
+            const title = document.getElementById('rosterHeaderTitle');
+            
+            if (isMultiSelectMode) {
+                btn.style.background = 'var(--yellow)';
+                title.textContent = "☑️ Select Students below...";
+                document.getElementById('bulkActionBar').style.display = 'flex';
+            } else {
+                clearMultiSelect();
+            }
+        }
+
+        function clearMultiSelect() {
+            isMultiSelectMode = false;
+            selectedStudentsSet.clear();
+            document.getElementById('btnMultiSelect').style.background = 'var(--surface)';
+            document.getElementById('rosterHeaderTitle').textContent = "📋 Student Roster";
+            document.getElementById('bulkActionBar').style.display = 'none';
+            renderRosterGrid();
+        }
+
+        function updateBulkBarUI() {
+            document.getElementById('bulkCountText').textContent = `${selectedStudentsSet.size} Selected`;
+        }
+
+        function awardClassPoint() {
+            if (confirm("Award +1 Point to the ENTIRE class?")) {
+                const allNames = students.map(s => s.Name);
+                const finalPts = isDouble ? 2 : 1;
+                
+                sendRealtimeCommand('bulkAddPoints', { students: allNames, points: finalPts });
+                
+                allNames.forEach(name => {
+                    robustFetch(`${GOOGLE_WEB_APP_URL}?action=addPoints&name=${encodeURIComponent(name)}&points=${finalPts}&tag=Class+Reward&t=${new Date().getTime()}`);
+                });
+                
+                showToast(`🎉 Whole Class got +${finalPts}!`, true);
+                loadData();
+            }
+        }
+
+        function submitBulkPoints(amount) {
+            if (selectedStudentsSet.size === 0) {
+                alert("Please select at least one student first!");
+                return;
+            }
+            const finalPts = isDouble ? amount * 2 : amount;
+            const namesArray = Array.from(selectedStudentsSet);
+
+            sendRealtimeCommand('bulkAddPoints', { students: namesArray, points: finalPts });
+
+            namesArray.forEach(name => {
+                robustFetch(`${GOOGLE_WEB_APP_URL}?action=addPoints&name=${encodeURIComponent(name)}&points=${finalPts}&tag=Group+Reward&t=${new Date().getTime()}`);
+            });
+
+            showToast(`⭐ +${finalPts} awarded to ${namesArray.length} students!`, true);
+            clearMultiSelect();
+            loadData();
         }
 
         function redeemPrize(name) {
@@ -587,13 +650,11 @@
             document.getElementById('mobileVaultView').style.display = 'flex'; 
             document.getElementById('vaultLockedState').style.display = 'flex'; 
             document.getElementById('vaultRevealedState').style.display = 'none'; 
-            stopCamera(); 
         }
         
         function closePrizeVaultLocal() { 
             document.getElementById('mobileVaultView').style.display = 'none'; 
             document.getElementById('mainAppView').style.display = 'block'; 
-            startCamera(); 
         }
         
         function revealPrizeVaultLocal() {
@@ -667,42 +728,7 @@
             alert("✅ Goal settings beamed to Big Screen!");
         }
 
-        // SAFEGUARDED CAMERA LOADER
-        function startCamera() {
-            if (html5QrcodeScanner) return; 
-            const readerElem = document.getElementById('reader');
-            if (!readerElem) return;
-            document.getElementById('scannerView').style.display = 'block';
-            
-            try {
-                html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: {width: 250, height: 250} }, false);
-                html5QrcodeScanner.render((decodedText) => {
-                    const student = students.find(s => s.Name.toLowerCase() === decodedText.trim().toLowerCase());
-                    if (student) { 
-                        activeStudentName = student.Name; 
-                        sendRealtimeCommand('setActive', { name: student.Name }); 
-                        showActionPanel(student, false); 
-                    }
-                }, () => {});
-            } catch(e) {
-                console.warn("Camera failed to start:", e);
-                const statusTxt = document.getElementById('kioskStatusText');
-                if (statusTxt) statusTxt.textContent = "Camera unavailable (Use Search Bar above)";
-            }
-        }
-
-        function stopCamera() { 
-            if (html5QrcodeScanner) { 
-                try {
-                    html5QrcodeScanner.clear(); 
-                } catch(e){}
-                html5QrcodeScanner = null; 
-            } 
-            document.getElementById('scannerView').style.display = 'none'; 
-        }
-
         function showActionPanel(student, isKioskScan) {
-            stopCamera(); 
             if (isKioskScan) {
                 if (navigator.vibrate) navigator.vibrate([200]);
                 document.getElementById('dingSound').play().catch(e => {}); 
@@ -763,6 +789,7 @@
             robustFetch(`${GOOGLE_WEB_APP_URL}?action=addPoints&name=${encodeURIComponent(activeStudentName)}&points=${finalAmount}&tag=${encodeURIComponent(selectedTag)}&t=${new Date().getTime()}`);
             
             resetRemote(); 
+            loadData();
         }
 
         function undoLastPoint() {
@@ -774,13 +801,13 @@
             if (toast) toast.style.display = 'none'; 
             undoData = null;
             if (navigator.vibrate) navigator.vibrate([50, 50, 50]); 
+            loadData();
         }
 
         function resetRemote() {
             document.getElementById('actionPanel').style.display = 'none';
             activeStudentName = 'none'; 
             sendRealtimeCommand('setActive', { name: 'none' }); 
-            startCamera(); 
         }
 
         function toggleAutoMode() {
@@ -805,13 +832,13 @@
                 const data = await res.json(); 
                 students = data.students || [];
                 populateDatalist();
+                renderRosterGrid();
             } catch(err) {
                 console.error("Remote failed to load student data.");
             }
         }
         
         loadData(); 
-        startCamera();
 
         async function handleImageUpload(input, type) {
             const file = input.files[0];
