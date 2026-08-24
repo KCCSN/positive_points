@@ -96,7 +96,7 @@
             align-items: center;
         }
 
-        /* SOUNDBOARD & TIMERS */
+        /* TIMERS */
         .grid-buttons {
             display: flex;
             gap: 8px;
@@ -264,18 +264,6 @@
 
         <div id="autoToggleBtn" class="auto-toggle" onclick="toggleAutoMode()">
             <h2 id="autoToggleText" class="fredoka">▶️ Turn ON Auto-Check-In</h2>
-        </div>
-
-        <!-- SOUNDBOARD SFX -->
-        <div class="section-card">
-            <div class="section-title"><span>🔊 Soundboard SFX</span></div>
-            <div class="grid-buttons">
-                <button class="btn-mini" onclick="sendRealtimeCommand('playSFX', {sfx: 'airhorn'})">🎺 Airhorn</button>
-                <button class="btn-mini" onclick="sendRealtimeCommand('playSFX', {sfx: 'drumroll'})">🥁 Drumroll</button>
-                <button class="btn-mini" onclick="sendRealtimeCommand('playSFX', {sfx: 'crickets'})">🦗 Crickets</button>
-                <button class="btn-mini" onclick="sendRealtimeCommand('playSFX', {sfx: 'tada'})">🎉 Ta-da</button>
-                <button class="btn-mini" onclick="sendRealtimeCommand('playSFX', {sfx: 'chime'})">🔔 Chime</button>
-            </div>
         </div>
 
         <!-- TIMER CONTROLS -->
