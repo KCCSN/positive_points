@@ -330,7 +330,6 @@
         </header>
         
         <div class="remote-bar">
-            <!-- PAUSE BUTTON -->
             <button id="btnPauseScrollRemote" class="btn-remote" style="background:#ddd; color:var(--dark);" onclick="toggleScrollRemote()">⏸️ Pause</button>
             <button class="btn-remote btn-vault" onclick="sendRealtimeCommand('showVault'); openPrizeVaultLocal();">🎁 Vault</button>
             <button class="btn-remote btn-reveal" onclick="sendRealtimeCommand('revealVault'); revealPrizeVaultLocal();">🏆 Reveal</button>
@@ -351,7 +350,7 @@
 
         <div id="scannerView">
             <div id="reader"></div>
-            <div class="kiosk-status-text">...or waiting for laptop kiosk scan...</div>
+            <div class="kiosk-status-text" id="kioskStatusText">Searching for camera...</div>
         </div>
 
         <div id="actionPanel">
@@ -366,7 +365,6 @@
                 <button class="tag-btn" onclick="toggleTag(this, 'Quiet')">Quiet</button>
             </div>
 
-            <!-- IMGBB UPLOAD BUTTONS -->
             <div style="display: flex; gap: 10px; justify-content: center; margin-top: 15px;">
                 <button class="btn-cancel" style="margin-top: 0; background: #eee; color: var(--dark);" onclick="document.getElementById('artUpload').click()">📸 Add Art</button>
                 <button class="btn-cancel" style="margin-top: 0; background: #eee; color: var(--dark);" onclick="document.getElementById('avatarUpload').click()">📸 Avatar</button>
@@ -449,10 +447,19 @@
         let undoTimer = null;
         let isScrollPaused = false;
 
+        function showToast(msg, isSuccess = false) {
+            const toast = document.getElementById('undoToast');
+            if (!toast) return;
+            toast.style.background = isSuccess ? 'var(--green)' : 'var(--primary)';
+            toast.style.color = 'white';
+            toast.innerHTML = msg;
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 3000);
+        }
+
         function getSafeAvatar(studentName, url) {
             const safeName = studentName ? encodeURIComponent(studentName.trim()) : 'Student';
             const strUrl = url ? url.toString().trim() : "";
-            
             if (!strUrl || !strUrl.startsWith("http") || strUrl.includes("github.io")) {
                 return `https://api.dicebear.com/9.x/bottts/svg?seed=${safeName}`;
             }
@@ -500,8 +507,6 @@
                         const student = students.find(s => s.Name.toLowerCase() === event.message.name.toLowerCase());
                         if (student) {
                             student.Points = parseInt(student.Points) + event.message.points;
-                            
-                            // If points went negative (prize redeemed), instantly re-render vault if open
                             if (event.message.points < 0 && document.getElementById('vaultRevealedState').style.display === 'flex') {
                                 revealPrizeVaultLocal();
                             }
@@ -517,10 +522,21 @@
             }
         });
 
-        // --- NEW: REDEEM PRIZE ENGINE ---
+        function sendRealtimeCommand(action, extras = {}) { 
+            pubnub.publish(
+                { channel: "classroom_channel", message: { action: action, ...extras } },
+                function(status) {
+                    if (status && status.error) {
+                        console.error("PubNub publish error:", status);
+                        showToast("⚠️ Signal lost. Reconnecting...");
+                    }
+                }
+            ); 
+        }
+
         function redeemPrize(name) {
             if(confirm(`Redeem prize for ${name}? This will deduct 15 points.`)) {
-                pubnub.publish({ channel: "classroom_channel", message: { action: "addPoints", name: name, points: -15, isDouble: false } });
+                sendRealtimeCommand('addPoints', { name: name, points: -15, isDouble: false });
                 robustFetch(`${GOOGLE_WEB_APP_URL}?action=addPoints&name=${encodeURIComponent(name)}&points=-15&tag=Prize+Redeemed&t=${new Date().getTime()}`);
             }
         }
@@ -528,11 +544,12 @@
         function toggleScrollRemote() {
             isScrollPaused = !isScrollPaused;
             document.getElementById('btnPauseScrollRemote').innerHTML = isScrollPaused ? '▶️ Play' : '⏸️ Pause';
-            pubnub.publish({ channel: "classroom_channel", message: { action: "toggleScroll", paused: isScrollPaused } });
+            sendRealtimeCommand('toggleScroll', { paused: isScrollPaused });
         }
 
         function populateDatalist() {
             const datalist = document.getElementById('studentDatalist');
+            if (!datalist) return;
             datalist.innerHTML = '';
             students.forEach(s => {
                 const option = document.createElement('option');
@@ -551,6 +568,8 @@
                 activeStudentName = student.Name; 
                 sendRealtimeCommand('setActive', { name: student.Name }); 
                 showActionPanel(student, false); 
+            } else {
+                showToast("⚠️ Student not found.");
             }
         }
 
@@ -558,7 +577,7 @@
             if (scrollTimeout) return; 
             scrollTimeout = setTimeout(() => { 
                 const maxScroll = e.target.scrollHeight - e.target.clientHeight || 1; 
-                pubnub.publish({ channel: "classroom_channel", message: { action: "scrollVault", percent: e.target.scrollTop / maxScroll } }); 
+                sendRealtimeCommand('scrollVault', { percent: e.target.scrollTop / maxScroll }); 
                 scrollTimeout = null; 
             }, 100); 
         }
@@ -595,7 +614,6 @@
                 const avatar = getSafeAvatar(w.Name, w.AvatarURL);
                 const card = document.createElement('div');
                 card.className = 'vault-winner-card';
-                // Add the redeem action
                 card.onclick = function() { redeemPrize(w.Name); };
                 
                 card.innerHTML = `
@@ -644,28 +662,40 @@
             const name = document.getElementById('goalNameInput').value || 'Pizza Party';
             const amount = document.getElementById('goalAmountInput').value || 500;
             
-            pubnub.publish({ channel: "classroom_channel", message: { action: "updateGoal", emoji: emoji, name: name, amount: amount } });
+            sendRealtimeCommand('updateGoal', { emoji: emoji, name: name, amount: amount });
             document.getElementById('goalModal').classList.remove('active');
             alert("✅ Goal settings beamed to Big Screen!");
         }
 
+        // SAFEGUARDED CAMERA LOADER
         function startCamera() {
             if (html5QrcodeScanner) return; 
+            const readerElem = document.getElementById('reader');
+            if (!readerElem) return;
             document.getElementById('scannerView').style.display = 'block';
             
-            html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: {width: 250, height: 250} }, false);
-            html5QrcodeScanner.render((decodedText) => {
-                const student = students.find(s => s.Name.toLowerCase() === decodedText.trim().toLowerCase());
-                if (student) { 
-                    activeStudentName = student.Name; 
-                    sendRealtimeCommand('setActive', { name: student.Name }); 
-                    showActionPanel(student, false); 
-                }
-            }, () => {});
+            try {
+                html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: {width: 250, height: 250} }, false);
+                html5QrcodeScanner.render((decodedText) => {
+                    const student = students.find(s => s.Name.toLowerCase() === decodedText.trim().toLowerCase());
+                    if (student) { 
+                        activeStudentName = student.Name; 
+                        sendRealtimeCommand('setActive', { name: student.Name }); 
+                        showActionPanel(student, false); 
+                    }
+                }, () => {});
+            } catch(e) {
+                console.warn("Camera failed to start:", e);
+                const statusTxt = document.getElementById('kioskStatusText');
+                if (statusTxt) statusTxt.textContent = "Camera unavailable (Use Search Bar above)";
+            }
         }
+
         function stopCamera() { 
             if (html5QrcodeScanner) { 
-                html5QrcodeScanner.clear(); 
+                try {
+                    html5QrcodeScanner.clear(); 
+                } catch(e){}
                 html5QrcodeScanner = null; 
             } 
             document.getElementById('scannerView').style.display = 'none'; 
@@ -720,15 +750,16 @@
             const finalAmount = isDouble ? amount * 2 : amount;
             
             undoData = { name: activeStudentName, points: finalAmount, tag: selectedTag };
-            document.getElementById('undoToast').style.display = 'block';
+            showToast(`⭐ +${finalAmount} to ${activeStudentName}`, true);
             
             clearTimeout(undoTimer); 
             undoTimer = setTimeout(() => { 
-                document.getElementById('undoToast').style.display = 'none'; 
+                const toast = document.getElementById('undoToast');
+                if (toast) toast.style.display = 'none'; 
                 undoData = null; 
             }, 5000);
             
-            pubnub.publish({ channel: "classroom_channel", message: { action: "addPoints", name: activeStudentName, points: finalAmount, isDouble: isDouble } });
+            sendRealtimeCommand('addPoints', { name: activeStudentName, points: finalAmount, isDouble: isDouble });
             robustFetch(`${GOOGLE_WEB_APP_URL}?action=addPoints&name=${encodeURIComponent(activeStudentName)}&points=${finalAmount}&tag=${encodeURIComponent(selectedTag)}&t=${new Date().getTime()}`);
             
             resetRemote(); 
@@ -736,10 +767,11 @@
 
         function undoLastPoint() {
             if (!undoData) return;
-            pubnub.publish({ channel: "classroom_channel", message: { action: "addPoints", name: undoData.name, points: -undoData.points, isDouble: false } });
+            sendRealtimeCommand('addPoints', { name: undoData.name, points: -undoData.points, isDouble: false });
             robustFetch(`${GOOGLE_WEB_APP_URL}?action=addPoints&name=${encodeURIComponent(undoData.name)}&points=${-undoData.points}&tag=UNDO&t=${new Date().getTime()}`);
             
-            document.getElementById('undoToast').style.display = 'none'; 
+            const toast = document.getElementById('undoToast');
+            if (toast) toast.style.display = 'none'; 
             undoData = null;
             if (navigator.vibrate) navigator.vibrate([50, 50, 50]); 
         }
@@ -767,10 +799,6 @@
             }
         }
 
-        function sendRealtimeCommand(action, extras = {}) { 
-            pubnub.publish({ channel: "classroom_channel", message: { action: action, ...extras } }); 
-        }
-
         async function loadData() {
             try {
                 const res = await fetch(GOOGLE_WEB_APP_URL + '?action=get&t=' + new Date().getTime());
@@ -789,11 +817,7 @@
             const file = input.files[0];
             if (!file) return;
 
-            const msgBox = document.getElementById('undoToast');
-            msgBox.style.background = '#FFD166';
-            msgBox.style.color = '#333';
-            msgBox.innerHTML = `⏳ Uploading ${type}...`;
-            msgBox.style.display = 'block';
+            showToast(`⏳ Uploading ${type}...`);
 
             const formData = new FormData();
             formData.append("image", file);
@@ -811,21 +835,16 @@
                     const actionStr = type === 'artwork' ? 'updateArtwork' : 'updateAvatar';
                     robustFetch(`${GOOGLE_WEB_APP_URL}?action=${actionStr}&name=${encodeURIComponent(activeStudentName)}&url=${encodeURIComponent(imageUrl)}&t=${new Date().getTime()}`);
                     
-                    msgBox.style.background = '#06D6A0';
-                    msgBox.style.color = 'white';
-                    msgBox.innerHTML = `✅ ${type} saved!`;
+                    showToast(`✅ ${type} saved!`, true);
                     
                     if(type === 'avatar') document.getElementById('scanAvatar').src = imageUrl;
 
                     sendRealtimeCommand('refreshData'); 
-
-                    setTimeout(() => { msgBox.style.display = 'none'; }, 3000);
+                } else {
+                    throw new Error("ImgBB rejected upload");
                 }
             } catch (err) {
-                msgBox.style.background = '#FF4B72';
-                msgBox.style.color = 'white';
-                msgBox.innerHTML = "❌ Upload failed.";
-                setTimeout(() => { msgBox.style.display = 'none'; }, 3000);
+                showToast("❌ Upload failed.");
             }
             input.value = ""; 
         }
