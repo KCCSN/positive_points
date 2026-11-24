@@ -248,6 +248,7 @@
         </header>
         
         <div class="remote-bar">
+            <button id="btnSessionToggle" class="btn-remote" style="background: var(--yellow); color: var(--dark);" onclick="toggleSession()">☀️ Before School</button>
             <button id="btnPauseScrollRemote" class="btn-remote" style="background:#ddd; color:var(--dark);" onclick="toggleScrollRemote()">⏸️ Pause</button>
             <button class="btn-remote btn-vault" onclick="sendRealtimeCommand('showVault'); openPrizeVaultLocal();">🎁 Vault</button>
             <button class="btn-remote btn-reveal" onclick="sendRealtimeCommand('revealVault'); revealPrizeVaultLocal();">🏆 Reveal</button>
@@ -397,6 +398,24 @@
         let undoData = null; 
         let undoTimer = null;
         let isScrollPaused = false;
+
+
+        let currentSession = new Date().getHours() < 12 ? 'before' : 'after';
+
+        function updateSessionBtnUI() {
+            const btn = document.getElementById('btnSessionToggle');
+            if (btn) {
+                btn.innerHTML = currentSession === 'before' ? '☀️ Before School' : '🌙 Afterschool';
+            }
+        }
+
+        function toggleSession() {
+            currentSession = currentSession === 'before' ? 'after' : 'before';
+            updateSessionBtnUI();
+            sendRealtimeCommand('switchSession', { session: currentSession });
+            loadData();
+            showToast(`Switched to ${currentSession === 'before' ? 'Before School' : 'Afterschool'}`, true);
+        }
 
         function showToast(msg, isSuccess = false) {
             const toast = document.getElementById('undoToast');
@@ -815,8 +834,9 @@
         }
 
         async function loadData() {
+            updateSessionBtnUI();
             try {
-                const res = await fetch(GOOGLE_WEB_APP_URL + '?action=get&t=' + new Date().getTime());
+                const res = await fetch(`${GOOGLE_WEB_APP_URL}?action=get&session=${currentSession}&t=${new Date().getTime()}`);
                 const data = await res.json(); 
                 students = data.students || [];
                 populateDatalist();

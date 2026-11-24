@@ -300,6 +300,9 @@
         pubnub.subscribe({ channels: ["classroom_channel"] });
 
         let students = []; 
+        let currentSession = new Date().getHours() < 12 ? 'before' : 'after';
+        let isManualSession = false;
+        let combinedClassTotal = 0;
         let orderedStudents = []; 
         let celebrationQueue = []; 
         let isCelebrating = false;
@@ -519,6 +522,13 @@
                     else if (msg.action === "refreshData") {
                         fetchStudentData(); 
                     }
+                    else if (msg.action === "switchSession") {
+                        currentSession = msg.session;
+                        isManualSession = true;
+                        orderedStudents = [];
+                        knownStudentCount = 0;
+                        fetchStudentData();
+                    }
                 } catch(err) {
                     console.error("Error processing realtime message:", err);
                 }
@@ -585,7 +595,7 @@
         }
 
         function updateClassGoal() {
-            let total = 0; students.forEach(s => total += parseInt(s.Points) || 0);
+            let total = combinedClassTotal;
             let goalAmount = parseInt(localStorage.getItem('customGoalAmount')) || 500;
             let goalEmoji = localStorage.getItem('customGoalEmoji') || '🍕';
             let goalName = localStorage.getItem('customGoalName') || 'Pizza Party';
@@ -680,10 +690,22 @@
 
         async function fetchStudentData() {
             try {
-                const response = await fetch(GOOGLE_WEB_APP_URL + '?action=get&t=' + new Date().getTime());
+                // Auto-switch at noon unless manually overridden
+                if (!isManualSession) {
+                    const autoSession = new Date().getHours() < 12 ? 'before' : 'after';
+                    if (autoSession !== currentSession) {
+                        currentSession = autoSession;
+                        orderedStudents = [];
+                        knownStudentCount = 0;
+                    }
+                }
+
+                const response = await fetch(`${GOOGLE_WEB_APP_URL}?action=get&session=${currentSession}&t=${new Date().getTime()}`);
                 const rawResponse = await response.json();
                 
+                combinedClassTotal = parseInt(rawResponse.totalClassPoints) || 0;
                 setAutoMode(rawResponse.autoMode);
+                // ... keep the rest of fetchStudentData() exactly the same ...
 
                 const newStudents = rawResponse.students.map(s => {
                     return { Name: s.Name, Points: s.Points, Artwork: s.Artwork, AvatarURL: getSafeAvatar(s.Name, s.AvatarURL) };
