@@ -382,10 +382,13 @@
         const pubnub = new PubNub({ 
             publishKey: PUBNUB_PUBLISH_KEY, 
             subscribeKey: PUBNUB_SUBSCRIBE_KEY, 
-            userId: "teacher_phone" 
+            userId: "teacher_phone_" + Math.random().toString(36).slice(2, 7),
+            restore: true
         });
-        
         pubnub.subscribe({ channels: ["classroom_channel"] });
+        document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === "visible") pubnub.reconnect();
+        });
 
         let students = []; 
         let activeStudentName = 'none'; 

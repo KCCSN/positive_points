@@ -294,10 +294,13 @@
         const pubnub = new PubNub({ 
             publishKey: PUBNUB_PUBLISH_KEY, 
             subscribeKey: PUBNUB_SUBSCRIBE_KEY, 
-            userId: "big_screen" 
+            userId: "big_screen_" + Math.random().toString(36).slice(2, 7),
+            restore: true
         });
-        
         pubnub.subscribe({ channels: ["classroom_channel"] });
+        document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === "visible") pubnub.reconnect();
+        });
 
         let students = []; 
         let currentSession = new Date().getHours() < 12 ? 'before' : 'after';
@@ -525,6 +528,14 @@
                     else if (msg.action === "switchSession") {
                         currentSession = msg.session;
                         isManualSession = true;
+                        orderedStudents = [];
+                        knownStudentCount = 0;
+                        fetchStudentData();
+                    }
+                    else if (msg.action === "switchSession") {
+                        currentSession = msg.session;
+                        isManualSession = true;
+                        students = [];
                         orderedStudents = [];
                         knownStudentCount = 0;
                         fetchStudentData();
