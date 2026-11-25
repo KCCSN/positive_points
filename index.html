@@ -116,7 +116,7 @@
         @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
         .leaderboard-wrapper { flex: 1; overflow: hidden; position: relative; mask-image: linear-gradient(to bottom, transparent, black 2%, black 98%, transparent); -webkit-mask-image: linear-gradient(to bottom, transparent, black 2%, black 98%, transparent); }
-        .scroll-track { display: flex; flex-direction: column; gap: 10px; animation: scrollUp 150s linear infinite; padding-right: 10px;}
+        .scroll-track { display: flex; flex-direction: column; gap: 10px; animation: scrollUp 120s linear infinite; padding-right: 10px;}
         @keyframes scrollUp { 0% { transform: translateY(0); } 100% { transform: translateY(-50%); } }
         
         .lb-card { background: var(--surface); border: 3px solid var(--dark); border-radius: 10px; padding: 10px 15px; display: flex; align-items: center; margin: 0 5px; box-shadow: 4px 4px 0 var(--dark); }
@@ -808,7 +808,7 @@
                 return; 
             }
             
-            track.style.animation = 'scrollUp 150s linear infinite';
+            track.style.animation = 'scrollUp 120s linear infinite';
             track.style.animationPlayState = isScrollPaused ? 'paused' : 'running';
             
             if (knownStudentCount !== students.length || wasSearching) {
